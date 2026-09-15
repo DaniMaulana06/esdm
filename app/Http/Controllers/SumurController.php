@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSumurRequest;
 use App\Http\Requests\UpdateSumurRequest;
 use App\Models\BkuKontrak;
 use App\Models\Sumur;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,17 @@ class SumurController extends Controller
         return Inertia::render('Sumur/Index', [
             'sumurs' => $sumurs,
             'bkuKontraks' => $bkuKontraks,
+        ]);
+    }
+
+    public function create()
+    {
+        $sumurs = Sumur::orderBy('nama_sumur')->get(['id', 'nama_sumur']);
+
+        Cache::forget('bku.all');
+
+        return Inertia::render('Sumur/Create', [
+            'sumurs' => $sumurs,
         ]);
     }
 

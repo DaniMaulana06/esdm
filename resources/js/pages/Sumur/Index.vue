@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,11 +31,31 @@ const deleteItem = (id: number) => {
     }
 }
 
-// const page = usePage();
-// const flash = computed(() => page.props.flash as { success?: string; error?: string });
 defineProps<{
     sumurs: Sumur[];
 }>();
+
+const page = usePage();
+
+const flash = computed(() => page.props.flash as {
+    success?: string; error?: string
+}
+);
+
+const showFlash = ref(true);
+
+onMounted(() => {
+    if (flash.value.success || flash.value.error) {
+        setTimeout(() => {
+            showFlash.value = false;
+        }, 3000);
+    }
+});
+
+const closeFlash = () => {
+    showFlash.value = false;
+};
+
 </script>
 
 <template>
@@ -43,6 +63,53 @@ defineProps<{
     <Head title="Sumur" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900">
+                        Kelola Data Sumur
+                    </h1>
+<!-- 
+                    <p class="mt-1 text-sm text-gray-600">
+                        Kelola data BKU.
+                    </p> -->
+                </div>
+                <Link :href="route('sumur.create')" prefetch
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    + Tambah Sumur
+                </Link>
+            </div>
+
+            <!-- FLASH SUCCESS -->
+            <div
+                v-if="showFlash && flash.success"
+                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"
+            >
+                <span>
+                    {{ flash.success }}
+                </span>
+
+                <button
+                    type="button"
+                    @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900"
+                >
+                    ×
+                </button>
+            </div>
+
+            <!-- FLASH ERROR -->
+            <div v-if="showFlash && flash.error"
+                class="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                <span>
+                    {{ flash.error }}
+                </span>
+
+                <button type="button" @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-red-700 hover:text-red-900">
+                    ×
+                </button>
+            </div>
+
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <table class="w-full">
                     <thead class="bg-gray-50">

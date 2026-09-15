@@ -18,7 +18,18 @@ class UpdateBkuRequest extends FormRequest
 
         return [
             'nama' => ['required', 'string', 'max:100', Rule::unique('bku', 'nama')->ignore($bkuId)],
-            'penetapan' => ['required', 'integer', 'min:1900', 'max:2100'],
+            'penetapan' => ['required', 'integer', 'max:10000'],
         ];
+    }
+
+    public function messages(): array 
+    {
+        return [
+            'nama.required' => 'Nama BKU wajib diisi',
+            'nama.unique' => 'Nama BKU sudah ada',
+            'penetapan.required' => 'Jumlah penetapan wajib diisi',
+            'penetapan.numeric' => 'Penetapan harus berupa angka',
+            'penetapan.max' => 'Penetapan tidak bisa lebih dari 10.000',
+        ];    
     }
 }
