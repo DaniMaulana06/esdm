@@ -15,26 +15,32 @@ class SumurController extends Controller
 {
     public function index(): Response
     {
-        $sumurs = Sumur::with(['bkuKontrak.bku', 'bkuKontrak.kontrak'])
-            ->latest()
-            ->get();
+        $sumurs = Cache::remember('sumur.all', 60 * 60, function () {
+            return Sumur::with([
+                'bkuKontrak.bku:id,nama',
+                'bkuKontrak.kontrak:id,nama'
+            ])
+                ->latest()
+                ->get();
+        });
 
-        $bkuKontraks = BkuKontrak::with(['bku', 'kontrak'])->get();
+        // $bkuKontraks = BkuKontrak::with(['bku', 'kontrak'])->get();
 
         return Inertia::render('Sumur/Index', [
             'sumurs' => $sumurs,
-            'bkuKontraks' => $bkuKontraks,
+            // 'bkuKontraks' => $bkuKontraks,
         ]);
     }
 
     public function create(): Response
     {
-        $sumurs = Sumur::orderBy('nama_sumur')->get(['id', 'nama_sumur']);
-
-        Cache::forget('bku.all');
+        $bkuKontraks = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama'
+        ])->orderBy('id')->get();
 
         return Inertia::render('Sumur/Create', [
-            'sumurs' => $sumurs,
+            'bkuKontraks' => $bkuKontraks,
         ]);
     }
 
@@ -43,19 +49,42 @@ class SumurController extends Controller
         // dd($request->validated());
         Sumur::create($request->validated());
 
+        Cache::forget('sumur.all');
+
         return redirect()->route('sumur.index')->with('success', 'Data Sumur berhasil ditambahkan.');
     }
 
-    public function update(UpdateSumurRequest $request, Sumur $sumur): RedirectResponse
+    public function edit(Sumur $sumur): Response
     {
+        $bkuKontraks = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama',
+        ])
+            ->orderBy('id')
+            ->get();
+
+        return Inertia::render('Sumur/Edit', [
+            'sumur' => $sumur,
+            'bkuKontraks' => $bkuKontraks,
+        ]);
+    }
+
+    public function update(
+        UpdateSumurRequest $request,
+        Sumur $sumur
+    ): RedirectResponse {
         $sumur->update($request->validated());
 
-        return redirect()->back()->with('success', 'Data Sumur berhasil diperbarui.');
+        Cache::forget('sumur.all');
+
+        return redirect()->route('sumur.index')->with('success', 'Data Sumur berhasil diperbarui.');
     }
 
     public function destroy(Sumur $sumur): RedirectResponse
     {
         $sumur->delete();
+
+        Cache::forget('sumur.all');
 
         return redirect()->back()->with('success', 'Data Sumur berhasil dihapus.');
     }

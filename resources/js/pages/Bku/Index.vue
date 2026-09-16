@@ -32,6 +32,9 @@ defineProps<{
 
 const page = usePage();
 
+// console.log(page.props.auth);
+// console.log(page.props.auth?.user);
+
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
 }

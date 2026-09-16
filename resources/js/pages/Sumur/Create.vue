@@ -1,18 +1,39 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import CardDescription from '@/components/ui/card/CardDescription.vue';
-import CardTitle from '@/components/ui/card/CardTitle.vue';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+interface Bku {
+    id: number;
+    nama: string;
+}
+
+interface Kontrak {
+    id: number;
+    nama: string;
+}
 
 interface BkuKontrak {
     id: number;
-    nomor_kontrak: string;
+    bku_id: number;
+    kontrak_id: number;
+    jumlah_sumur: number;
+    bku: Bku;
+    kontrak: Kontrak;
 }
+
+const props = defineProps<{
+    bkuKontraks: BkuKontrak[];
+}>();
 
 const form = useForm({
     bku_kontrak_id: '',
@@ -28,9 +49,8 @@ const submit = () => {
     form.post(route('sumur.store'), {
         preserveScroll: true,
     });
-}
+};
 </script>
-
 
 <template>
 
@@ -43,12 +63,37 @@ const submit = () => {
                     <CardTitle>Tambah Sumur</CardTitle>
 
                     <CardDescription>
-                        Tambahkan data sumur minyak rakyat ke dalam sistem.
+                        Tambahkan data sumur minyak rakyat.
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent>
                     <form @submit.prevent="submit" class="space-y-5">
+
+                        <!-- BKU Kontrak -->
+                        <div class="space-y-2">
+                            <Label for="bku_kontrak_id">
+                                BKU Kontrak
+                            </Label>
+
+                            <select id="bku_kontrak_id" v-model="form.bku_kontrak_id"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                <option value="" disabled>
+                                    Pilih BKU Kontrak
+                                </option>
+
+                                <option v-for="item in props.bkuKontraks" :key="item.id" :value="item.id">
+                                    {{ item.bku.nama }}
+                                    -
+                                    {{ item.kontrak.nama }}
+                                </option>
+                            </select>
+
+                            <p v-if="form.errors.bku_kontrak_id" class="text-sm text-destructive">
+                                {{ form.errors.bku_kontrak_id }}
+                            </p>
+                        </div>
+
                         <!-- Nama Sumur -->
                         <div class="space-y-2">
                             <Label for="nama_sumur">
@@ -69,7 +114,7 @@ const submit = () => {
                                 Desa
                             </Label>
 
-                            <Input id="desa" v-model="form.desa" type="text" placeholder="Masukkan nama desa" />
+                            <Input id="desa" v-model="form.desa" type="text" placeholder="Masukkan desa" />
 
                             <p v-if="form.errors.desa" class="text-sm text-destructive">
                                 {{ form.errors.desa }}
@@ -83,7 +128,7 @@ const submit = () => {
                             </Label>
 
                             <Input id="kecamatan" v-model="form.kecamatan" type="text"
-                                placeholder="Masukkan nama kecamatan" />
+                                placeholder="Masukkan kecamatan" />
 
                             <p v-if="form.errors.kecamatan" class="text-sm text-destructive">
                                 {{ form.errors.kecamatan }}
@@ -97,7 +142,7 @@ const submit = () => {
                             </Label>
 
                             <Input id="kabupaten" v-model="form.kabupaten" type="text"
-                                placeholder="Masukkan nama kabupaten" />
+                                placeholder="Masukkan kabupaten" />
 
                             <p v-if="form.errors.kabupaten" class="text-sm text-destructive">
                                 {{ form.errors.kabupaten }}
@@ -111,7 +156,7 @@ const submit = () => {
                             </Label>
 
                             <Input id="latitude" v-model="form.latitude" type="number" step="any"
-                                placeholder="Contoh: -2.990934123" />
+                                placeholder="Contoh: -2.9761" />
 
                             <p v-if="form.errors.latitude" class="text-sm text-destructive">
                                 {{ form.errors.latitude }}
@@ -125,14 +170,14 @@ const submit = () => {
                             </Label>
 
                             <Input id="longitude" v-model="form.longitude" type="number" step="any"
-                                placeholder="Contoh: 104.75655412" />
+                                placeholder="Contoh: 104.7754" />
 
                             <p v-if="form.errors.longitude" class="text-sm text-destructive">
                                 {{ form.errors.longitude }}
                             </p>
                         </div>
 
-                        <!-- Tombol -->
+                        <!-- Button -->
                         <div class="flex gap-3 pt-2">
                             <Button variant="outline" as-child>
                                 <Link :href="route('sumur.index')">
@@ -148,6 +193,7 @@ const submit = () => {
                                 }}
                             </Button>
                         </div>
+
                     </form>
                 </CardContent>
             </Card>

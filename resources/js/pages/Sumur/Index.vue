@@ -12,17 +12,35 @@ const breadcrumbs: BreadcrumbItem[] = [
     }
 ];
 
+interface Bku {
+    id: number;
+    nama: string;
+}
+
+interface Kontrak {
+    id: number;
+    nama: string;
+}
+
+interface BkuKontrak {
+    id: number;
+    bku_id: number;
+    kontrak_id: number;
+    jumlah_sumur: number;
+    bku: Bku;
+    kontrak: Kontrak;
+}
+
 interface Sumur {
     id: number;
     bku_kontrak_id: number;
     nama_sumur: string;
-    desa: number;
-    kecamatan: number;
-    kabupaten: number;
-    latitude: number;
-    longitude: number;
-    created_at: string;
-    updated_at: string;
+    desa: string;
+    kecamatan: string;
+    kabupaten: string;
+    latitude: number | null;
+    longitude: number | null;
+    bku_kontrak: BkuKontrak;
 }
 
 const deleteItem = (id: number) => {
@@ -68,7 +86,7 @@ const closeFlash = () => {
                     <h1 class="text-2xl font-semibold text-gray-900">
                         Kelola Data Sumur
                     </h1>
-<!-- 
+                    <!-- 
                     <p class="mt-1 text-sm text-gray-600">
                         Kelola data BKU.
                     </p> -->
@@ -80,19 +98,14 @@ const closeFlash = () => {
             </div>
 
             <!-- FLASH SUCCESS -->
-            <div
-                v-if="showFlash && flash.success"
-                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"
-            >
+            <div v-if="showFlash && flash.success"
+                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
                 <span>
                     {{ flash.success }}
                 </span>
 
-                <button
-                    type="button"
-                    @click="closeFlash"
-                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900"
-                >
+                <button type="button" @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900">
                     ×
                 </button>
             </div>
@@ -119,7 +132,11 @@ const closeFlash = () => {
                             </th>
 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Kontrak BKU
+                                BKU
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                Kontrak
                             </th>
 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
@@ -157,7 +174,11 @@ const closeFlash = () => {
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ smr.bku_kontrak_id }}
+                                {{ smr.bku_kontrak?.bku?.nama }}
+                            </td>
+                            
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ smr.bku_kontrak?.kontrak?.nama }}
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
@@ -184,7 +205,7 @@ const closeFlash = () => {
 
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <Link :href="route('bku.edit', { sumur: smr.id })"
+                                    <Link :href="route('sumur.edit', { sumur: smr.id })"
                                         class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         Edit
                                     </Link>

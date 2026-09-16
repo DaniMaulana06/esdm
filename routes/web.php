@@ -15,15 +15,19 @@ Route::get('/', function () {
 //     return Inertia::render('Dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth','verified'])->group( function (){
-    Route::get('dashboard', function(){
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-    Route::resource('bku', BkuController::class)->except(['show']);
-    Route::resource('sumur', SumurController::class)->except(['show']);
-    Route::resource('kontrak', KontrakController::class)->except(['show']);
-    Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
+
+    Route::middleware('staf_esdm')->group(function () {
+        Route::resource('bku', BkuController::class)->except(['show']);
+        Route::resource('sumur', SumurController::class)->except(['show']);
+        Route::resource('kontrak', KontrakController::class)->except(['show']);
+        Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
+    });
+
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

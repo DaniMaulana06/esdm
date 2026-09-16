@@ -3,39 +3,53 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import type { NavItem, SharedData } from '@/types';
+import { LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { computed } from 'vue';
 
-const mainNavItems: NavItem[] = [
+const page = usePage<SharedData>();
+
+const mainNavItems: (NavItem & { roles: string[]})[]= [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        roles: ['admin', 'staf_dinas', 'operator_bku'],
     },
     {
         title: 'BKU',
         href: '/bku',
         icon: LayoutGrid,
+        roles: ['admin', 'staf_dinas'],
     },
     {
         title: 'Sumur',
         href: '/sumur',
         icon: LayoutGrid,
+        roles: ['admin', 'staf_dinas'],
     },
     {
         title: 'Kontrak',
         href: '/kontrak',
         icon: LayoutGrid,
+        roles: ['admin', 'staf_dinas'],
     },
     {
         title: 'BKU Kontrak',
         href: '/bku-kontrak',
         icon: LayoutGrid,
+        roles: ['admin', 'staf_dinas'],
     },
 ];
+const visibleMenuItems = computed(() => {
+    const role = page.props.auth.user?.role;
 
+    return mainNavItems.filter((item) =>
+        item.roles.includes(role)
+    );
+});
 </script>
 
 <template>
@@ -53,7 +67,7 @@ const mainNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="visibleMenuItems" />
         </SidebarContent>
 
         <SidebarFooter>
