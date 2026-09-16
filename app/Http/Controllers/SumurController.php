@@ -27,7 +27,7 @@ class SumurController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
         $sumurs = Sumur::orderBy('nama_sumur')->get(['id', 'nama_sumur']);
 
@@ -40,9 +40,10 @@ class SumurController extends Controller
 
     public function store(StoreSumurRequest $request): RedirectResponse
     {
+        // dd($request->validated());
         Sumur::create($request->validated());
 
-        return redirect()->back()->with('success', 'Data Sumur berhasil ditambahkan.');
+        return redirect()->route('sumur.index')->with('success', 'Data Sumur berhasil ditambahkan.');
     }
 
     public function update(UpdateSumurRequest $request, Sumur $sumur): RedirectResponse

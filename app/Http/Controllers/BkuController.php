@@ -23,7 +23,7 @@ class BkuController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
         $bkus = Bku::orderBy('nama')->get(['id', 'nama']);
 
@@ -38,6 +38,8 @@ class BkuController extends Controller
     {
         // dd($request->validated());
         Bku::create($request->validated());
+
+        Cache::forget('bku.all');
 
         return redirect()->route('bku.index')->with('success', 'Data BKU berhasil ditambahkan.');
     }

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BkuController;
+use App\Http\Controllers\BkuKontrakController;
+use App\Http\Controllers\KontrakController;
 use App\Http\Controllers\SumurController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,6 +21,8 @@ Route::middleware(['auth','verified'])->group( function (){
     })->name('dashboard');
     Route::resource('bku', BkuController::class)->except(['show']);
     Route::resource('sumur', SumurController::class)->except(['show']);
+    Route::resource('kontrak', KontrakController::class)->except(['show']);
+    Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
 });
 
 require __DIR__.'/settings.php';

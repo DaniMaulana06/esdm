@@ -24,6 +24,16 @@ const mainNavItems: NavItem[] = [
         href: '/sumur',
         icon: LayoutGrid,
     },
+    {
+        title: 'Kontrak',
+        href: '/kontrak',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'BKU Kontrak',
+        href: '/bku-kontrak',
+        icon: LayoutGrid,
+    },
 ];
 
 </script>

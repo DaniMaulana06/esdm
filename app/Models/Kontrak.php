@@ -21,8 +21,8 @@ class Kontrak extends Model
     public function bkus(): BelongsToMany
     {
         return $this->belongsToMany(Bku::class, 'bku_kontrak', 'kontrak_id', 'bku_id')
-                    ->withPivot('id', 'jumlah_sumur')
-                    ->withTimestamps();
+            ->withPivot('id', 'jumlah_sumur')
+            ->withTimestamps();
     }
 
     public function bkuKontraks(): HasMany
