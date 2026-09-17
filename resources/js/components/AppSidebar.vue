@@ -5,7 +5,14 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/vue3';
 import type { NavItem, SharedData } from '@/types';
-import { LayoutGrid } from 'lucide-vue-next';
+import { 
+    LayoutGrid, 
+    Home,
+    Building2, 
+    LandPlot,
+    Signature,
+    NotepadText
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 
@@ -15,25 +22,25 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
     {
         title: 'Dashboard',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: Home,
         roles: ['admin', 'staf_dinas', 'operator_bku'],
     },
     {
         title: 'BKU',
         href: '/bku',
-        icon: LayoutGrid,
+        icon: Building2,
         roles: ['admin', 'staf_dinas'],
     },
     {
         title: 'Sumur',
         href: '/sumur',
-        icon: LayoutGrid,
+        icon: LandPlot,
         roles: ['admin', 'staf_dinas'],
     },
     {
         title: 'Kontrak',
         href: '/kontrak',
-        icon: LayoutGrid,
+        icon: Signature,
         roles: ['admin', 'staf_dinas'],
     },
     {
@@ -41,6 +48,13 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         href: '/bku-kontrak',
         icon: LayoutGrid,
         roles: ['admin', 'staf_dinas'],
+    },
+
+    {
+        title: 'Laporan Harian',
+        href: '/laporan-harian',
+        icon: NotepadText,
+        roles: ['admin', 'staf_dinas', 'operator_bku'],
     },
 ];
 const visibleMenuItems = computed(() => {

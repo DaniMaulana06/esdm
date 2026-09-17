@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class StafEsdm
+class OperatorBku
 {
     /**
      * Handle an incoming request.
@@ -15,8 +15,7 @@ class StafEsdm
      */
     public function handle(Request $request, Closure $next): Response
     {
-        
-        if (!$request->user() || !$request->user()->isStafEsdm()){
+        if (!$request->user() || !$request->user()->isOperatorBku()){
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         } else {
             return $next($request);

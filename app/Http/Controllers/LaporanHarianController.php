@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreLaporanHarianRequest;
 use App\Models\BkuKontrak;
 use App\Models\LaporanHarian;
+use Cache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,38 +17,74 @@ class LaporanHarianController extends Controller
     {
         $user = $request->user();
 
-        $query = LaporanHarian::with(['bkuKontrak.bku', 'bkuKontrak.kontrak', 'justifikasis']);
+        $query = LaporanHarian::with([
+            'bkuKontrak.bku',
+            'bkuKontrak.kontrak',
+            'justifikasis',
+        ]);
 
-        // Jika role operator_bku, filter laporan hanya untuk BKU miliknya
+        // Operator hanya melihat laporan dari BKU miliknya
         if ($user->isOperatorBku()) {
             $query->whereHas('bkuKontrak', function ($q) use ($user) {
                 $q->where('bku_id', $user->bku_id);
             });
         }
 
-        if ($request->has('bku_id') && $request->bku_id) {
+        // Filter BKU
+        if ($request->filled('bku_id')) {
             $query->whereHas('bkuKontrak', function ($q) use ($request) {
                 $q->where('bku_id', $request->bku_id);
             });
         }
 
-        if ($request->has('tanggal') && $request->tanggal) {
+        // Filter tanggal
+        if ($request->filled('tanggal')) {
             $query->where('tanggal', $request->tanggal);
         }
 
-        $laporanHarian = $query->latest('tanggal')->paginate(15)->withQueryString();
+        $laporanHarians = $query
+            ->latest('tanggal')
+            ->paginate(15)
+            ->withQueryString();
 
-        // Opsi BKU Kontrak yang tersedia untuk form input
-        $bkuKontrakQuery = BkuKontrak::with(['bku', 'kontrak']);
+        $bkuKontrakQuery = BkuKontrak::with([
+            'bku',
+            'kontrak',
+        ]);
+
         if ($user->isOperatorBku()) {
             $bkuKontrakQuery->where('bku_id', $user->bku_id);
         }
+
         $bkuKontraks = $bkuKontrakQuery->get();
 
-        return Inertia::render('laporan-harian/Index', [
-            'laporanHarian' => $laporanHarian,
+        return Inertia::render('LaporanHarian/Index', [
+            'laporanHarians' => $laporanHarians,
             'bkuKontraks' => $bkuKontraks,
             'filters' => $request->only(['bku_id', 'tanggal']),
+        ]);
+    }
+
+    public function create(Request $request): Response
+    {
+        $user = $request->user();
+
+        $query = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama',
+        ]);
+
+        // Operator hanya melihat kontrak dari BKU miliknya
+        if ($user->isOperatorBku()) {
+            $query->where('bku_id', $user->bku_id);
+        }
+
+        $bkuKontraks = $query
+            ->orderBy('bku_id')
+            ->get();
+
+        return Inertia::render('LaporanHarian/Create', [
+            'bkuKontraks' => $bkuKontraks,
         ]);
     }
 
@@ -55,6 +92,17 @@ class LaporanHarianController extends Controller
     {
         LaporanHarian::create($request->validated());
 
-        return redirect()->back()->with('success', 'Laporan produksi & lifting harian berhasil disimpan.');
+        Cache::forget('laporan_harian.all');
+
+        return redirect()->route('laporan-harian.index')->with('success', 'Laporan produksi & lifting harian berhasil disimpan.');
+    }
+
+    public function destroy(LaporanHarian $laporanHarian): RedirectResponse
+    {
+        $laporanHarian->delete();
+
+        // Cache::forget('laporan-harian.all');
+
+        return redirect()->back()->with('success', 'Data Kontrak berhasil dihapus.');
     }
 }

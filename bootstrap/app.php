@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\OperatorBku;
 use App\Http\Middleware\StafEsdm;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'staf_esdm' => StafEsdm::class,
+            'operator-bku' => OperatorBku::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
