@@ -22,7 +22,7 @@ defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Profile settings',
+        title: 'Pengaturan Profil',
         href: '/settings/profile',
     },
 ];
@@ -51,22 +51,22 @@ const submit = () => {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
 
-        <Head title="Profile settings" />
+        <Head title="Pengaturan Profil" />
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title="Informasi Profil" description="Ganti Nama dan Alamat E-Mail" />
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">Nama</Label>
                         <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name"
                             placeholder="Full name" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">Alamat E-Mail</Label>
                         <Input id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
                             autocomplete="username" placeholder="Email address" />
                         <InputError class="mt-2" :message="form.errors.email" />
@@ -92,17 +92,17 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save</Button>
+                        <Button :disabled="form.processing">Simpan</Button>
 
                         <TransitionRoot :show="form.recentlySuccessful" enter="transition ease-in-out"
                             enter-from="opacity-0" leave="transition ease-in-out" leave-to="opacity-0">
-                            <p class="text-sm text-neutral-600">Saved.</p>
+                            <p class="text-sm text-neutral-600">Tersimpan.</p>
                         </TransitionRoot>
                     </div>
                 </form>
             </div>
 
-            <DeleteUser />
+            <!-- <DeleteUser /> -->
         </SettingsLayout>
     </AppLayout>
 </template>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\Admin;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OperatorBku;
 use App\Http\Middleware\StafEsdm;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'staf_esdm' => StafEsdm::class,
             'operator-bku' => OperatorBku::class,
+            'admin' => Admin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

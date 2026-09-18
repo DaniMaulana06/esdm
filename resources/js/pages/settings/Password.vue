@@ -59,15 +59,15 @@ const updatePassword = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Profile settings" />
+        <Head title="Pengaturan Keamanan" />
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <HeadingSmall title="Perbarui Password" description="Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman." />
 
                 <form @submit.prevent="updatePassword" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="current_password">Current Password</Label>
+                        <Label for="current_password">Password saat ini</Label>
                         <Input
                             id="current_password"
                             ref="currentPasswordInput"
@@ -81,7 +81,7 @@ const updatePassword = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password">Password baru</Label>
                         <Input
                             id="password"
                             ref="passwordInput"
@@ -95,7 +95,7 @@ const updatePassword = () => {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation">Konfirmasi password</Label>
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
@@ -108,7 +108,7 @@ const updatePassword = () => {
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save password</Button>
+                        <Button :disabled="form.processing">Simpan password</Button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
@@ -117,7 +117,7 @@ const updatePassword = () => {
                             leave="transition ease-in-out"
                             leave-to="opacity-0"
                         >
-                            <p class="text-sm text-neutral-600">Saved</p>
+                            <p class="text-sm text-neutral-600">Tersimpan</p>
                         </TransitionRoot>
                     </div>
                 </form>

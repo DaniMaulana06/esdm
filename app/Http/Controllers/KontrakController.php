@@ -14,9 +14,13 @@ class KontrakController extends Controller
 {
     public function index(): Response
     {
-        $kontraks = Kontrak::withCount('bkus')
-            ->latest()
-            ->get();
+        // $kontraks = Kontrak::withCount('bkus')
+        //     ->latest()
+        //     ->get();
+
+        $kontraks = Cache::remember('kontrak.all', 60 * 60, function(){
+            return Kontrak::withCount('bkus')->latest()->get();
+        });
 
         return Inertia::render('Kontrak/Index', [
             'kontraks' => $kontraks,
@@ -26,8 +30,6 @@ class KontrakController extends Controller
     public function create(): Response
     {
         $kontraks = Kontrak::orderBy('nama')->get(['id', 'nama']);
-
-        Cache::forget('kontraks.all');
 
         return Inertia::render('Kontrak/Create', [
             'kontraks' => $kontraks,
@@ -45,6 +47,8 @@ class KontrakController extends Controller
     {
         Kontrak::create($request->validated());
 
+        Cache::forget('kontraks.all');
+
         return redirect()->route('kontrak.index')->with('success', 'Data Kontrak berhasil ditambahkan.');
     }
 
@@ -52,12 +56,16 @@ class KontrakController extends Controller
     {
         $kontrak->update($request->validated());
 
+        Cache::forget('kontraks.all');
+
         return redirect()->route('kontrak.index')->with('success', 'Data Kontrak berhasil diperbarui.');
     }
 
     public function destroy(Kontrak $kontrak): RedirectResponse
     {
         $kontrak->delete();
+
+        Cache::forget('kontraks.all');
 
         return redirect()->back()->with('success', 'Data Kontrak berhasil dihapus.');
     }

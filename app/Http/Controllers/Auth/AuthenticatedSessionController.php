@@ -33,6 +33,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // dd([
+        //     'auth_id' => auth()->id(),
+        //     'auth_name' => auth()->user()?->name,
+        //     'auth_bku_id' => auth()->user()?->bku_id,
+        //     'session_id' => $request->session()->getId(),
+        // ]);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

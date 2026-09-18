@@ -14,12 +14,6 @@ interface Props {
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
 });
-
-const isMasterDataOpen = ref(
-    route().current('sumur.*') || 
-    route().current('kontrak.*') || 
-    route().current('bku.*')
-);
 </script>
 
 <template>

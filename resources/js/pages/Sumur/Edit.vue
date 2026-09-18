@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import Button from '@/components/ui/button/Button.vue';
-import Card from '@/components/ui/card/Card.vue';
-import CardContent from '@/components/ui/card/CardContent.vue';
-import CardDescription from '@/components/ui/card/CardDescription.vue';
-import CardHeader from '@/components/ui/card/CardHeader.vue';
-import CardTitle from '@/components/ui/card/CardTitle.vue';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface Bku {
     id: number;
@@ -170,8 +172,9 @@ const submit = () => {
                                 Latitude
                             </Label>
 
-                            <Input id="latitude" v-model="form.latitude" type="number" step="any"
-                                placeholder="Contoh: -2.9761" />
+                            <Input id="latitude" v-model="form.latitude" type="text" inputmode="decimal" step="any"
+                                placeholder="Contoh: -2.9761" @input="form.latitude = form.latitude.replace(/,/g, '.')"
+                                class="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 
                             <p v-if="form.errors.latitude" class="text-sm text-destructive">
                                 {{ form.errors.latitude }}
@@ -184,8 +187,10 @@ const submit = () => {
                                 Longitude
                             </Label>
 
-                            <Input id="longitude" v-model="form.longitude" type="number" step="any"
-                                placeholder="Contoh: 104.7754" />
+                            <Input id="longitude" v-model="form.longitude" type="text" step="any"
+                                placeholder="Contoh: 104.7754"
+                                @input="form.longitude = form.longitude.replace(/,/g, '.')"
+                                class="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 
                             <p v-if="form.errors.longitude" class="text-sm text-destructive">
                                 {{ form.errors.longitude }}
@@ -196,7 +201,7 @@ const submit = () => {
                         <div class="flex gap-3 pt-2">
                             <Button variant="outline" as-child>
                                 <Link :href="route('sumur.index')">
-                                Batal
+                                    Batal
                                 </Link>
                             </Button>
 

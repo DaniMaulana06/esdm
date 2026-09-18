@@ -9,7 +9,7 @@ class UpdateSumurRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isStafEsdm() ?? false;
+        return $this->user()?->isOperatorBku() ?? false;
     }
 
     public function rules(): array
@@ -25,5 +25,13 @@ class UpdateSumurRequest extends FormRequest
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'latitude' => str_replace(',', '.', $this->latitude),
+            'longitude' => str_replace(',', '.', $this->longitude),
+        ]);
     }
 }

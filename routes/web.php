@@ -5,6 +5,7 @@ use App\Http\Controllers\BkuKontrakController;
 use App\Http\Controllers\KontrakController;
 use App\Http\Controllers\LaporanHarianController;
 use App\Http\Controllers\SumurController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,17 +22,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::middleware('admin')->group(function () {
+        Route::resource('users', UserController::class)
+            ->except(['show']);
+    });
+
     Route::middleware('staf_esdm')->group(function () {
         Route::resource('bku', BkuController::class)->except(['show']);
-        Route::resource('sumur', SumurController::class)->except(['show']);
         Route::resource('kontrak', KontrakController::class)->except(['show']);
         Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
-        
     });
+    Route::resource('sumur', SumurController::class)->except(['show']);
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
-
+    
     Route::middleware('operator-bku')->group(function () {
-        // Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
         Route::get('laporan-harian/create', [LaporanHarianController::class, 'create'])->name('laporan-harian.create');
         Route::post('laporan-harian', [LaporanHarianController::class, 'store'])->name('laporan-harian.store');
     });

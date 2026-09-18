@@ -155,8 +155,10 @@ const submit = () => {
                                 Latitude
                             </Label>
 
-                            <Input id="latitude" v-model="form.latitude" type="number" step="any"
-                                placeholder="Contoh: -2.9761" />
+                            <Input id="latitude" v-model="form.latitude" type="text" inputmode="decimal" step="any"
+                                placeholder="Contoh: -2.9761"
+                                @input="form.latitude = form.latitude.replace(/,/g, '.')"
+                                class="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 
                             <p v-if="form.errors.latitude" class="text-sm text-destructive">
                                 {{ form.errors.latitude }}
@@ -169,8 +171,10 @@ const submit = () => {
                                 Longitude
                             </Label>
 
-                            <Input id="longitude" v-model="form.longitude" type="number" step="any"
-                                placeholder="Contoh: 104.7754" />
+                            <Input id="longitude" v-model="form.longitude" type="text" step="any"
+                                placeholder="Contoh: 104.7754"
+                                @input="form.longitude = form.longitude.replace(/,/g, '.')"
+                                class="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 
                             <p v-if="form.errors.longitude" class="text-sm text-destructive">
                                 {{ form.errors.longitude }}

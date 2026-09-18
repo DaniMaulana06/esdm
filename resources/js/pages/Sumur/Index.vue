@@ -61,9 +61,17 @@ const cekLokasi = (latitude: number | null, longitude: number | null) => {
 
 defineProps<{
     sumurs: Sumur[];
+    debugUser: {
+        id: number;
+        name: string;
+        bku_id: number | null;
+    };
 }>();
 
 const page = usePage();
+
+// console.log('USER DARI INERTIA:', page.props.auth?.user);
+// console.log('SUMUR DARI INERTIA:', page.props.sumurs);
 
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
@@ -100,7 +108,7 @@ const closeFlash = () => {
                         Kelola data BKU.
                     </p> -->
                 </div>
-                <Link :href="route('sumur.create')" prefetch
+                <Link :href="route('sumur.create')"
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     + Tambah Sumur
                 </Link>
@@ -132,6 +140,12 @@ const closeFlash = () => {
                 </button>
             </div>
 
+            <div class="p-4 bg-yellow-100">
+                <p>User ID: {{ debugUser.id }}</p>
+                <p>User: {{ debugUser.name }}</p>
+                <p>BKU ID: {{ debugUser.bku_id }}</p>
+            </div>
+
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <div class="w-full">
                     <table class="w-full">
@@ -140,27 +154,27 @@ const closeFlash = () => {
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     No
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     BKU
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Kontrak
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Nama Sumur
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Desa
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Kecamatan
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Kabupaten
                                 </th>
@@ -170,39 +184,39 @@ const closeFlash = () => {
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Longitude
                                 </th>
-    
+
                                 <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                     Aksi
                                 </th>
                             </tr>
                         </thead>
-    
+
                         <tbody class="divide-y">
                             <tr v-for="(smr, index) in sumurs" :key="smr.id" class="hover:bg-gray-50">
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ index + 1 }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.bku_kontrak?.bku?.nama }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.bku_kontrak?.kontrak?.nama }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.nama_sumur }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.desa }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.kecamatan }}
                                 </td>
-    
+
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.kabupaten }}
                                 </td>
@@ -212,20 +226,20 @@ const closeFlash = () => {
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.longitude }}
                                 </td>
-    
+
                                 <td class="px-6 py-4">
                                     <div class="flex justify-center gap-2">
-    
+
                                         <Button @click="cekLokasi(smr.latitude, smr.longitude)"
                                             class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
                                             Cek Lokasi
                                         </Button>
-    
+
                                         <Link :href="route('sumur.edit', { sumur: smr.id })"
                                             class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                             Edit
                                         </Link>
-    
+
                                         <Button @click="deleteItem(smr.id)"
                                             class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                             Hapus
@@ -233,7 +247,7 @@ const closeFlash = () => {
                                     </div>
                                 </td>
                             </tr>
-    
+
                             <tr v-if="sumurs.length === 0">
                                 <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
                                     Belum ada data Sumur.

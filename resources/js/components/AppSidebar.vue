@@ -11,7 +11,8 @@ import {
     Building2, 
     LandPlot,
     Signature,
-    NotepadText
+    NotepadText,
+    User2
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
@@ -35,7 +36,7 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         title: 'Sumur',
         href: '/sumur',
         icon: LandPlot,
-        roles: ['admin', 'staf_dinas'],
+        roles: ['admin', 'staf_dinas','operator_bku'],
     },
     {
         title: 'Kontrak',
@@ -55,6 +56,13 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         href: '/laporan-harian',
         icon: NotepadText,
         roles: ['admin', 'staf_dinas', 'operator_bku'],
+    },
+    
+    {
+        title: 'Manajemen User',
+        href: '/users',
+        icon: User2,
+        roles: ['admin'],
     },
 ];
 const visibleMenuItems = computed(() => {
