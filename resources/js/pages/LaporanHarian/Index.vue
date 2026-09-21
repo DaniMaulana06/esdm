@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { type SharedData } from '@/types';
@@ -237,15 +238,20 @@ const closeFlash = () => {
 
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <!-- <Link :href="route('laporan-harian.edit', { laporanHarian: laporanHarian.id })"
-                                        class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-                                        Edit
-                                    </Link> -->
+                                    <Button v-if="page.props.auth.user.role === 'staf_dinas'" variant="outline"
+                                        as-child class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
+                                        <Link :href="route('laporan-harian.edit', {
+                                            laporan_harian: laporanHarian.id,
+                                        })
+                                            ">
+                                            Edit
+                                        </Link>
+                                    </Button>
 
-                                    <button @click="deleteItem(laporanHarian.id)" v-if="isStafEsdm"
+                                    <Button @click="deleteItem(laporanHarian.id)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
-                                    </button>
+                                    </Button>
                                 </div>
                             </td>
                         </tr>

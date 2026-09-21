@@ -205,11 +205,11 @@ const submit = () => {
                                 </Link>
                             </Button>
 
-                            <Button type="submit" :disabled="form.processing">
+                            <Button type="submit" :disabled="form.processing" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
                                 {{
                                     form.processing
-                                        ? 'Menyimpan...'
-                                        : 'Simpan'
+                                        ? 'Memperbarui...'
+                                        : 'Update'
                                 }}
                             </Button>
                         </div>

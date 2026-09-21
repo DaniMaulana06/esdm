@@ -31,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('bku', BkuController::class)->except(['show']);
         Route::resource('kontrak', KontrakController::class)->except(['show']);
         Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
+        Route::get('laporan-harian/{laporan_harian}/edit', [LaporanHarianController::class, 'edit'])->name('laporan-harian.edit');
+        Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])
+        ->name('laporan-harian.update');
     });
     Route::resource('sumur', SumurController::class)->except(['show']);
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');

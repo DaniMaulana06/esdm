@@ -140,11 +140,11 @@ const closeFlash = () => {
                 </button>
             </div>
 
-            <div class="p-4 bg-yellow-100">
+            <!-- <div class="p-4 bg-yellow-100">
                 <p>User ID: {{ debugUser.id }}</p>
                 <p>User: {{ debugUser.name }}</p>
                 <p>BKU ID: {{ debugUser.bku_id }}</p>
-            </div>
+            </div> -->
 
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <div class="w-full">

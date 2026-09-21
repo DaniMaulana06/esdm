@@ -88,6 +88,18 @@ class LaporanHarianController extends Controller
         ]);
     }
 
+    public function edit(LaporanHarian $laporanHarian): Response
+    {
+        $laporanHarian->load([
+            'bkuKontrak.bku',
+            'bkuKontrak.kontrak',
+        ]);
+
+        return Inertia::render('LaporanHarian/Edit', [
+            'laporanHarian' => $laporanHarian,
+        ]);
+    }
+
     public function store(StoreLaporanHarianRequest $request): RedirectResponse
     {
         LaporanHarian::create($request->validated());
@@ -95,6 +107,22 @@ class LaporanHarianController extends Controller
         Cache::forget('laporan_harian.all');
 
         return redirect()->route('laporan-harian.index')->with('success', 'Laporan produksi & lifting harian berhasil disimpan.');
+    }
+
+    public function update(
+        Request $request,
+        LaporanHarian $laporanHarian
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'total_produksi' => ['required', 'numeric', 'min:0'],
+            'total_lifting' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $laporanHarian->update($validated);
+
+        return redirect()
+            ->route('laporan-harian.index')
+            ->with('success', 'Laporan harian berhasil diperbarui.');
     }
 
     public function destroy(LaporanHarian $laporanHarian): RedirectResponse
