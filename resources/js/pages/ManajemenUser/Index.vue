@@ -70,14 +70,6 @@ const formatRole = (role: string) => {
     }
 };
 
-const formatTanggal = (tanggal: string) => {
-    return new Date(tanggal).toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-};
-
 const deleteUser = (id: number) => {
     if (confirm('Apakah kamu yakin ingin menghapus user ini?')) {
         router.delete(
@@ -233,14 +225,16 @@ const deleteUser = (id: number) => {
 
                     <div class="flex gap-1">
                         <template v-for="(link, index) in props.users.links" :key="index">
-                            <Link v-if="link.url" :href="link.url" v-html="link.label"
+                            <Link v-if="link.url" :href="link.url"
                                 class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50" :class="{
                                     'bg-blue-600 text-white hover:bg-blue-600':
                                         link.active,
-                                }" />
+                                }"> {{ link.label }}</Link>
 
-                            <span v-else v-html="link.label"
-                                class="rounded-md border px-3 py-1.5 text-sm text-gray-400" />
+                            <span v-else
+                                class="rounded-md border px-3 py-1.5 text-sm text-gray-400">
+                                {{ link.label }}
+                            </span>
                         </template>
                     </div>
                 </div>

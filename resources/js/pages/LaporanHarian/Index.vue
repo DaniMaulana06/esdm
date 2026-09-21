@@ -70,7 +70,7 @@ interface Pagination<T> {
     total: number;
 }
 
-const props = defineProps<{
+defineProps<{
     laporanHarians: Pagination<LaporanHarian>;
     bkuKontraks: BkuKontrak[];
     filters: {
