@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,5 +36,24 @@ class LaporanHarian extends Model
     public function justifikasis(): HasMany
     {
         return $this->hasMany(Justifikasi::class, 'laporan_harian_id');
+    }
+
+    public function scopeForUser(
+        Builder $query,
+        User $user
+    ): Builder {
+        if ($user->isOperatorBku()) {
+            $query->whereHas(
+                'bkuKontrak',
+                function (Builder $query) use ($user) {
+                    $query->where(
+                        'bku_id',
+                        $user->bku_id
+                    );
+                }
+            );
+        }
+    
+        return $query;
     }
 }

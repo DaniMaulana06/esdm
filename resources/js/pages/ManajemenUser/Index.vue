@@ -49,7 +49,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'User Management',
+        title: 'Manajemen User',
         href: route('users.index'),
     },
 ];
@@ -83,7 +83,7 @@ const deleteUser = (id: number) => {
 
 <template>
 
-    <Head title="User Management" />
+    <Head title="Manajemen User" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
@@ -92,7 +92,7 @@ const deleteUser = (id: number) => {
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900">
-                        User Management
+                        Manajemen User
                     </h1>
 
                     <p class="mt-1 text-sm text-gray-600">

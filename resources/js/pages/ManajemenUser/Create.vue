@@ -114,6 +114,10 @@ const submit = () => {
                                     Pilih Role
                                 </option>
 
+                                <option value="admin">
+                                    Admin
+                                </option>
+
                                 <option value="staf_dinas">
                                     Staf Dinas
                                 </option>

@@ -85,7 +85,7 @@ const submit = () => {
                 </CardHeader>
 
                 <CardContent>
-                    <form @submit.prevent="submit" class="space-y-5">
+                    <form @submit.prevent="submit" class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
                         <!-- BKU Kontrak -->
                         <div class="space-y-2">
@@ -198,7 +198,7 @@ const submit = () => {
                         </div>
 
                         <!-- Button -->
-                        <div class="flex gap-3 pt-2">
+                        <div class="flex justify-end gap-3 md:col-span-2">
                             <Button variant="outline" as-child>
                                 <Link :href="route('sumur.index')">
                                     Batal

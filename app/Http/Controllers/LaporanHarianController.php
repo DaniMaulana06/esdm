@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\LaporanHarianFilter;
+use App\Http\Requests\FilterLaporanHarianRequest;
 use App\Http\Requests\StoreLaporanHarianRequest;
 use App\Models\BkuKontrak;
 use App\Models\LaporanHarian;
@@ -13,47 +15,42 @@ use Inertia\Response;
 
 class LaporanHarianController extends Controller
 {
-    public function index(Request $request): Response
-    {
+    public function index(
+        FilterLaporanHarianRequest $request,
+        LaporanHarianFilter $filter
+    ): Response {
         $user = $request->user();
 
-        $query = LaporanHarian::with([
-            'bkuKontrak.bku',
-            'bkuKontrak.kontrak',
-            'justifikasis',
-        ]);
+        $query = LaporanHarian::query()
+            ->with([
+                'bkuKontrak.bku',
+                'bkuKontrak.kontrak',
+                'justifikasis',
+            ])
+            ->forUser($user);
 
-        // Operator hanya melihat laporan dari BKU miliknya
-        if ($user->isOperatorBku()) {
-            $query->whereHas('bkuKontrak', function ($q) use ($user) {
-                $q->where('bku_id', $user->bku_id);
-            });
-        }
-
-        // Filter BKU
-        if ($request->filled('bku_id')) {
-            $query->whereHas('bkuKontrak', function ($q) use ($request) {
-                $q->where('bku_id', $request->bku_id);
-            });
-        }
-
-        // Filter tanggal
-        if ($request->filled('tanggal')) {
-            $query->where('tanggal', $request->tanggal);
-        }
+        // Search, filter, dan sorting
+        $filter->apply(
+            $query,
+            $request->validated()
+        );
 
         $laporanHarians = $query
-            ->latest('tanggal')
             ->paginate(15)
             ->withQueryString();
 
+        // BKU + Kontrak untuk kebutuhan halaman
         $bkuKontrakQuery = BkuKontrak::with([
             'bku',
             'kontrak',
         ]);
 
+        // Operator hanya mendapatkan BKU miliknya
         if ($user->isOperatorBku()) {
-            $bkuKontrakQuery->where('bku_id', $user->bku_id);
+            $bkuKontrakQuery->where(
+                'bku_id',
+                $user->bku_id
+            );
         }
 
         $bkuKontraks = $bkuKontrakQuery->get();
@@ -61,7 +58,7 @@ class LaporanHarianController extends Controller
         return Inertia::render('LaporanHarian/Index', [
             'laporanHarians' => $laporanHarians,
             'bkuKontraks' => $bkuKontraks,
-            'filters' => $request->only(['bku_id', 'tanggal']),
+            'filters' => $request->validated(),
         ]);
     }
 

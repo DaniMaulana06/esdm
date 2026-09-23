@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
@@ -59,7 +59,7 @@ const cekLokasi = (latitude: number | null, longitude: number | null) => {
     }
 }
 
-defineProps<{
+const props = defineProps<{
     sumurs: Sumur[];
     debugUser: {
         id: number;
@@ -68,7 +68,14 @@ defineProps<{
     };
 }>();
 
-const page = usePage();
+const page = usePage<SharedData>();
+
+const user = computed(() => page.props.auth.user);
+
+const isStafEsdm = computed(() => {
+    return user.value?.role === 'staf_esdm';
+});
+
 
 // console.log('USER DARI INERTIA:', page.props.auth?.user);
 // console.log('SUMUR DARI INERTIA:', page.props.sumurs);
@@ -140,12 +147,6 @@ const closeFlash = () => {
                 </button>
             </div>
 
-            <!-- <div class="p-4 bg-yellow-100">
-                <p>User ID: {{ debugUser.id }}</p>
-                <p>User: {{ debugUser.name }}</p>
-                <p>BKU ID: {{ debugUser.bku_id }}</p>
-            </div> -->
-
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <div class="w-full">
                     <table class="w-full">
@@ -178,12 +179,12 @@ const closeFlash = () => {
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Kabupaten
                                 </th>
-                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <!-- <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Latitude
                                 </th>
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                     Longitude
-                                </th>
+                                </th> -->
 
                                 <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                     Aksi
@@ -220,12 +221,12 @@ const closeFlash = () => {
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.kabupaten }}
                                 </td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                <!-- <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.latitude }}
                                 </td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                     {{ smr.longitude }}
-                                </td>
+                                </td> -->
 
                                 <td class="px-6 py-4">
                                     <div class="flex justify-center gap-2">

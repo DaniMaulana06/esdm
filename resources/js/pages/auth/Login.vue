@@ -2,6 +2,7 @@
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import Card from '@/components/ui/card/Card.vue';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,8 @@ const submit = () => {
             {{ status }}
         </div>
 
+
+
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
@@ -68,11 +71,7 @@ const submit = () => {
                     Log in
                 </Button>
             </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
-            </div>
         </form>
+
     </AuthBase>
 </template>

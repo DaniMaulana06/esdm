@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
+import Input from '@/components/ui/input/Input.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { type SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -70,15 +72,115 @@ interface Pagination<T> {
     total: number;
 }
 
-defineProps<{
+interface Filters {
+    search?: string;
+    bku_id?: string;
+    tanggal?: string;
+    sort?: string;
+    direction?: string;
+}
+
+
+const props = defineProps<{
     laporanHarians: Pagination<LaporanHarian>;
     bkuKontraks: BkuKontrak[];
-    filters: {
-        bku_id?: string;
-        tanggal?: string;
-    };
+    filters: Filters;
 }>();
 
+const search = ref(props.filters.search ?? '');
+const bkuId = ref(props.filters.bku_id ?? '');
+const tanggal = ref(props.filters.tanggal ?? '');
+
+const bkus = computed(() => {
+    const uniqueBku = new Map<number, Bku>();
+
+    props.bkuKontraks.forEach((item) => {
+        if (item.bku) {
+            uniqueBku.set(item.bku.id, item.bku);
+        }
+    });
+
+    return Array.from(uniqueBku.values());
+});
+
+const applyFilter = () => {
+    router.get(
+        route('laporan-harian.index'),
+        {
+            search: search.value || undefined,
+            bku_id: bkuId.value || undefined,
+            tanggal: tanggal.value || undefined,
+
+            // Pertahankan sorting yang sedang aktif
+            sort: props.filters.sort || undefined,
+            direction: props.filters.direction || undefined,
+        },
+        {
+            preserveState: false,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const resetFilter = () => {
+    search.value = '';
+    bkuId.value = '';
+    tanggal.value = '';
+
+    router.get(
+        route('laporan-harian.index'),
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const sortBy = (column: string) => {
+    let direction = 'asc';
+
+    if (props.filters.sort === column) {
+        direction =
+            props.filters.direction === 'asc'
+                ? 'desc'
+                : 'asc';
+    }
+
+    router.get(
+        route('laporan-harian.index'),
+        {
+            search: search.value || undefined,
+            bku_id: bkuId.value || undefined,
+            tanggal: tanggal.value || undefined,
+            sort: column,
+            direction,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const getSortIcon = (column: string) => {
+    if (props.filters.sort !== column) {
+        return ArrowUpDown;
+    }
+
+    return props.filters.direction === 'asc'
+        ? ArrowUp
+        : ArrowDown;
+};
+
+const paginationLabel = (label: string) => {
+    return label
+        .replace('&laquo;', '«')
+        .replace('&raquo;', '»');
+};
 
 const deleteItem = (id: number) => {
     if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
@@ -177,6 +279,57 @@ const closeFlash = () => {
                 </button>
             </div>
 
+            <div class="rounded-lg border bg-card p-4 shadow-sm p-2 mb-4">
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <!-- Search -->
+                    <div class="lg:col-span-2">
+                        <label for="search" class="mb-2 block text-sm font-medium">
+                            Cari
+                        </label>
+
+                        <Input id="search" v-model="search" type="text" placeholder="Cari BKU atau kontrak..."
+                            @keyup.enter="applyFilter" />
+                    </div>
+
+                    <!-- BKU -->
+                    <div>
+                        <label for="bku" class="mb-2 block text-sm font-medium">
+                            BKU
+                        </label>
+
+                        <select id="bku" v-model="bkuId"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
+                            <option value="">
+                                Semua BKU
+                            </option>
+
+                            <option v-for="bku in bkus" :key="bku.id" :value="String(bku.id)">
+                                {{ bku.nama }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Tanggal -->
+                    <div>
+                        <label for="tanggal" class="mb-2 block text-sm font-medium">
+                            Tanggal
+                        </label>
+
+                        <Input id="tanggal" v-model="tanggal" type="date"/>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                    <Button type="button" @click="applyFilter">
+                        Cari
+                    </Button>
+
+                    <Button type="button" variant="outline" @click="resetFilter">
+                        Reset
+                    </Button>
+                </div>
+            </div>
+
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <table class="w-full">
                     <thead class="bg-gray-50">
@@ -238,8 +391,8 @@ const closeFlash = () => {
 
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <Button v-if="page.props.auth.user.role === 'staf_dinas'" variant="outline"
-                                        as-child class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
+                                    <Button v-if="page.props.auth.user.role === 'staf_dinas'" variant="outline" as-child
+                                        class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         <Link :href="route('laporan-harian.edit', {
                                             laporan_harian: laporanHarian.id,
                                         })

@@ -40,6 +40,7 @@ class UpdateUserRequest extends FormRequest
             'role' => [
                 'required',
                 Rule::in([
+                    'admin',
                     'staf_dinas',
                     'operator_bku',
                 ]),

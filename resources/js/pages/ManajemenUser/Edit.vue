@@ -122,6 +122,10 @@ const submit = () => {
 
                         <select id="role" v-model="form.role"
                             class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                            <option value="admin">
+                                Admin
+                            </option>
+
                             <option value="staf_dinas">
                                 Staf Dinas
                             </option>
