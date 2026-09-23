@@ -18,6 +18,7 @@ class LaporanHarianFilter
     ): Builder {
         $this->search($query, $filters);
         $this->filterBku($query, $filters);
+        $this->filterKontrak($query, $filters);
         $this->filterTanggal($query, $filters);
         $this->sort($query, $filters);
 
@@ -73,6 +74,24 @@ class LaporanHarianFilter
             'bkuKontrak',
             function (Builder $query) use ($bkuId) {
                 $query->where('bku_id', $bkuId);
+            }
+        );
+    }
+
+    private function filterKontrak(
+        Builder $query,
+        array $filters
+    ): void {
+        $kontrakId = $filters['kontrak_id'] ?? null;
+
+        if (!$kontrakId) {
+            return;
+        }
+
+        $query->whereHas(
+            'bkuKontrak.kontrak',
+            function (Builder $query) use ($kontrakId) {
+                $query->where('id', $kontrakId);
             }
         );
     }

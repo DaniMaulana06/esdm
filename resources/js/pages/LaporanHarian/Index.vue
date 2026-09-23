@@ -76,6 +76,7 @@ interface Filters {
     search?: string;
     bku_id?: string;
     tanggal?: string;
+    kontrakId?: string;
     sort?: string;
     direction?: string;
 }
@@ -90,6 +91,7 @@ const props = defineProps<{
 const search = ref(props.filters.search ?? '');
 const bkuId = ref(props.filters.bku_id ?? '');
 const tanggal = ref(props.filters.tanggal ?? '');
+const kontrakId = ref(props.filters.kontrakId ?? '');
 
 const bkus = computed(() => {
     const uniqueBku = new Map<number, Bku>();
@@ -110,6 +112,7 @@ const applyFilter = () => {
             search: search.value || undefined,
             bku_id: bkuId.value || undefined,
             tanggal: tanggal.value || undefined,
+            kontrak_id: kontrakId.value || undefined,
 
             // Pertahankan sorting yang sedang aktif
             sort: props.filters.sort || undefined,
@@ -139,6 +142,21 @@ const resetFilter = () => {
     );
 };
 
+const kontrakOptions = computed(() => {
+    const kontraks = props.bkuKontraks
+        .map((item) => item.kontrak)
+        .filter(Boolean);
+
+    return Array.from(
+        new Map(
+            kontraks.map((kontrak) => [
+                kontrak.id,
+                kontrak,
+            ])
+        ).values()
+    );
+});
+
 const sortBy = (column: string) => {
     let direction = 'asc';
 
@@ -154,6 +172,7 @@ const sortBy = (column: string) => {
         {
             search: search.value || undefined,
             bku_id: bkuId.value || undefined,
+            kontrak_id: kontrakId.value || undefined,
             tanggal: tanggal.value || undefined,
             sort: column,
             direction,
@@ -205,8 +224,8 @@ const isOperatorBku = computed(() => {
     return user.value?.role === 'operator_bku';
 });
 
-const isStafEsdm = computed(() => {
-    return user.value?.role === 'staf_esdm';
+const isStafEsdmOrAdmin = computed(() => {
+    return user.value?.role === 'staf_esdm' || user.value?.role === 'admin';
 });
 
 const showFlash = ref(true);
@@ -282,7 +301,7 @@ const closeFlash = () => {
             <div class="rounded-lg border bg-card p-4 shadow-sm p-2 mb-4">
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <!-- Search -->
-                    <div class="lg:col-span-2">
+                    <div class="lg:col-span-2" v-if="isStafEsdmOrAdmin">
                         <label for="search" class="mb-2 block text-sm font-medium">
                             Cari
                         </label>
@@ -292,7 +311,7 @@ const closeFlash = () => {
                     </div>
 
                     <!-- BKU -->
-                    <div>
+                    <div v-if="isStafEsdmOrAdmin">
                         <label for="bku" class="mb-2 block text-sm font-medium">
                             BKU
                         </label>
@@ -309,13 +328,31 @@ const closeFlash = () => {
                         </select>
                     </div>
 
+                    <!-- Kontrak - semua role -->
+                    <div>
+                        <label for="kontrak" class="mb-2 block text-sm font-medium">
+                            Kontrak
+                        </label>
+
+                        <select id="kontrak" v-model="kontrakId"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                            <option value="">
+                                Semua Kontrak
+                            </option>
+
+                            <option v-for="item in kontrakOptions" :key="item.id" :value="String(item.id)">
+                                {{ item.nama }}
+                            </option>
+                        </select>
+                    </div>
+
                     <!-- Tanggal -->
                     <div>
                         <label for="tanggal" class="mb-2 block text-sm font-medium">
                             Tanggal
                         </label>
 
-                        <Input id="tanggal" v-model="tanggal" type="date"/>
+                        <Input id="tanggal" v-model="tanggal" type="date" />
                     </div>
                 </div>
 
@@ -346,16 +383,28 @@ const closeFlash = () => {
                             </th>
 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Tanggal
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('tanggal')">
+                                    Tanggal
+                                    <component :is="getSortIcon('tanggal')" class="h-4 w-4" />
+                                </button>
                             </th>
 
-                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
-                                Total Produksi
-                            </th>
-                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
-                                Total Lifting
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('total_produksi')">
+                                    Total Produksi
+                                    <component :is="getSortIcon('total_produksi')" class="h-4 w-4" />
+                                </button>
                             </th>
 
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('total_lifting')">
+                                    Total Lifting
+                                    <component :is="getSortIcon('total_lifting')" class="h-4 w-4" />
+                                </button>
+                            </th>
                             <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                 Keterangan
                             </th>
@@ -401,7 +450,7 @@ const closeFlash = () => {
                                         </Link>
                                     </Button>
 
-                                    <Button @click="deleteItem(laporanHarian.id)" v-if="isStafEsdm"
+                                    <Button @click="deleteItem(laporanHarian.id)" v-if="page.props.auth.user.role === 'staf_dinas'"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </Button>

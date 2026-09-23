@@ -36,6 +36,12 @@ class FilterLaporanHarianRequest extends FormRequest
                 'exists:bku,id',
             ],
 
+            'kontrak_id' => [
+                'nullable',
+                'integer',
+                'exists:kontrak,id',
+            ],
+
             'tanggal' => [
                 'nullable',
                 'date',
