@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/button/Button.vue';
-import Input from '@/components/ui/input/Input.vue';
-import Label from '@/components/ui/label/Label.vue';
+import Card from '@/components/ui/card/Card.vue';
+import CardDescription from '@/components/ui/card/CardDescription.vue';
+import CardHeader from '@/components/ui/card/CardHeader.vue';
+import CardTitle from '@/components/ui/card/CardTitle.vue';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -41,16 +46,28 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const getLaporanError = (
+    index: number,
+    field: 'bku_kontrak_id' | 'total_produksi' | 'total_lifting',
+): string | undefined => {
+    return form.errors[
+        `laporan.${index}.${field}` as keyof typeof form.errors
+    ];
+};
+
 const form = useForm({
-    bku_kontrak_id: '',
     tanggal: new Date().toISOString().split('T')[0],
-    total_produksi: '',
-    total_lifting: '',
-    keterangan: '',
+    laporan: props.bkuKontraks.map((item) => ({
+        bku_kontrak_id: item.id,
+        total_produksi: '',
+        total_lifting: '',
+    })),
 });
 
 const submit = () => {
-    form.post(route('laporan-harian.store'));
+    form.post(route('laporan-harian.store'), {
+        preserveScroll: true,
+    });
 };
 </script>
 
@@ -60,117 +77,181 @@ const submit = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
-            <div class="mb-6">
-                <h1 class="text-2xl font-semibold text-gray-900">
-                    Tambah Laporan Harian
-                </h1>
+            <Card>
 
-                <p class="mt-1 text-sm text-gray-600">
-                    Masukkan laporan produksi dan lifting harian berdasarkan kontrak.
-                </p>
-            </div>
+                <!-- Header -->
+                <CardHeader>
+                    <CardTitle>
+                        Tambah Laporan Harian
+                    </CardTitle>
 
-            <div class="max-w-2xl overflow-hidden rounded-lg border bg-white shadow-sm">
-                <form @submit.prevent="submit" class="space-y-6 p-6">
-                    <!-- BKU & KONTRAK -->
-                    <div class="space-y-2">
-                        <label for="bku_kontrak_id" class="text-sm font-medium text-gray-700">
-                            Kontrak
-                        </label>
+                    <CardDescription>
+                        Isi data laporan produksi dan lifting harian.
+                    </CardDescription>
+                </CardHeader>
 
-                        <select id="bku_kontrak_id" v-model="form.bku_kontrak_id"
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                            <option value="" disabled>
-                                Pilih Kontrak
-                            </option>
+                <form @submit.prevent="submit" class="space-y-6">
 
-                            <option v-for="item in props.bkuKontraks" :key="item.id" :value="item.id">
-                                {{ item.kontrak.nama }}
-                            </option>
-                        </select>
+                    <!-- 2 KOLOM -->
+                    <div class="grid grid-cols-1 gap-3 lg:grid-cols-3 px-6">
 
-                        <p v-if="form.errors.bku_kontrak_id" class="text-sm text-red-600">
-                            {{ form.errors.bku_kontrak_id }}
-                        </p>
-                    </div>
+                        <!-- ========================= -->
+                        <!-- KOLOM KIRI -->
+                        <!-- ========================= -->
+                        <div class="lg:col-span-1">
 
-                    <!-- TANGGAL -->
-                    <div class="space-y-2">
-                        <label for="tanggal" class="text-sm font-medium text-gray-700">
-                            Tanggal Laporan
-                        </label>
+                            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                                <div class="border-b border-gray-200 px-6 py-4">
+                                    <h3 class="text-base font-semibold text-gray-800">
+                                        Informasi Laporan
+                                    </h3>
 
-                        <Input id="tanggal" v-model="form.tanggal" type="date" readonly
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Informasi dasar laporan.
+                                    </p>
+                                </div>
 
-                        <p v-if="form.errors.tanggal" class="text-sm text-red-600">
-                            {{ form.errors.tanggal }}
-                        </p>
-                    </div>
+                                <div class="space-y-6 px-6 py-6">
 
-                    <!-- TOTAL PRODUKSI -->
-                    <div class="space-y-2">
-                        <Label for="total_produksi" class="text-sm font-medium text-gray-700">
-                            Total Produksi
-                        </Label>
+                                    <!-- Nama / BKU -->
+                                    <div>
+                                        <Label class="mb-2 block text-sm font-medium text-gray-700">
+                                            BKU
+                                        </Label>
 
-                        <input id="total_produksi" v-model="form.total_produksi" type="number" min="0" step="0.01"
-                            placeholder="Contoh: 100"
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                                        <Input :model-value="props.bkuKontraks[0]?.bku?.nama ?? '-'" readonly
+                                            class="bg-gray-50" />
+                                    </div>
 
-                        <p class="text-xs text-gray-500">
-                            Masukkan jumlah produksi dalam satuan yang digunakan oleh Dinas.
-                        </p>
+                                    <!-- Tanggal -->
+                                    <div>
+                                        <Label class="mb-2 block text-sm font-medium text-gray-700">
+                                            Tanggal
+                                        </Label>
 
-                        <p v-if="form.errors.total_produksi" class="text-sm text-red-600">
-                            {{ form.errors.total_produksi }}
-                        </p>
-                    </div>
+                                        <Input v-model="form.tanggal" type="date" readonly class="bg-gray-50" />
 
-                    <!-- TOTAL LIFTING -->
-                    <div class="space-y-2">
-                        <Label for="total_lifting" class="text-sm font-medium text-gray-700">
-                            Total Lifting
-                        </Label>
+                                        <InputError :message="form.errors.tanggal" class="mt-2" />
+                                    </div>
 
-                        <input id="total_lifting" v-model="form.total_lifting" type="number" min="0" step="0.01"
-                            placeholder="Contoh: 95"
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                                </div>
+                            </div>
 
-                        <p v-if="form.errors.total_lifting" class="text-sm text-red-600">
-                            {{ form.errors.total_lifting }}
-                        </p>
-                    </div>
+                        </div>
 
 
-                    <div class="space-y-2">
-                        <Label for="keterangan" class="text-sm font-medium text-gray-700">
-                            Keterangan
-                        </Label>
+                        <!-- ========================= -->
+                        <!-- KOLOM KANAN -->
+                        <!-- ========================= -->
+                        <div class="lg:col-span-2 mb-6">
 
-                        <input id="keterangan" v-model="form.keterangan" type="text" min="0" step="0.01"
-                            placeholder="Keterangan"
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                            <div v-if="Object.keys(form.errors).length > 0"
+                                class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 mb-3">
+                                <p class="text-sm font-medium text-red-800">
+                                    Laporan gagal disimpan.
+                                </p>
+    
+                                <ul class="mt-2 list-disc space-y-1 pl-5">
+                                    <li v-for="(error, key) in form.errors" :key="key" class="text-sm text-red-600">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </div>
 
-                        <p v-if="form.errors.total_lifting" class="text-sm text-red-600">
-                            {{ form.errors.total_lifting }}
-                        </p>
-                    </div>
+                            <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                                <div div class="border-b border-gray-200 px-6 py-4">
+                                    <h3 class="text-base font-semibold text-gray-800">
+                                        Laporan Kontrak
+                                    </h3>
 
-                    <!-- BUTTON -->
-                    <div class="flex items-center justify-end gap-3 border-t pt-6">
-                        <Link :href="route('laporan-harian.index')"
-                            class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Batal
-                        </Link>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Isi produksi dan lifting untuk setiap
+                                        kontrak.
+                                    </p>
+                                </div div class="border-b border-gray-200 px-6 py-4">
 
-                        <Button type="submit" :disabled="form.processing"
-                            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
-                            {{ form.processing ? 'Menyimpan...' : 'Simpan Laporan' }}
-                        </Button>
+                                <div class="space-y-3 px-6 py-6">
+
+                                    <!-- KONTRAK -->
+                                    <div v-for="(item, index) in props.bkuKontraks" :key="item.id"
+                                        class="rounded-lg border border-gray-200">
+
+                                        <!-- Nama kontrak -->
+                                        <div class="border-b border-gray-200 bg-gray-50 px-4 py-3">
+                                            <h4 class="text-sm font-semibold text-gray-800">
+                                                {{ item.kontrak.nama }}
+                                            </h4>
+                                        </div>
+
+                                        <!-- Form -->
+                                        <div class="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2">
+
+                                            <!-- Produksi -->
+                                            <div>
+                                                <label class="mb-2 block text-sm font-medium text-gray-700">
+                                                    Total Produksi
+                                                </label>
+
+                                                <Input v-model="form.laporan[index]
+                                                    .total_produksi
+                                                    " type="number" min="0" step="0.01"
+                                                    placeholder="Masukkan produksi" />
+
+                                                <InputError :message="getLaporanError(index, 'total_produksi')"
+                                                    class="mt-2" />
+                                            </div>
+
+                                            <!-- Lifting -->
+                                            <div>
+                                                <label class="mb-2 block text-sm font-medium text-gray-700">
+                                                    Total Lifting
+                                                </label>
+
+                                                <Input v-model="form.laporan[index]
+                                                    .total_lifting
+                                                    " type="number" min="0" step="0.01"
+                                                    placeholder="Masukkan lifting" />
+
+                                                <InputError :message="getLaporanError(index, 'total_lifting')"
+                                                    class="mt-2" />
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- Error umum -->
+                                <div v-if="form.errors.laporan"
+                                    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                                    <p class="text-sm text-red-600">
+                                        {{ form.errors.laporan }}
+                                    </p>
+                                </div>
+
+
+                                <!-- BUTTON -->
+                                <div class="flex items-center justify-end gap-3 mx-6 mb-4">
+                                    <Button type="button" variant="outline" as-child>
+                                        <Link :href="route('laporan-harian.index')">
+                                            Batal
+                                        </Link>
+                                    </Button>
+
+                                    <Button type="submit" :disabled="form.processing ||
+                                        props.bkuKontraks.length === 0
+                                        ">
+                                        {{
+                                            form.processing
+                                                ? 'Menyimpan...'
+                                                : 'Simpan Laporan'
+                                        }}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
-            </div>
+            </Card>
         </div>
     </AppLayout>
 </template>

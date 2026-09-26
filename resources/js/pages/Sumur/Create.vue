@@ -70,16 +70,16 @@ const submit = () => {
                 <CardContent>
                     <form @submit.prevent="submit" class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-                        <!-- BKU Kontrak -->
+                        <!-- Kontrak -->
                         <div class="space-y-2">
                             <Label for="bku_kontrak_id">
-                                BKU Kontrak
+                                Kontrak
                             </Label>
 
                             <select id="bku_kontrak_id" v-model="form.bku_kontrak_id"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                                 <option value="" disabled>
-                                    Pilih BKU Kontrak
+                                    Pilih Kontrak
                                 </option>
 
                                 <option v-for="item in props.bkuKontraks" :key="item.id" :value="item.id">

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreLaporanHarianRequest;
 use App\Models\BkuKontrak;
 use App\Models\LaporanHarian;
 use Cache;
+use DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -71,7 +72,7 @@ class LaporanHarianController extends Controller
             'kontrak:id,nama',
         ]);
 
-        // Operator hanya melihat kontrak dari BKU miliknya
+        // operator hanya melihat kontrak dari BKU miliknya
         if ($user->isOperatorBku()) {
             $query->where('bku_id', $user->bku_id);
         }
@@ -97,13 +98,64 @@ class LaporanHarianController extends Controller
         ]);
     }
 
-    public function store(StoreLaporanHarianRequest $request): RedirectResponse
-    {
-        LaporanHarian::create($request->validated());
+    public function store(StoreLaporanHarianRequest $request): RedirectResponse {
+        $user = $request->user();
 
-        Cache::forget('laporan_harian.all');
+        $validated = $request->validated();
 
-        return redirect()->route('laporan-harian.index')->with('success', 'Laporan produksi & lifting harian berhasil disimpan.');
+        $bkuKontraks = BkuKontrak::query()
+            ->where('bku_id', $user->bku_id)
+            ->pluck('id')
+            ->sort()
+            ->values();
+
+        $submittedIds = collect($validated['laporan'])
+            ->pluck('bku_kontrak_id')
+            ->sort()
+            ->values();
+
+        //validasi agar seluruh kontrak dilaporakan
+        if ( 
+            $bkuKontraks->count() !== $submittedIds->count() ||
+            $bkuKontraks->diff($submittedIds)->isNotEmpty() ||
+            $submittedIds->diff($bkuKontraks)->isNotEmpty()
+        ) {
+            return back()
+                ->withErrors([
+                    'laporan' => 'Semua kontrak milik BKU wajib dilaporkan.',
+                ])
+                ->withInput();
+        }
+
+        foreach ($validated['laporan'] as $index => $laporan) { //validasi 1 hari 1 laporan
+            $sudahAda = LaporanHarian::query()
+                ->where('bku_kontrak_id', $laporan['bku_kontrak_id'])
+                ->whereDate('tanggal', $validated['tanggal'])
+                ->exists();
+
+            if ($sudahAda) {
+                return back()
+                    ->withErrors([
+                        "laporan.$index.bku_kontrak_id" =>
+                            'Laporan untuk kontrak ini pada tanggal tersebut sudah pernah dibuat.',
+                    ])
+                    ->withInput();
+            }
+        }
+
+        // simpan laporan dalam 1 transaksi
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['laporan'] as $laporan) {
+                LaporanHarian::create([
+                    'bku_kontrak_id' => $laporan['bku_kontrak_id'],
+                    'tanggal' => $validated['tanggal'],
+                    'total_produksi' => $laporan['total_produksi'],
+                    'total_lifting' => $laporan['total_lifting'],
+                ]);
+            }
+        });
+
+        return redirect()->route('laporan-harian.index')->with('success','Laporan produksi & lifting harian berhasil disimpan.');
     }
 
     public function update(
