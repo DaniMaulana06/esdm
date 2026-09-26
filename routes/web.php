@@ -23,21 +23,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::middleware('admin')->group(function () {
-        Route::resource('users', UserController::class)
-            ->except(['show']);
+        Route::resource('users', UserController::class)->except(['show']);
+    });
+
+    Route::middleware('admin-or-staf')->group(function () {
+        Route::get('bku', [BkuController::class, 'index'])->name('bku.index');
+        Route::get('kontrak', [KontrakController::class, 'index'])->name('kontrak.index');
+        Route::get('bku-kontrak', [BkuKontrakController::class, 'index'])->name('bku-kontrak.index');
+        Route::get('sumur', [SumurController::class, 'index'])->name('sumur.index');
+        Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
+    });
+
+    Route::get('sumur', [SumurController::class, 'index'])->name('sumur.index');
+    
+    Route::middleware('staf-or-operator-bku')->group(function () {
+        Route::get('sumur/create', [SumurController::class, 'create'])->name('sumur.create');
+        Route::post('sumur', [SumurController::class, 'store'])->name('sumur.store');
     });
 
     Route::middleware('staf_esdm')->group(function () {
-        Route::resource('bku', BkuController::class)->except(['show']);
-        Route::resource('kontrak', KontrakController::class)->except(['show']);
-        Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show']);
+        Route::resource('bku', BkuController::class)->except(['show', 'index']);
+        Route::resource('kontrak', KontrakController::class)->except(['show', 'index']);
+        Route::resource('bku-kontrak', BkuKontrakController::class)->except(['show', 'index']);
+
+        Route::get('sumur/{sumur}/edit', [SumurController::class, 'edit'])->name('sumur.edit');
+        Route::put('sumur/{sumur}', [SumurController::class, 'update'])->name('sumur.update');
+        Route::delete('sumur/{sumur}', [SumurController::class, 'destroy'])->name('sumur.destroy');
+
         Route::get('laporan-harian/{laporan_harian}/edit', [LaporanHarianController::class, 'edit'])->name('laporan-harian.edit');
-        Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])
-        ->name('laporan-harian.update');
+        Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])->name('laporan-harian.update');
+        
     });
-    Route::resource('sumur', SumurController::class)->except(['show']);
+
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
-    
+
     Route::middleware('operator-bku')->group(function () {
         Route::get('laporan-harian/create', [LaporanHarianController::class, 'create'])->name('laporan-harian.create');
         Route::post('laporan-harian', [LaporanHarianController::class, 'store'])->name('laporan-harian.store');

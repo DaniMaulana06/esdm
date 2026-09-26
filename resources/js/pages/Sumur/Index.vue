@@ -61,11 +61,6 @@ const cekLokasi = (latitude: number | null, longitude: number | null) => {
 
 const props = defineProps<{
     sumurs: Sumur[];
-    debugUser: {
-        id: number;
-        name: string;
-        bku_id: number | null;
-    };
 }>();
 
 const page = usePage<SharedData>();
@@ -73,9 +68,12 @@ const page = usePage<SharedData>();
 const user = computed(() => page.props.auth.user);
 
 const isStafEsdm = computed(() => {
-    return user.value?.role === 'staf_esdm';
+    return user.value?.role === 'staf_dinas';
 });
 
+const isStafEsdmOrOperatorBku = computed(() => {
+    return (user.value?.role === 'staf_dinas' || (user.value?.role === 'operator_bku' && user.value?.bku_id != null));
+});
 
 // console.log('USER DARI INERTIA:', page.props.auth?.user);
 // console.log('SUMUR DARI INERTIA:', page.props.sumurs);
@@ -115,7 +113,7 @@ const closeFlash = () => {
                         Kelola data BKU.
                     </p> -->
                 </div>
-                <Link :href="route('sumur.create')"
+                <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku"
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     + Tambah Sumur
                 </Link>
@@ -236,12 +234,12 @@ const closeFlash = () => {
                                             Cek Lokasi
                                         </Button>
 
-                                        <Link :href="route('sumur.edit', { sumur: smr.id })"
+                                        <Link :href="route('sumur.edit', { sumur: smr.id })" v-if="isStafEsdm"
                                             class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                             Edit
                                         </Link>
 
-                                        <Button @click="deleteItem(smr.id)"
+                                        <Button @click="deleteItem(smr.id)" v-if="isStafEsdm"
                                             class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                             Hapus
                                         </Button>

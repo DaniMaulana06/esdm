@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Middleware\Admin;
+use App\Http\Middleware\AdminOrStaf;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OperatorBku;
 use App\Http\Middleware\StafEsdm;
+use App\Http\Middleware\StafOrOperatorBku;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'staf_esdm' => StafEsdm::class,
             'operator-bku' => OperatorBku::class,
             'admin' => Admin::class,
+            'admin-or-staf' => AdminOrStaf::class,
+            'staf-or-operator-bku' => StafOrOperatorBku::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

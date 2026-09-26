@@ -38,7 +38,11 @@ class User extends Authenticatable
      */
     public function isStafEsdm(): bool
     {
-        return $this->role === 'staf_dinas' || $this->role === 'admin';
+        return $this->role === 'staf_dinas';
+    }
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**

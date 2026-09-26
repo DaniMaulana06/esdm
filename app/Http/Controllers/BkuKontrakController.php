@@ -77,7 +77,9 @@ class BkuKontrakController extends Controller
     public function store(StoreBkuKontrakRequest $request): RedirectResponse
     {
         BkuKontrak::create($request->validated());
+
         Cache::forget('bku_kontrak.all');
+        
         return redirect()->route('bku-kontrak.index')->with('success', 'Penetapan Kontrak ke BKU berhasil disimpan.');
     }
 

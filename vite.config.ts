@@ -20,6 +20,10 @@ export default defineConfig({
             },
         }),
     ],
+    // server: {
+    //     host: true,
+    //     allowedHosts: ['.ngrok-free.app'],
+    // },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),

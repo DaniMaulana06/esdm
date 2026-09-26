@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
@@ -28,8 +28,13 @@ defineProps<{
     kontraks: Kontrak[];
 }>();
 
-const page = usePage();
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
 
+const isStafEsdm = computed(() => {
+    return user.value?.role === 'staf_dinas';
+});
+ 
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
 }
@@ -66,7 +71,7 @@ const closeFlash = () => {
                         Kelola data Kontrak.
                     </p>
                 </div>
-                <Link :href="route('kontrak.create')" prefetch
+                <Link :href="route('kontrak.create')" prefetch v-if="isStafEsdm"
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     + Tambah Kontrak
                 </Link>
@@ -142,12 +147,12 @@ const closeFlash = () => {
 
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <Link :href="route('kontrak.edit', { kontrak: kontrak.id })"
+                                    <Link :href="route('kontrak.edit', { kontrak: kontrak.id })" v-if="isStafEsdm"
                                         class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         Edit
                                     </Link>
 
-                                    <button @click="deleteItem(kontrak.id)"
+                                    <button @click="deleteItem(kontrak.id)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </button>

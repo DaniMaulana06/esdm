@@ -225,7 +225,7 @@ const isOperatorBku = computed(() => {
 });
 
 const isStafEsdmOrAdmin = computed(() => {
-    return user.value?.role === 'staf_esdm' || user.value?.role === 'admin';
+    return (user.value?.role === 'staf_dinas' || (user.value?.role === 'admin' && user.value?.bku_id != null));
 });
 
 const showFlash = ref(true);

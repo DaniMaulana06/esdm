@@ -47,7 +47,7 @@ class KontrakController extends Controller
     {
         Kontrak::create($request->validated());
 
-        Cache::forget('kontraks.all');
+        Cache::forget('kontrak.all');
 
         return redirect()->route('kontrak.index')->with('success', 'Data Kontrak berhasil ditambahkan.');
     }
@@ -56,7 +56,7 @@ class KontrakController extends Controller
     {
         $kontrak->update($request->validated());
 
-        Cache::forget('kontraks.all');
+        Cache::forget('kontrak.all');
 
         return redirect()->route('kontrak.index')->with('success', 'Data Kontrak berhasil diperbarui.');
     }
@@ -65,7 +65,7 @@ class KontrakController extends Controller
     {
         $kontrak->delete();
 
-        Cache::forget('kontraks.all');
+        Cache::forget('kontrak.all');
 
         return redirect()->back()->with('success', 'Data Kontrak berhasil dihapus.');
     }
