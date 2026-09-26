@@ -59,7 +59,7 @@ const cekLokasi = (latitude: number | null, longitude: number | null) => {
     }
 }
 
-const props = defineProps<{
+defineProps<{
     sumurs: Sumur[];
 }>();
 

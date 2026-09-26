@@ -195,11 +195,11 @@ const getSortIcon = (column: string) => {
         : ArrowDown;
 };
 
-const paginationLabel = (label: string) => {
-    return label
-        .replace('&laquo;', '«')
-        .replace('&raquo;', '»');
-};
+// const paginationLabel = (label: string) => {
+//     return label
+//         .replace('&laquo;', '«')
+//         .replace('&raquo;', '»');
+// };
 
 const deleteItem = (id: number) => {
     if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
