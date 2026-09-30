@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
@@ -152,10 +153,10 @@ const closeFlash = () => {
                                         Edit
                                     </Link>
 
-                                    <button @click="deleteItem(kontrak.id)" v-if="isStafEsdm"
+                                    <Button @click="deleteItem(kontrak.id)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
-                                    </button>
+                                    </Button>
                                 </div>
                             </td>
                         </tr>

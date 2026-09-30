@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BkuController;
 use App\Http\Controllers\BkuKontrakController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KontrakController;
 use App\Http\Controllers\LaporanHarianController;
 use App\Http\Controllers\SumurController;
@@ -18,9 +19,7 @@ Route::get('/', function () {
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('admin')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);

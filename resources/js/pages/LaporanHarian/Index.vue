@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
+import Calendar from '@/components/ui/calendar/Calendar.vue';
 import Input from '@/components/ui/input/Input.vue';
+import Popover from '@/components/ui/popover/Popover.vue';
+import PopoverContent from '@/components/ui/popover/PopoverContent.vue';
+import PopoverTrigger from '@/components/ui/popover/PopoverTrigger.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { type SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, Ref, ref } from 'vue';
 import { route } from 'ziggy-js';
+import { CalendarIcon } from 'lucide-vue-next';
+import { DateFormatter, DateValue, getLocalTimeZone, parseDate, today } from '@internationalized/date'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -90,19 +97,27 @@ const props = defineProps<{
 
 const search = ref(props.filters.search ?? '');
 const bkuId = ref(props.filters.bku_id ?? '');
-const tanggal = ref(props.filters.tanggal ?? '');
+const tanggal = ref(
+    props.filters.tanggal
+        ? parseDate(props.filters.tanggal)
+        : today(getLocalTimeZone()),
+) as Ref<DateValue>;
 const kontrakId = ref(props.filters.kontrakId ?? '');
 
 const bkus = computed(() => {
     const uniqueBku = new Map<number, Bku>();
-
+    
     props.bkuKontraks.forEach((item) => {
         if (item.bku) {
             uniqueBku.set(item.bku.id, item.bku);
         }
     });
-
+    
     return Array.from(uniqueBku.values());
+});
+
+const df = new DateFormatter('id-ID', {
+    dateStyle: 'long',
 });
 
 const applyFilter = () => {
@@ -111,7 +126,7 @@ const applyFilter = () => {
         {
             search: search.value || undefined,
             bku_id: bkuId.value || undefined,
-            tanggal: tanggal.value || undefined,
+            tanggal: tanggal.value ? tanggal.value.toString() : undefined,
             kontrak_id: kontrakId.value || undefined,
 
             // Pertahankan sorting yang sedang aktif
@@ -129,7 +144,7 @@ const applyFilter = () => {
 const resetFilter = () => {
     search.value = '';
     bkuId.value = '';
-    tanggal.value = '';
+    tanggal.value = today(getLocalTimeZone());
 
     router.get(
         route('laporan-harian.index'),
@@ -173,7 +188,7 @@ const sortBy = (column: string) => {
             search: search.value || undefined,
             bku_id: bkuId.value || undefined,
             kontrak_id: kontrakId.value || undefined,
-            tanggal: tanggal.value || undefined,
+            tanggal: tanggal.value ? tanggal.value.toString() : undefined,
             sort: column,
             direction,
         },
@@ -249,6 +264,8 @@ onMounted(() => {
 const closeFlash = () => {
     showFlash.value = false;
 };
+
+const defaultPlaceholder = today(getLocalTimeZone())
 </script>
 
 <template>
@@ -352,7 +369,21 @@ const closeFlash = () => {
                             Tanggal
                         </label>
 
-                        <Input id="tanggal" v-model="tanggal" type="date" />
+                        <!-- <Input id="tanggal" v-model="tanggal" type="date" /> -->
+                        <Popover>
+                            <PopoverTrigger as-child>
+                                <Button variant="outline" :class="cn(
+                                    'w-[280px] justify-start text-left font-normal',
+                                    !tanggal && 'text-muted-foreground',
+                                )">
+                                    <CalendarIcon class="mr-2 h-4 w-4" />
+                                    {{ tanggal ? df.format(tanggal.toDate(getLocalTimeZone())) : "Pilih tanggal" }}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent class="w-auto p-0">
+                                <Calendar v-model="tanggal" :initial-focus="true" layout="month-and-year" />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
 
@@ -450,7 +481,8 @@ const closeFlash = () => {
                                         </Link>
                                     </Button>
 
-                                    <Button @click="deleteItem(laporanHarian.id)" v-if="page.props.auth.user.role === 'staf_dinas'"
+                                    <Button @click="deleteItem(laporanHarian.id)"
+                                        v-if="page.props.auth.user.role === 'staf_dinas'"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </Button>
@@ -459,7 +491,7 @@ const closeFlash = () => {
                         </tr>
 
                         <tr v-if="laporanHarians.data.length === 0">
-                            <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">
                                 Belum ada data Laporan Harian.
                             </td>
                         </tr>
