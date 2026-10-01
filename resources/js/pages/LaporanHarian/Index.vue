@@ -11,11 +11,19 @@ import { BreadcrumbItem } from '@/types';
 import { type SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
-import { computed, onMounted, Ref, ref } from 'vue';
+import { computed, onMounted, reactive, Ref, ref } from 'vue';
 import { route } from 'ziggy-js';
 import { CalendarIcon } from 'lucide-vue-next';
 import { DateFormatter, DateValue, getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import CreateJustifikasiDialog from '@/components/justifikasi/CreateJustifikasiDialog.vue';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -58,6 +66,7 @@ interface LaporanHarian {
     tanggal: string;
     total_produksi: string;
     total_lifting: string;
+    keterangan: string | null;
 
     bku_kontrak: BkuKontrak;
     justifikasi_terbaru: Justifikasi | null;
@@ -222,12 +231,6 @@ const getSortIcon = (column: string) => {
         : ArrowDown;
 };
 
-// const paginationLabel = (label: string) => {
-//     return label
-//         .replace('&laquo;', '«')
-//         .replace('&raquo;', '»');
-// };
-
 const deleteItem = (id: number) => {
     if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
         router.delete(route('laporan-harian.destroy', {
@@ -252,9 +255,12 @@ const isOperatorBku = computed(() => {
 });
 
 const isStafEsdmOrAdmin = computed(() => {
-    return (user.value?.role === 'staf_dinas' || (user.value?.role === 'admin' && user.value?.bku_id != null));
+    return ['admin', 'staf_dinas'].includes(user.value?.role);
 });
 
+const isStafEsdm = computed(() => {
+    return user.value?.role === 'staf_dinas';
+});
 
 const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleDateString('id-ID', {
@@ -278,7 +284,28 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
-const defaultPlaceholder = today(getLocalTimeZone())
+const filters = reactive({
+    search: '',
+    bku_id: '',
+    kontrak_id: '',
+    tanggal: '',
+    sort: 'tanggal',
+    direction: 'desc',
+});
+
+const goToPage = (page: number) => {
+    router.get(
+        route('laporan-harian.index'),
+        {
+            ...filters,
+            page,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
 </script>
 
 <template>
@@ -298,7 +325,7 @@ const defaultPlaceholder = today(getLocalTimeZone())
                 </div>
                 <Link :href="route('laporan-harian.create')" prefetch v-if="isOperatorBku"
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    + Tambah Laporan Harian
+                    + Buat Laporan Harian
                 </Link>
             </div>
 
@@ -411,17 +438,15 @@ const defaultPlaceholder = today(getLocalTimeZone())
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
+            <!-- tabel di role operator bku -->
+            <div class="overflow-hidden rounded-lg border bg-white shadow-sm" v-if="!isStafEsdmOrAdmin">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 No
                             </th>
-<!-- 
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Nama BKU
-                            </th> -->
+                            
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Nama Kontrak
                             </th>
@@ -457,6 +482,10 @@ const defaultPlaceholder = today(getLocalTimeZone())
                             <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                 Keterangan
                             </th>
+
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                                Aksi
+                            </th>
                         </tr>
                     </thead>
 
@@ -464,12 +493,8 @@ const defaultPlaceholder = today(getLocalTimeZone())
                         <tr v-for="(laporanHarian, index) in laporanHarians.data" :key="laporanHarian.id"
                             class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ index + 1 }}
+                                {{ (laporanHarians.current_page - 1) * laporanHarians.per_page + index + 1 }}
                             </td>
-
-                            <!-- <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ laporanHarian.bku_kontrak.bku.nama }}
-                            </td> -->
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ laporanHarian.bku_kontrak.kontrak.nama }}
@@ -486,6 +511,7 @@ const defaultPlaceholder = today(getLocalTimeZone())
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ laporanHarian.total_lifting }}
                             </td>
+                            
                             <td class="px-6 py-4">
                                 <span v-if="!laporanHarian.justifikasi_terbaru"
                                     class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
@@ -508,9 +534,13 @@ const defaultPlaceholder = today(getLocalTimeZone())
                                 </span>
                             </td>
 
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.keterangan }}
+                            </td>
+
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <Button v-if="page.props.auth.user.role === 'staf_dinas'" variant="outline" as-child
+                                    <Button v-if="isStafEsdm" variant="outline" as-child
                                         class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         <Link :href="route('laporan-harian.edit', {
                                             laporan_harian: laporanHarian.id,
@@ -520,13 +550,12 @@ const defaultPlaceholder = today(getLocalTimeZone())
                                         </Link>
                                     </Button>
 
-                                    <Button @click="deleteItem(laporanHarian.id)"
-                                        v-if="page.props.auth.user.role === 'staf_dinas'"
+                                    <Button @click="deleteItem(laporanHarian.id)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </Button>
 
-                                    <Button v-if="user.role === 'operator_bku'" variant="outline" size="sm"
+                                    <Button v-if="isOperatorBku" variant="outline" size="sm"
                                         @click="openJustifikasi(laporanHarian)">
                                         Ajukan Justifikasi
                                     </Button>
@@ -541,6 +570,167 @@ const defaultPlaceholder = today(getLocalTimeZone())
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- tabel di role admin or staf -->
+            <div class="overflow-hidden rounded-lg border bg-white shadow-sm" v-if="isStafEsdmOrAdmin">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                No
+                            </th>
+                            
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700" >
+                                Nama BKU
+                            </th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                Nama Kontrak
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('tanggal')">
+                                    Tanggal
+                                    <component :is="getSortIcon('tanggal')" class="h-4 w-4" />
+                                </button>
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('total_produksi')">
+                                    Total Produksi
+                                    <component :is="getSortIcon('total_produksi')" class="h-4 w-4" />
+                                </button>
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                <button type="button" class="flex items-center gap-2 font-semibold hover:text-gray-900"
+                                    @click="sortBy('total_lifting')">
+                                    Total Lifting
+                                    <component :is="getSortIcon('total_lifting')" class="h-4 w-4" />
+                                </button>
+                            </th>
+
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                                Status
+                            </th>
+
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                                Keterangan
+                            </th>
+
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y">
+                        <tr v-for="(laporanHarian, index) in laporanHarians.data" :key="laporanHarian.id"
+                            class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                {{ (laporanHarians.current_page - 1) * laporanHarians.per_page + index + 1 }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.bku_kontrak.bku.nama }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.bku_kontrak.kontrak.nama }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ formatTanggal(laporanHarian.tanggal) }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.total_produksi }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.total_lifting }}
+                            </td>
+                            
+                            <td class="px-6 py-4">
+                                <span v-if="!laporanHarian.justifikasi_terbaru"
+                                    class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                                    Belum diajukan
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'pending'"
+                                    class="inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
+                                    Menunggu Persetujuan
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'approved'"
+                                    class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                                    Disetujui
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'rejected'"
+                                    class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                                    Ditolak
+                                </span>
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ laporanHarian.keterangan }}
+                            </td>
+
+                            <td class="px-6 py-4">
+                                <div class="flex justify-center gap-2">
+                                    <Button v-if="isStafEsdm" variant="outline" as-child
+                                        class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
+                                        <Link :href="route('laporan-harian.edit', {
+                                            laporan_harian: laporanHarian.id,
+                                        })
+                                            ">
+                                            Edit
+                                        </Link>
+                                    </Button>
+
+                                    <Button @click="deleteItem(laporanHarian.id)" v-if="isStafEsdm"
+                                        class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
+                                        Hapus
+                                    </Button>
+
+                                    <Button v-if="isOperatorBku" variant="outline" size="sm"
+                                        @click="openJustifikasi(laporanHarian)">
+                                        Ajukan Justifikasi
+                                    </Button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr v-if="laporanHarians.data.length === 0">
+                            <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">
+                                Belum ada data Laporan Harian.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div v-if="laporanHarians.last_page > 1" class="flex justify-center border-t border-gray-200 px-6 py-4">
+                <Pagination v-slot="{ page }" :items-per-page="laporanHarians.per_page" :total="laporanHarians.total"
+                    :default-page="laporanHarians.current_page" @update:page="goToPage">
+                    <PaginationContent v-slot="{ items }">
+                        <PaginationPrevious />
+
+                        <template v-for="(item, index) in items" :key="index">
+                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                :is-active="item.value === page">
+                                {{ item.value }}
+                            </PaginationItem>
+
+                            <PaginationEllipsis v-else :index="index" />
+                        </template>
+
+                        <PaginationNext />
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     </AppLayout>

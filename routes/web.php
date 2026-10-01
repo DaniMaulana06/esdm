@@ -53,11 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('laporan-harian/{laporan_harian}/edit', [LaporanHarianController::class, 'edit'])->name('laporan-harian.edit');
         Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])->name('laporan-harian.update');
 
-        Route::get('justifikasi', [JustifikasiController::class, 'index'])->name('justifikasi.index');
         Route::put('justifikasi/{justifikasi}/process', [JustifikasiController::class, 'process'])->name('justifikasi.process');
-
+        
     });
-
+    
+    Route::get('justifikasi', [JustifikasiController::class, 'index'])->name('justifikasi.index');
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
 
     Route::middleware('operator-bku')->group(function () {

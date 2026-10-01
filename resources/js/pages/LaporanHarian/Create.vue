@@ -8,8 +8,9 @@ import CardTitle from '@/components/ui/card/CardTitle.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { SharedData, type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
 interface Bku {
@@ -61,6 +62,7 @@ const form = useForm({
         bku_kontrak_id: item.id,
         total_produksi: '',
         total_lifting: '',
+        keterangan: '',
     })),
 });
 
@@ -68,6 +70,24 @@ const submit = () => {
     form.post(route('laporan-harian.store'), {
         preserveScroll: true,
     });
+};
+
+const page = usePage<SharedData>();
+const showFlash = ref(true);
+const flash = computed(() => page.props.flash as {
+    success?: string; error?: string
+}
+);
+onMounted(() => {
+    if (flash.value.success || flash.value.error) {
+        setTimeout(() => {
+            showFlash.value = false;
+        }, 3000);
+    }
+});
+
+const closeFlash = () => {
+    showFlash.value = false;
 };
 </script>
 
@@ -95,9 +115,7 @@ const submit = () => {
                     <!-- 2 KOLOM -->
                     <div class="grid grid-cols-1 gap-3 lg:grid-cols-3 px-6">
 
-                        <!-- ========================= -->
                         <!-- KOLOM KIRI -->
-                        <!-- ========================= -->
                         <div class="lg:col-span-1">
 
                             <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -139,23 +157,27 @@ const submit = () => {
 
                         </div>
 
-
-                        <!-- ========================= -->
                         <!-- KOLOM KANAN -->
-                        <!-- ========================= -->
                         <div class="lg:col-span-2 mb-6">
 
                             <div v-if="Object.keys(form.errors).length > 0"
                                 class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 mb-3">
                                 <p class="text-sm font-medium text-red-800">
-                                    Laporan gagal disimpan.
+                                    Laporan sudah ada, ajukan justifikasi jika ingin merubah data.
                                 </p>
-    
-                                <ul class="mt-2 list-disc space-y-1 pl-5">
-                                    <li v-for="(error, key) in form.errors" :key="key" class="text-sm text-red-600">
-                                        {{ error }}
-                                    </li>
-                                </ul>
+                            </div>
+                            
+                            <!-- FLASH ERROR -->
+                            <div v-if="showFlash && flash.error"
+                                class="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                                <span>
+                                    {{ flash.error }}
+                                </span>
+
+                                <button type="button" @click="closeFlash"
+                                    class="ml-4 text-lg font-bold text-red-700 hover:text-red-900">
+                                    ×
+                                </button>
                             </div>
 
                             <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -203,9 +225,9 @@ const submit = () => {
 
                                             <!-- Lifting -->
                                             <div>
-                                                <label class="mb-2 block text-sm font-medium text-gray-700">
+                                                <Label class="mb-2 block text-sm font-medium text-gray-700">
                                                     Total Lifting
-                                                </label>
+                                                </Label>
 
                                                 <Input v-model="form.laporan[index]
                                                     .total_lifting
@@ -216,6 +238,20 @@ const submit = () => {
                                                     class="mt-2" />
                                             </div>
 
+
+                                        </div>
+                                        <!-- Keterangan -->
+                                        <div class="px-4 pb-4">
+                                            <Label class="mb-2 block text-sm font-medium text-gray-700">
+                                                Keterangan
+                                            </Label>
+
+                                            <Input v-model="form.laporan[index]
+                                                .keterangan
+                                                " type="text" min="0" step="0.01" placeholder="Keterangan" />
+
+                                            <InputError :message="getLaporanError(index, 'total_lifting')"
+                                                class="mt-2" />
                                         </div>
                                     </div>
 

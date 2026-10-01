@@ -252,6 +252,10 @@ const user = computed(() => page.props.auth.user);
 const isStafEsdmOrAdmin = computed(() => {
     return user.value?.role === 'staf_dinas' || user.value?.role === 'admin';
 });
+
+const isBku = computed(() => {
+    return user.value?.role === 'operator_bku';
+});
 </script>
 
 <template>
@@ -278,9 +282,8 @@ const isStafEsdmOrAdmin = computed(() => {
                     </p>
                 </div>
 
-                <!-- KPI -->
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
+                <!-- KPI Admin or Staf-->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" v-if="!isBku">
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -326,17 +329,35 @@ const isStafEsdmOrAdmin = computed(() => {
                             </p>
                         </CardContent>
                     </Card>
+                </div>
+
+                <!-- KPI Operator BKU-->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" v-if="isBku">
 
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
-                                Rata-rata Lifting
+                                Jumlah Kontrak
                             </CardTitle>
                         </CardHeader>
 
                         <CardContent>
                             <div class="text-2xl font-bold">
-                                {{ formatNumber(stats.average_lifting) }}
+                                {{ formatNumber(stats.total_kontrak) }}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-sm font-medium text-gray-500">
+                                Rata-rata Produksi
+                            </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div class="text-2xl font-bold">
+                                {{ formatNumber(stats.average_produksi) }}
                             </div>
 
                             <p class="mt-1 text-xs text-gray-500">
@@ -344,11 +365,10 @@ const isStafEsdmOrAdmin = computed(() => {
                             </p>
                         </CardContent>
                     </Card>
-
                 </div>
 
-                <!-- Filter -->
-                <Card>
+                <!-- Filter Admin or Staf-->
+                <Card v-if="!isBku">
                     <CardHeader>
                         <CardTitle>Filter Dashboard</CardTitle>
                     </CardHeader>
@@ -419,6 +439,93 @@ const isStafEsdmOrAdmin = computed(() => {
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div>
+                                <Label class="mb-2 block text-sm font-medium">
+                                    Kontrak
+                                </Label>
+
+                                <Select v-model="kontrakModel">
+                                    <SelectTrigger class="w-[280px]">
+                                        <SelectValue placeholder="Pilih Kontrak" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="all">Semua Kontrak</SelectItem>
+                                            <SelectItem v-for="kontrak in kontraks" :key="kontrak.id" :value="String(kontrak.id)">
+                                                {{ kontrak.nama }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex justify-end gap-2">
+                            <Button type="button" variant="outline" @click="resetFilter">
+                                Reset
+                            </Button>
+
+                            <Button type="button" @click="applyFilter">
+                                Terapkan Filter
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Filter Operator BKU -->
+                <Card v-if="isBku">
+                    <CardHeader>
+                        <CardTitle>Filter Dashboard</CardTitle>
+                    </CardHeader>
+
+                    <CardContent>
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+
+                            <div>
+                                <Label class="mb-2 block text-sm font-medium">
+                                    Dari Tanggal
+                                </Label>
+
+                                <Popover>
+                                    <PopoverTrigger as-child>
+                                        <Button variant="outline" :class="cn(
+                                            'w-[280px] justify-start text-left font-normal',
+                                            !start_date && 'text-muted-foreground',
+                                        )">
+                                            <CalendarIcon class="mr-2 h-4 w-4" />
+                                            {{ startDateLabel }}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent class="w-auto p-0">
+                                        <Calendar v-model="start_date" :initial-focus="true"
+                                            :default-placeholder="defaultPlaceholder" layout="month-and-year"
+                                            @update:model-value="updateStartDate" />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            <div>
+                                <Label class="mb-2 block text-sm font-medium">
+                                    Sampai Tanggal
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger as-child>
+                                        <Button variant="outline" :class="cn(
+                                            'w-[280px] justify-start text-left font-normal',
+                                            !end_date && 'text-muted-foreground',
+                                        )">
+                                            <CalendarIcon class="mr-2 h-4 w-4" />
+                                            {{ endDateLabel }}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent class="w-auto p-0">
+                                        <Calendar v-model="end_date" :initial-focus="true"
+                                            :default-placeholder="defaultPlaceholder" layout="month-and-year"
+                                            @update:model-value="updateEndDate" />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
 
                             <div>

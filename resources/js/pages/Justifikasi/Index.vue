@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -30,6 +30,14 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { BreadcrumbItem, SharedData } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Justifikasi Revisi',
+        href: route('justifikasi.index'),
+    }
+];
 
 interface Justifikasi {
     id: number;
@@ -205,18 +213,21 @@ const statusLabel = (
 
     return labels[status];
 };
+
+const page = usePage<SharedData>();
+
+const user = computed(() => page.props.auth.user);
+
+const isStafEsdm = computed(() => {
+    return user.value?.role === 'staf_dinas';
+});
 </script>
 
 <template>
 
     <Head title="Justifikasi Revisi" />
 
-    <AppLayout :breadcrumbs="[
-        {
-            title: 'Justifikasi Revisi',
-            href: route('justifikasi.index'),
-        },
-    ]">
+    <AppLayout :breadcrumbs= "breadcrumbs">
         <div class="py-6">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
@@ -319,19 +330,19 @@ const statusLabel = (
                                             Status
                                         </th>
 
-                                        <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                                        <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                             Peninjau
                                         </th>
-                                        <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                                        <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                             Aksi
                                         </th>
                                     </tr>
                                 </thead>
 
                                 <tbody class="divide-y divide-gray-200">
-                                    <tr v-for="(justifikasi,index
-                                        ) in justifikasis.data" :key="justifikasi.id
-                                            ">
+                                    <tr v-for="(justifikasi, index
+                                    ) in justifikasis.data" :key="justifikasi.id
+                                        ">
                                         <td class="px-6 py-4 text-sm text-gray-700">
                                             {{
                                                 (justifikasis.current_page -
@@ -414,7 +425,16 @@ const statusLabel = (
                                             </span>
                                         </td>
 
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-6 py-4 text-center text-sm text-gray-700">
+                                            {{
+                                                justifikasi
+                                                    .peninjau
+                                                    ?.name ??
+                                                '-'
+                                            }}
+
+                                        </td>
+                                        <td class="px-6 py-4 text-right" v-if="isStafEsdm">
                                             <div v-if="
                                                 justifikasi.status ===
                                                 'pending'
@@ -438,14 +458,14 @@ const statusLabel = (
                                                 </Button>
                                             </div>
 
-                                            <span v-else class="text-sm text-gray-500">
+                                            <!-- <span v-else class="text-sm text-gray-500">
                                                 {{
                                                     justifikasi
                                                         .peninjau
-                                                        ?.name ??
+                                                        ?.name ?? 
                                                     '-'
                                                 }}
-                                            </span>
+                                            </span> -->
                                         </td>
                                     </tr>
 
