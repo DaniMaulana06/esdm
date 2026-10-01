@@ -11,7 +11,9 @@ import {
     LandPlot,
     Signature,
     NotepadText,
-    User2
+    User2,
+    FilePenLine,
+    FilePen
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
@@ -55,6 +57,13 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         href: '/laporan-harian',
         icon: NotepadText,
         roles: ['admin', 'staf_dinas', 'operator_bku'],
+    },
+
+    {
+        title: 'Justifikasi',
+        href: '/justifikasi',
+        icon: FilePenLine,
+        roles: ['admin', 'staf_dinas'],
     },
     
     {

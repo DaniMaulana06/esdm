@@ -26,7 +26,7 @@ class LaporanHarianController extends Controller
             ->with([
                 'bkuKontrak.bku',
                 'bkuKontrak.kontrak',
-                'justifikasis',
+                'justifikasiTerbaru',
             ])
             ->forUser($user);
 

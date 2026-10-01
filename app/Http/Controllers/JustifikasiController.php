@@ -34,62 +34,105 @@ class JustifikasiController extends Controller
             $query->where('status', $request->status);
         }
 
-        $justifikasis = $query->latest()->paginate(15)->withQueryString();
+        $justifikasis = $query
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        return Inertia::render('justifikasi/Index', [
+        return Inertia::render('Justifikasi/Index', [
             'justifikasis' => $justifikasis,
             'filters' => $request->only(['status']),
         ]);
     }
 
-    public function store(StoreJustifikasiRequest $request): RedirectResponse
-    {
+    public function store(
+        StoreJustifikasiRequest $request
+    ): RedirectResponse {
         $user = $request->user();
-        $laporanHarian = LaporanHarian::with('bkuKontrak')->findOrFail($request->laporan_harian_id);
 
-        $bkuId = $user->isOperatorBku() ? $user->bku_id : $laporanHarian->bkuKontrak->bku_id;
+        $laporanHarian = LaporanHarian::with('bkuKontrak')
+            ->whereHas(
+                'bkuKontrak',
+                function ($query) use ($user) {
+                    $query->where('bku_id', $user->bku_id);
+                }
+            )
+            ->findOrFail($request->laporan_harian_id);
+
+        $sudahAda = Justifikasi::query()
+            ->where('laporan_harian_id', $laporanHarian->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($sudahAda) {
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Laporan ini masih memiliki pengajuan justifikasi yang sedang diproses.'
+                );
+        }
 
         Justifikasi::create([
             'laporan_harian_id' => $laporanHarian->id,
-            'bku_id' => $bkuId,
+            'bku_id' => $user->bku_id,
             'alasan_revisi' => $request->alasan_revisi,
             'produksi_usulan' => $request->produksi_usulan,
             'lifting_usulan' => $request->lifting_usulan,
             'status' => 'pending',
         ]);
 
-        return redirect()->back()->with('success', 'Pengajuan Justifikasi Revisi berhasil dikirim.');
+        return redirect()
+            ->route('laporan-harian.index')
+            ->with(
+                'success',
+                'Pengajuan Justifikasi Revisi berhasil dikirim.'
+            );
     }
 
-    public function process(ProcessJustifikasiRequest $request, Justifikasi $justifikasi): RedirectResponse
-    {
+    public function process(
+        ProcessJustifikasiRequest $request,
+        Justifikasi $justifikasi
+    ): RedirectResponse {
         if ($justifikasi->status !== 'pending') {
-            return redirect()->back()->with('error', 'Pengajuan Justifikasi ini sudah diproses sebelumnya.');
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Pengajuan Justifikasi ini sudah diproses sebelumnya.'
+                );
         }
 
         DB::transaction(function () use ($request, $justifikasi) {
-            $status = $request->status; // 'approved' atau 'rejected'
+            $status = $request->status;
 
             if ($status === 'approved') {
                 $laporanHarian = $justifikasi->laporanHarian;
 
                 $oldValues = [
-                    'total_produksi' => $laporanHarian->total_produksi,
-                    'total_lifting' => $laporanHarian->total_lifting,
+                    'total_produksi' =>
+                        $laporanHarian->total_produksi,
+
+                    'total_lifting' =>
+                        $laporanHarian->total_lifting,
                 ];
 
                 $newValues = [
-                    'total_produksi' => $justifikasi->produksi_usulan,
-                    'total_lifting' => $justifikasi->lifting_usulan,
+                    'total_produksi' =>
+                        $justifikasi->produksi_usulan,
+
+                    'total_lifting' =>
+                        $justifikasi->lifting_usulan,
                 ];
 
-                // Update data Laporan Harian
                 $laporanHarian->update([
-                    'total_produksi' => $justifikasi->produksi_usulan,
-                    'total_lifting' => $justifikasi->lifting_usulan,
+                    'total_produksi' =>
+                        $justifikasi->produksi_usulan,
+
+                    'total_lifting' =>
+                        $justifikasi->lifting_usulan,
                 ]);
 
-                // Record Audit Log
                 AuditLogs::create([
                     'user_id' => $request->user()->id,
                     'action' => 'APPROVE_REVISI_LAPORAN_HARIAN',
@@ -102,7 +145,6 @@ class JustifikasiController extends Controller
                 ]);
             }
 
-            // Update status Justifikasi
             $justifikasi->update([
                 'status' => $status,
                 'ditinjau_oleh' => $request->user()->id,
@@ -114,6 +156,8 @@ class JustifikasiController extends Controller
             ? 'Pengajuan Justifikasi Revisi telah disetujui dan data laporan harian telah diperbarui.'
             : 'Pengajuan Justifikasi Revisi telah ditolak.';
 
-        return redirect()->back()->with('success', $message);
+        return redirect()
+            ->back()
+            ->with('success', $message);
     }
 }

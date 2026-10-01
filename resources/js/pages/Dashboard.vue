@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, ref, Ref } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
-
+import { Head, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { DateValue } from 'reka-ui';
 import { CalendarIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
@@ -26,7 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
-import SelectLabel from '@/components/ui/select/SelectLabel.vue';
+import { SharedData } from '@/types';
 
 interface Bku {
     id: number;
@@ -247,6 +244,13 @@ const maxBkuProduction = computed(() => {
         ...props.productionByBku.map((item) => item.total_produksi),
         1,
     );
+});
+
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
+
+const isStafEsdmOrAdmin = computed(() => {
+    return user.value?.role === 'staf_dinas' || user.value?.role === 'admin';
 });
 </script>
 
@@ -535,7 +539,7 @@ const maxBkuProduction = computed(() => {
                 </Card>
 
                 <!-- Produksi per BKU + Status -->
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2" v-if="isStafEsdmOrAdmin">
 
                     <Card>
                         <CardHeader>
@@ -569,7 +573,7 @@ const maxBkuProduction = computed(() => {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card v-if="isStafEsdmOrAdmin">
                         <CardHeader>
                             <CardTitle>
                                 Status Pelaporan Hari Ini
@@ -634,7 +638,7 @@ const maxBkuProduction = computed(() => {
                 </div>
 
                 <!-- BKU Belum Lengkap -->
-                <Card>
+                <Card v-if="isStafEsdmOrAdmin">
                     <CardHeader>
                         <CardTitle>
                             BKU Belum Lengkap Melapor
@@ -671,7 +675,7 @@ const maxBkuProduction = computed(() => {
                 </Card>
 
                 <!-- Laporan Terbaru -->
-                <Card>
+                <Card v-if="isStafEsdmOrAdmin">
                     <CardHeader>
                         <CardTitle>Laporan Terbaru</CardTitle>
                     </CardHeader>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class LaporanHarian extends Model
 {
@@ -38,6 +39,11 @@ class LaporanHarian extends Model
         return $this->hasMany(Justifikasi::class, 'laporan_harian_id');
     }
 
+    public function justifikasiTerbaru(): HasOne
+    {
+        return $this->hasOne(Justifikasi::class,'laporan_harian_id')->latestOfMany();
+    }
+
     public function scopeForUser(
         Builder $query,
         User $user
@@ -53,7 +59,7 @@ class LaporanHarian extends Model
                 }
             );
         }
-    
+
         return $query;
     }
 }

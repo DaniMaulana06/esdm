@@ -15,6 +15,7 @@ import { computed, onMounted, Ref, ref } from 'vue';
 import { route } from 'ziggy-js';
 import { CalendarIcon } from 'lucide-vue-next';
 import { DateFormatter, DateValue, getLocalTimeZone, parseDate, today } from '@internationalized/date'
+import CreateJustifikasiDialog from '@/components/justifikasi/CreateJustifikasiDialog.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,8 +45,11 @@ interface BkuKontrak {
 
 interface Justifikasi {
     id: number;
-    alasan?: string;
-    status?: string;
+    status: 'pending' | 'approved' | 'rejected';
+    alasan_revisi: string;
+    produksi_usulan: number | string;
+    lifting_usulan: number | string;
+    catatan_dinas: string | null;
 }
 
 interface LaporanHarian {
@@ -56,7 +60,7 @@ interface LaporanHarian {
     total_lifting: string;
 
     bku_kontrak: BkuKontrak;
-    justifikasis: Justifikasi[];
+    justifikasi_terbaru: Justifikasi | null;
 }
 
 interface Pagination<T> {
@@ -88,6 +92,14 @@ interface Filters {
     direction?: string;
 }
 
+const showJustifikasi = ref(false);
+
+const selectedLaporan = ref<LaporanHarian | null>(null);
+
+const openJustifikasi = (laporan: LaporanHarian) => {
+    selectedLaporan.value = laporan;
+    showJustifikasi.value = true;
+};
 
 const props = defineProps<{
     laporanHarians: Pagination<LaporanHarian>;
@@ -106,13 +118,13 @@ const kontrakId = ref(props.filters.kontrakId ?? '');
 
 const bkus = computed(() => {
     const uniqueBku = new Map<number, Bku>();
-    
+
     props.bkuKontraks.forEach((item) => {
         if (item.bku) {
             uniqueBku.set(item.bku.id, item.bku);
         }
     });
-    
+
     return Array.from(uniqueBku.values());
 });
 
@@ -243,7 +255,6 @@ const isStafEsdmOrAdmin = computed(() => {
     return (user.value?.role === 'staf_dinas' || (user.value?.role === 'admin' && user.value?.bku_id != null));
 });
 
-const showFlash = ref(true);
 
 const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleDateString('id-ID', {
@@ -252,6 +263,8 @@ const formatTanggal = (tanggal: string) => {
         year: 'numeric',
     })
 }
+
+const showFlash = ref(true);
 
 onMounted(() => {
     if (flash.value.success || flash.value.error) {
@@ -405,10 +418,10 @@ const defaultPlaceholder = today(getLocalTimeZone())
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 No
                             </th>
-
+<!-- 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Nama BKU
-                            </th>
+                            </th> -->
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Nama Kontrak
                             </th>
@@ -436,6 +449,11 @@ const defaultPlaceholder = today(getLocalTimeZone())
                                     <component :is="getSortIcon('total_lifting')" class="h-4 w-4" />
                                 </button>
                             </th>
+
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                                Status
+                            </th>
+
                             <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                                 Keterangan
                             </th>
@@ -449,9 +467,9 @@ const defaultPlaceholder = today(getLocalTimeZone())
                                 {{ index + 1 }}
                             </td>
 
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                            <!-- <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ laporanHarian.bku_kontrak.bku.nama }}
-                            </td>
+                            </td> -->
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ laporanHarian.bku_kontrak.kontrak.nama }}
@@ -467,6 +485,27 @@ const defaultPlaceholder = today(getLocalTimeZone())
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ laporanHarian.total_lifting }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span v-if="!laporanHarian.justifikasi_terbaru"
+                                    class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                                    Belum diajukan
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'pending'"
+                                    class="inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
+                                    Menunggu Persetujuan
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'approved'"
+                                    class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                                    Disetujui
+                                </span>
+
+                                <span v-else-if="laporanHarian.justifikasi_terbaru.status === 'rejected'"
+                                    class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                                    Ditolak
+                                </span>
                             </td>
 
                             <td class="px-6 py-4">
@@ -486,6 +525,11 @@ const defaultPlaceholder = today(getLocalTimeZone())
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </Button>
+
+                                    <Button v-if="user.role === 'operator_bku'" variant="outline" size="sm"
+                                        @click="openJustifikasi(laporanHarian)">
+                                        Ajukan Justifikasi
+                                    </Button>
                                 </div>
                             </td>
                         </tr>
@@ -500,4 +544,6 @@ const defaultPlaceholder = today(getLocalTimeZone())
             </div>
         </div>
     </AppLayout>
+
+    <CreateJustifikasiDialog v-model:open="showJustifikasi" :laporan="selectedLaporan" />
 </template>

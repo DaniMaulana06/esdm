@@ -3,6 +3,7 @@
 use App\Http\Controllers\BkuController;
 use App\Http\Controllers\BkuKontrakController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JustifikasiController;
 use App\Http\Controllers\KontrakController;
 use App\Http\Controllers\LaporanHarianController;
 use App\Http\Controllers\SumurController;
@@ -34,7 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('sumur', [SumurController::class, 'index'])->name('sumur.index');
-    
+
     Route::middleware('staf-or-operator-bku')->group(function () {
         Route::get('sumur/create', [SumurController::class, 'create'])->name('sumur.create');
         Route::post('sumur', [SumurController::class, 'store'])->name('sumur.store');
@@ -51,7 +52,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('laporan-harian/{laporan_harian}/edit', [LaporanHarianController::class, 'edit'])->name('laporan-harian.edit');
         Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])->name('laporan-harian.update');
-        
+
+        Route::get('justifikasi', [JustifikasiController::class, 'index'])->name('justifikasi.index');
+        Route::put('justifikasi/{justifikasi}/process', [JustifikasiController::class, 'process'])->name('justifikasi.process');
+
     });
 
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
@@ -59,6 +63,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('operator-bku')->group(function () {
         Route::get('laporan-harian/create', [LaporanHarianController::class, 'create'])->name('laporan-harian.create');
         Route::post('laporan-harian', [LaporanHarianController::class, 'store'])->name('laporan-harian.store');
+
+        Route::post(
+            'justifikasi',
+            [JustifikasiController::class, 'store']
+        )->name('justifikasi.store');
     });
 });
 
