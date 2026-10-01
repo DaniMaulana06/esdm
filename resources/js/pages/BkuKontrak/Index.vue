@@ -137,10 +137,10 @@ const closeFlash = () => {
                                 Kontrak
                             </th>
 
-                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Jumlah Sumur
                             </th>
-                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Aksi
                             </th>
                         </tr>

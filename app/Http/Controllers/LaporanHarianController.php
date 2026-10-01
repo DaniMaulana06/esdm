@@ -7,8 +7,8 @@ use App\Http\Requests\FilterLaporanHarianRequest;
 use App\Http\Requests\StoreLaporanHarianRequest;
 use App\Models\BkuKontrak;
 use App\Models\LaporanHarian;
-use Cache;
-use DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,45 +21,105 @@ class LaporanHarianController extends Controller
         LaporanHarianFilter $filter
     ): Response {
         $user = $request->user();
+        $validated = $request->validated();
 
-        $query = LaporanHarian::query()
-            ->with([
-                'bkuKontrak.bku',
-                'bkuKontrak.kontrak',
-                'justifikasiTerbaru',
-            ])
-            ->forUser($user);
+        // 1) Query terfilter (aturan akses + search/filter dari kode lama)
+        $filtered = LaporanHarian::query()->forUser($user);
+        $filter->apply($filtered, $validated);
 
-        // Search, filter, dan sorting
-        $filter->apply(
-            $query,
-            $request->validated()
-        );
+        // Hanya butuh ID-nya; buang orderBy bawaan filter karena sorting diatur di bawah
+        $filteredIds = (clone $filtered)
+            ->reorder()
+            ->select('laporan_harian.id');
 
-        $laporanHarians = $query
-            ->paginate(15)
+        // 2a) Sorting level kelompok (pakai alias agregat — hanya untuk query GROUP BY)
+        $sortMap = [
+            'tanggal'       => 'laporan_harian.tanggal',
+            'total_produksi' => 'sum_produksi',
+            'total_lifting'  => 'sum_lifting',
+        ];
+        $sort = $sortMap[$validated['sort'] ?? ''] ?? 'laporan_harian.tanggal';
+        $direction = ($validated['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+        // 2b) Sorting untuk query flat operator BKU (pakai nama kolom asli)
+        $sortMapFlat = [
+            'tanggal'       => 'laporan_harian.tanggal',
+            'total_produksi' => 'laporan_harian.total_produksi',
+            'total_lifting'  => 'laporan_harian.total_lifting',
+        ];
+        $sortFlat = $sortMapFlat[$validated['sort'] ?? ''] ?? 'laporan_harian.tanggal';
+
+        // 3) Paginate kelompok: 1 baris = 1 BKU + 1 tanggal
+        $groups = LaporanHarian::query()
+            ->whereIn('laporan_harian.id', $filteredIds)
+            ->join('bku_kontrak', 'bku_kontrak.id', '=', 'laporan_harian.bku_kontrak_id')
+            ->select('bku_kontrak.bku_id', 'laporan_harian.tanggal')
+            ->selectRaw('SUM(laporan_harian.total_produksi) as sum_produksi')
+            ->selectRaw('SUM(laporan_harian.total_lifting) as sum_lifting')
+            ->groupBy('bku_kontrak.bku_id', 'laporan_harian.tanggal')
+            ->orderBy($sort, $direction)
+            ->orderBy('bku_kontrak.bku_id')
+            ->paginate(10)
             ->withQueryString();
 
-        // BKU + Kontrak untuk kebutuhan halaman
-        $bkuKontrakQuery = BkuKontrak::with([
-            'bku',
-            'kontrak',
-        ]);
+        // 4) Ambil laporan milik kelompok di halaman ini (tetap mengikuti filter)
+        $pairs = $groups->getCollection();
 
-        // Operator hanya mendapatkan BKU miliknya
+        $laporans = $pairs->isEmpty()
+            ? collect()
+            : LaporanHarian::query()
+                ->with(['bkuKontrak.bku', 'bkuKontrak.kontrak', 'justifikasiTerbaru'])
+                ->whereIn('laporan_harian.id', $filteredIds)
+                ->where(function ($q) use ($pairs) {
+                    foreach ($pairs as $p) {
+                        $q->orWhere(function ($q) use ($p) {
+                            $q->whereDate('tanggal', Carbon::parse($p->tanggal)->toDateString())
+                                ->whereHas('bkuKontrak', fn($b) => $b->where('bku_id', $p->bku_id));
+                        });
+                    }
+                })
+                ->get()
+                ->groupBy(fn($l) => $l->bkuKontrak->bku_id . '|' . Carbon::parse($l->tanggal)->toDateString());
+
+        // 5) Bentuk akhir untuk Vue
+        $groups->through(function ($p) use ($laporans) {
+            $date = Carbon::parse($p->tanggal)->toDateString();
+            $key = $p->bku_id . '|' . $date;
+            $items = $laporans->get($key, collect())->values();
+
+            return [
+                'key' => $key,
+                'bku' => $items->first()?->bkuKontrak->bku,
+                'tanggal' => $date,
+                'total_produksi' => $p->sum_produksi,
+                'total_lifting' => $p->sum_lifting,
+                'items' => $items,
+            ];
+        });
+
+        // BKU + Kontrak untuk dropdown (tidak berubah)
+        $bkuKontrakQuery = BkuKontrak::with(['bku', 'kontrak']);
+
         if ($user->isOperatorBku()) {
-            $bkuKontrakQuery->where(
-                'bku_id',
-                $user->bku_id
-            );
+            $bkuKontrakQuery->where('bku_id', $user->bku_id);
         }
 
-        $bkuKontraks = $bkuKontrakQuery->get();
+        // Query flat (per baris) khusus untuk operator BKU
+        $laporanHarians = null;
+        if ($user->isOperatorBku()) {
+            $laporanHarians = LaporanHarian::query()
+                ->with(['bkuKontrak.bku', 'bkuKontrak.kontrak', 'justifikasiTerbaru'])
+                ->whereIn('laporan_harian.id', $filteredIds)
+                ->orderBy($sortFlat, $direction)
+                ->paginate(10)
+                ->withQueryString();
+        }
 
         return Inertia::render('LaporanHarian/Index', [
-            'laporanHarians' => $laporanHarians,
-            'bkuKontraks' => $bkuKontraks,
-            'filters' => $request->validated(),
+            'groups'          => $user->isOperatorBku() ? null : $groups,
+            'laporanHarians'  => $laporanHarians,
+            'bkuKontraks'     => $bkuKontrakQuery->get(),
+            'filters'         => $validated,
         ]);
     }
 
@@ -98,7 +158,8 @@ class LaporanHarianController extends Controller
         ]);
     }
 
-    public function store(StoreLaporanHarianRequest $request): RedirectResponse {
+    public function store(StoreLaporanHarianRequest $request): RedirectResponse
+    {
         $user = $request->user();
 
         $validated = $request->validated();
@@ -115,7 +176,7 @@ class LaporanHarianController extends Controller
             ->values();
 
         //validasi agar seluruh kontrak dilaporakan
-        if ( 
+        if (
             $bkuKontraks->count() !== $submittedIds->count() ||
             $bkuKontraks->diff($submittedIds)->isNotEmpty() ||
             $submittedIds->diff($bkuKontraks)->isNotEmpty()
@@ -155,7 +216,7 @@ class LaporanHarianController extends Controller
             }
         });
 
-        return redirect()->route('laporan-harian.index')->with('success','Laporan produksi & lifting harian berhasil disimpan.');
+        return redirect()->route('laporan-harian.index')->with('success', 'Laporan produksi & lifting harian berhasil disimpan.');
     }
 
     public function update(

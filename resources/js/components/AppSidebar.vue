@@ -13,7 +13,6 @@ import {
     NotepadText,
     User2,
     FilePenLine,
-    FilePen
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';

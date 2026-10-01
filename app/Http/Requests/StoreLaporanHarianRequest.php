@@ -36,6 +36,7 @@ class StoreLaporanHarianRequest extends FormRequest
             'tanggal' => [
                 'required',
                 'date',
+                'date_equals:today',
                 Rule::unique('laporan_harian')->where(function ($query) {
                     return $query->where('bku_kontrak_id', $this->bku_kontrak_id);
                 }),
@@ -72,6 +73,7 @@ class StoreLaporanHarianRequest extends FormRequest
         return [
             'tanggal.required' => 'Tanggal laporan wajib diisi.',
             'tanggal.date' => 'Tanggal laporan tidak valid.',
+            'tanggal.date_equals' => 'Laporan hanya dapat dibuat untuk tanggal hari ini.',
 
             'laporan.required' => 'Data laporan wajib diisi.',
             'laporan.array' => 'Format data laporan tidak valid.',

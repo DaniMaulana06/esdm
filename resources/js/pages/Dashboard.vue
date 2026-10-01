@@ -13,7 +13,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover'
-import { DateFormatter, getLocalTimeZone, parseDate, today } from '@internationalized/date';
+import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 import Label from '@/components/ui/label/Label.vue';
 import {
     Select,
@@ -150,14 +150,6 @@ const endDateLabel = computed(() => {
 
     return end_date.value.toString();
 });
-
-const formatter = new DateFormatter('id-ID', {
-    dateStyle: 'long',
-});
-
-const startDatePlaceholder = computed(() => start_date.value);
-
-const endDatePlaceholder = computed(() => end_date.value);
 
 const form = reactive({
     start_date: props.filters.start_date,
