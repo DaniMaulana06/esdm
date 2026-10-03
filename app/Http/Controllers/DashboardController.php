@@ -7,14 +7,14 @@ use App\Models\Bku;
 use App\Models\BkuKontrak;
 use App\Models\Kontrak;
 use App\Models\LaporanHarian;
+use App\Services\LaporanMonitoringService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(FilterDashboardRequest $request): Response
+    public function index(FilterDashboardRequest $request, LaporanMonitoringService $monitoring): Response
     {
         $user = $request->user();
 
@@ -45,7 +45,7 @@ class DashboardController extends Controller
         if ($user->isOperatorBku()) {
             $laporanQuery->whereHas(
                 'bkuKontrak',
-                fn (Builder $query) =>
+                fn(Builder $query) =>
                     $query->where('bku_id', $user->bku_id)
             );
         }
@@ -59,7 +59,7 @@ class DashboardController extends Controller
         if ($bkuId) {
             $laporanQuery->whereHas(
                 'bkuKontrak',
-                fn (Builder $query) =>
+                fn(Builder $query) =>
                     $query->where('bku_id', $bkuId)
             );
         }
@@ -73,7 +73,7 @@ class DashboardController extends Controller
         if ($kontrakId) {
             $laporanQuery->whereHas(
                 'bkuKontrak',
-                fn (Builder $query) =>
+                fn(Builder $query) =>
                     $query->where('kontrak_id', $kontrakId)
             );
         }
@@ -154,7 +154,7 @@ class DashboardController extends Controller
             ->groupBy('tanggal')
             ->orderBy('tanggal')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn($item) => [
                 'tanggal' => $item->tanggal,
                 'total_produksi' => (float) $item->total_produksi,
             ])
@@ -173,7 +173,7 @@ class DashboardController extends Controller
             ->groupBy('tanggal')
             ->orderBy('tanggal')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn($item) => [
                 'tanggal' => $item->tanggal,
                 'total_produksi' => (float) $item->total_produksi,
                 'total_lifting' => (float) $item->total_lifting,
@@ -212,7 +212,7 @@ class DashboardController extends Controller
             )
             ->orderByDesc('total_produksi')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn($item) => [
                 'id' => $item->id,
                 'nama' => $item->nama,
                 'total_produksi' => (float) $item->total_produksi,
@@ -248,7 +248,7 @@ class DashboardController extends Controller
         if ($user->isOperatorBku()) {
             $kontraksQuery->whereHas(
                 'bkuKontraks',
-                fn (Builder $query) =>
+                fn(Builder $query) =>
                     $query->where('bku_id', $user->bku_id)
             );
         }
@@ -256,7 +256,7 @@ class DashboardController extends Controller
         if ($bkuId) {
             $kontraksQuery->whereHas(
                 'bkuKontraks',
-                fn (Builder $query) =>
+                fn(Builder $query) =>
                     $query->where('bku_id', $bkuId)
             );
         }
@@ -281,7 +281,7 @@ class DashboardController extends Controller
                 'bkuKontraks as kontrak_sudah_melapor' => function ($query) use ($today) {
                     $query->whereHas(
                         'laporanHarians',
-                        fn ($reportQuery) =>
+                        fn($reportQuery) =>
                             $reportQuery->whereDate('tanggal', $today)
                     );
                 },
@@ -292,7 +292,7 @@ class DashboardController extends Controller
                         ->with('kontrak')
                         ->whereDoesntHave(
                             'laporanHarians',
-                            fn ($reportQuery) =>
+                            fn($reportQuery) =>
                                 $reportQuery->whereDate('tanggal', $today)
                         );
                 },
@@ -309,7 +309,7 @@ class DashboardController extends Controller
 
         $sudahMelapor = $reportingBkus
             ->filter(
-                fn ($bku) =>
+                fn($bku) =>
                     $bku->total_kontrak > 0 &&
                     $bku->kontrak_sudah_melapor >= $bku->total_kontrak
             )
@@ -323,17 +323,17 @@ class DashboardController extends Controller
 
         $missingReports = $reportingBkus
             ->filter(
-                fn ($bku) =>
+                fn($bku) =>
                     $bku->total_kontrak > $bku->kontrak_sudah_melapor
             )
-            ->map(fn ($bku) => [
+            ->map(fn($bku) => [
                 'id' => $bku->id,
                 'nama' => $bku->nama,
                 'missing_count' =>
                     $bku->total_kontrak -
                     $bku->kontrak_sudah_melapor,
                 'contracts' => $bku->bkuKontraks
-                    ->map(fn ($bkuKontrak) => [
+                    ->map(fn($bkuKontrak) => [
                         'id' => $bkuKontrak->id,
                         'nama' => $bkuKontrak->kontrak->nama,
                     ])
@@ -356,7 +356,7 @@ class DashboardController extends Controller
             ->orderByDesc('id')
             ->limit(10)
             ->get()
-            ->map(fn ($laporan) => [
+            ->map(fn($laporan) => [
                 'id' => $laporan->id,
                 'tanggal' => $laporan->tanggal->toDateString(),
                 'bku' => $laporan->bkuKontrak->bku->nama,
@@ -365,6 +365,9 @@ class DashboardController extends Controller
                 'total_lifting' => (float) $laporan->total_lifting,
             ]);
 
+        // $riwayatBkuBelumLapor = $monitoring->getBkuBelumLapor();
+
+        // dd($riwayatBkuBelumLapor);
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_bku' => $totalBku,
@@ -382,6 +385,7 @@ class DashboardController extends Controller
 
             'bkus' => $bkus,
             'kontraks' => $kontraks,
+            'bkuBelumLapor' => $monitoring->getBkuBelumLapor(),
 
             'productionChart' => $productionChart,
             'productionLiftingChart' => $productionLiftingChart,
