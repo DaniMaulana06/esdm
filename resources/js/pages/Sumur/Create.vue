@@ -9,6 +9,12 @@ import {
 } from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
 import Label from '@/components/ui/label/Label.vue';
+import Select from '@/components/ui/select/Select.vue';
+import SelectContent from '@/components/ui/select/SelectContent.vue';
+import SelectGroup from '@/components/ui/select/SelectGroup.vue';
+import SelectItem from '@/components/ui/select/SelectItem.vue';
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
@@ -75,7 +81,7 @@ const submit = () => {
                             <Label for="bku_kontrak_id">
                                 Kontrak
                             </Label>
-
+                            <!-- 
                             <select id="bku_kontrak_id" v-model="form.bku_kontrak_id"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                                 <option value="" disabled>
@@ -87,7 +93,24 @@ const submit = () => {
                                     -
                                     {{ item.kontrak.nama }}
                                 </option>
-                            </select>
+                            </select> -->
+
+                            <Select v-model="form.bku_kontrak_id">
+                                <SelectTrigger class="w-[280px]">
+                                    <SelectValue placeholder="Pilih Kontrak" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="all">Semua Kontrak</SelectItem>
+                                        <SelectItem v-for="item in props.bkuKontraks" :key="item.id"
+                                            :value="String(item.id)">
+                                            {{ item.bku.nama }}
+                                            -
+                                            {{ item.kontrak.nama }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
 
                             <p v-if="form.errors.bku_kontrak_id" class="text-sm text-destructive">
                                 {{ form.errors.bku_kontrak_id }}
@@ -156,8 +179,7 @@ const submit = () => {
                             </Label>
 
                             <Input id="latitude" v-model="form.latitude" type="text" inputmode="decimal" step="any"
-                                placeholder="Contoh: -2.9761"
-                                @input="form.latitude = form.latitude.replace(/,/g, '.')"
+                                placeholder="Contoh: -2.9761" @input="form.latitude = form.latitude.replace(/,/g, '.')"
                                 class="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 
                             <p v-if="form.errors.latitude" class="text-sm text-destructive">

@@ -4,6 +4,14 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,6 +75,34 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
+const showDeleteDialog = ref(false);
+const bkuKontrakToDelete = ref<BkuKontrak | null>(null);
+const deleteConfirmText = ref('');
+
+const openDeleteDialog = (bkuKontrak: BkuKontrak) => {
+    bkuKontrakToDelete.value = bkuKontrak;
+    deleteConfirmText.value = '';
+    showDeleteDialog.value = true;
+}
+
+const confirmDelete = () => {
+    if (!bkuKontrakToDelete.value) return;
+    const expected = `delete BKU Kontrak ${bkuKontrakToDelete.value.bku.nama} ${bkuKontrakToDelete.value.kontrak.nama}`;
+    if (deleteConfirmText.value.trim() !== expected) return;
+    router.delete(route('bku-kontrak.destroy', bkuKontrakToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteDialog.value = false;
+            bkuKontrakToDelete.value = null;
+            deleteConfirmText.value = '';
+        }
+    });
+}
+
+const cancelDelete = () => {
+    showDeleteDialog.value = false;
+    bkuKontrakToDelete.value = null;
+    deleteConfirmText.value = '';
+}
 </script>
 
 <template>
@@ -91,19 +127,14 @@ const closeFlash = () => {
             </div>
 
             <!-- FLASH SUCCESS -->
-            <div
-                v-if="showFlash && flash.success"
-                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"
-            >
+            <div v-if="showFlash && flash.success"
+                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
                 <span>
                     {{ flash.success }}
                 </span>
 
-                <button
-                    type="button"
-                    @click="closeFlash"
-                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900"
-                >
+                <button type="button" @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900">
                     ×
                 </button>
             </div>
@@ -147,7 +178,8 @@ const closeFlash = () => {
                     </thead>
 
                     <tbody class="divide-y">
-                        <tr v-for="(bkuKontrak, index) in bkuKontraks" :key="bkuKontrak.bku_id" class="hover:bg-gray-50">
+                        <tr v-for="(bkuKontrak, index) in bkuKontraks" :key="bkuKontrak.bku_id"
+                            class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-600">
                                 {{ index + 1 }}
                             </td>
@@ -160,17 +192,18 @@ const closeFlash = () => {
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ bkuKontrak.jumlah_sumur}}
+                                {{ bkuKontrak.jumlah_sumur }}
                             </td>
 
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <Link :href="route('bku-kontrak.edit', { bku_kontrak: bkuKontrak.id })" v-if="isStafEsdm"
+                                    <Link :href="route('bku-kontrak.edit', { bku_kontrak: bkuKontrak.id })"
+                                        v-if="isStafEsdm"
                                         class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         Edit
                                     </Link>
 
-                                    <button @click="deleteItem(bkuKontrak.id)" v-if="isStafEsdm"
+                                    <button @click="openDeleteDialog(bkuKontrak)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </button>
@@ -187,5 +220,43 @@ const closeFlash = () => {
                 </table>
             </div>
         </div>
+
+        <!-- DIALOG KONFIRMASI HAPUS BKU KOntrak -->
+        <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="text-red-600">Hapus Kontrak</DialogTitle>
+                    <DialogDescription>
+                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data Kontrak akan dihapus secara permanen.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <DialogDescription class="my-2 space-y-3">
+                    <strong>
+                        <p class="text-sm text-gray-700">
+                            Untuk mengonfirmasi, ketik:
+                            <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
+                                delete BKU Kontrak {{ bkuKontrakToDelete?.bku.nama }} {{ bkuKontrakToDelete?.kontrak.nama }}
+                            </code>
+                        </p>
+                    </strong>
+                    <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
+                </DialogDescription>
+
+                <DialogFooter>
+                    <DialogClose>
+                        <button @click="cancelDelete" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
+                            Batal
+                        </button>
+                    </DialogClose>
+                    <button @click="confirmDelete"
+                        :disabled="deleteConfirmText.trim() !== `delete BKU Kontrak ${bkuKontrakToDelete?.bku.nama} ${bkuKontrakToDelete?.kontrak.nama}`"
+                        class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                        Ya, Hapus
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

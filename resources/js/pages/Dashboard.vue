@@ -697,7 +697,7 @@ const isBku = computed(() => {
                 <!-- Produksi vs Lifting -->
                 <Card>
                     <CardHeader>
-                        <CardTitle>Produksi vs Lifting</CardTitle>
+                        <CardTitle>Produksi & Lifting</CardTitle>
                     </CardHeader>
 
                     <CardContent>

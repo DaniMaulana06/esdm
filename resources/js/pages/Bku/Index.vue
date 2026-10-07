@@ -5,6 +5,15 @@ import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Badan Kerjasama Usaha',
@@ -18,12 +27,6 @@ interface Bku {
     penetapan: number;
     created_at: string;
     updated_at: string;
-}
-
-const deleteItem = (id: number) => {
-    if (confirm('Apakah kamu yakin ingin menghapus BKU ini?')) {
-        router.delete(route('bku.destroy', id));
-    }
 }
 
 defineProps<{
@@ -58,6 +61,34 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
+const showDeleteDialog = ref(false);
+const bkuToDelete = ref<Bku | null>(null);
+const deleteConfirmText = ref('');
+
+const openDeleteDialog = (bku: Bku) => {
+    bkuToDelete.value = bku;
+    deleteConfirmText.value = '';
+    showDeleteDialog.value = true;
+}
+
+const confirmDelete = () => {
+    if (!bkuToDelete.value) return;
+    const expected = `delete BKU ${bkuToDelete.value.nama}`;
+    if (deleteConfirmText.value.trim() !== expected) return;
+    router.delete(route('bku.destroy', bkuToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteDialog.value = false;
+            bkuToDelete.value = null;
+            deleteConfirmText.value = '';
+        }
+    });
+}
+
+const cancelDelete = () => {
+    showDeleteDialog.value = false;
+    bkuToDelete.value = null;
+    deleteConfirmText.value = '';
+}
 </script>
 
 <template>
@@ -82,19 +113,14 @@ const closeFlash = () => {
             </div>
 
             <!-- FLASH SUCCESS -->
-            <div
-                v-if="showFlash && flash.success"
-                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"
-            >
+            <div v-if="showFlash && flash.success"
+                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
                 <span>
                     {{ flash.success }}
                 </span>
 
-                <button
-                    type="button"
-                    @click="closeFlash"
-                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900"
-                >
+                <button type="button" @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900">
                     ×
                 </button>
             </div>
@@ -155,7 +181,7 @@ const closeFlash = () => {
                                         Edit
                                     </Link>
 
-                                    <button @click="deleteItem(bku.id)" v-if="isStafEsdm"
+                                    <button @click="openDeleteDialog(bku)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </button>
@@ -172,5 +198,43 @@ const closeFlash = () => {
                 </table>
             </div>
         </div>
+
+        <!-- DIALOG KONFIRMASI HAPUS BKU -->
+        <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="text-red-600">Hapus BKU</DialogTitle>
+                    <DialogDescription>
+                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data BKU akan dihapus secara permanen.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <DialogDescription class="my-2 space-y-3">
+                    <strong>
+                        <p class="text-sm text-gray-700">
+                            Untuk mengonfirmasi, ketik:
+                            <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
+                                delete BKU {{ bkuToDelete?.nama }}
+                            </code>
+                        </p>
+                    </strong>
+                    <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
+                </DialogDescription>
+
+                <DialogFooter>
+                    <DialogClose>
+                        <button @click="cancelDelete" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
+                            Batal
+                        </button>
+                    </DialogClose>
+                    <button @click="confirmDelete"
+                        :disabled="deleteConfirmText.trim() !== `delete BKU ${bkuToDelete?.nama}`"
+                        class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                        Ya, Hapus
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

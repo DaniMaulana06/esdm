@@ -130,7 +130,7 @@ class LaporanHarianController extends Controller
         $query = BkuKontrak::with([
             'bku:id,nama',
             'kontrak:id,nama',
-        ]);
+        ])->whereDate('created_at', '<', now()->toDateString());
 
         // operator hanya melihat kontrak dari BKU miliknya
         if ($user->isOperatorBku()) {
@@ -171,11 +171,13 @@ class LaporanHarianController extends Controller
         $query = BkuKontrak::with([
             'bku:id,nama',
             'kontrak:id,nama',
-        ])->where('bku_id', $user->bku_id);
+        ])
+        ->where('bku_id', $user->bku_id)
+        ->whereDate('created_at', '<', $tgl);
 
         $bkuKontraks = $query->orderBy('bku_id')->get();
 
-        return Inertia::render('LaporanHarian/Create', [
+        return Inertia::render('LaporanHarian/CreateBackfill', [
             'bkuKontraks' => $bkuKontraks,
             'tanggalBackfill' => $tgl->toDateString(),
         ]);
@@ -201,6 +203,7 @@ class LaporanHarianController extends Controller
 
         $bkuKontraks = BkuKontrak::query()
             ->where('bku_id', $user->bku_id)
+            ->whereDate('created_at', '<', $validated['tanggal'])
             ->pluck('id')
             ->sort()
             ->values();

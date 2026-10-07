@@ -58,7 +58,12 @@ class LaporanMonitoringService
                      * Cari kontrak yang BELUM memiliki laporan.
                      */
                     $belumMelapor = $bku->bkuKontraks
-                        ->whereNotIn('id', $sudahMelaporIds);
+                        ->whereNotIn('id', $sudahMelaporIds)
+                        ->filter(function ($bkuKontrak) use ($tanggal) {
+                            return $bkuKontrak->created_at 
+                                ? $bkuKontrak->created_at->startOfDay()->lt($tanggal) 
+                                : true;
+                        });
 
                     if ($belumMelapor->isNotEmpty()) {
 
@@ -114,7 +119,12 @@ class LaporanMonitoringService
                     ->pluck('bku_kontrak_id');
 
                 $belumMelapor = $bku->bkuKontraks
-                    ->whereNotIn('id', $sudahMelaporIds);
+                    ->whereNotIn('id', $sudahMelaporIds)
+                    ->filter(function ($bkuKontrak) use ($tanggal) {
+                        return $bkuKontrak->created_at 
+                            ? $bkuKontrak->created_at->startOfDay()->lt($tanggal) 
+                            : true;
+                    });
 
                 if ($belumMelapor->isNotEmpty()) {
                     $hasil[] = [

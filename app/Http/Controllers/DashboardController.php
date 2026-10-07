@@ -277,18 +277,22 @@ class DashboardController extends Controller
 
         $reportingBkusQuery = Bku::query()
             ->withCount([
-                'bkuKontraks as total_kontrak',
+                'bkuKontraks as total_kontrak' => function ($query) use ($today) {
+                    $query->whereDate('created_at', '<', $today);
+                },
                 'bkuKontraks as kontrak_sudah_melapor' => function ($query) use ($today) {
-                    $query->whereHas(
-                        'laporanHarians',
-                        fn($reportQuery) =>
-                            $reportQuery->whereDate('tanggal', $today)
-                    );
+                    $query->whereDate('created_at', '<', $today)
+                        ->whereHas(
+                            'laporanHarians',
+                            fn($reportQuery) =>
+                                $reportQuery->whereDate('tanggal', $today)
+                        );
                 },
             ])
             ->with([
                 'bkuKontraks' => function ($query) use ($today) {
                     $query
+                        ->whereDate('created_at', '<', $today)
                         ->with('kontrak')
                         ->whereDoesntHave(
                             'laporanHarians',

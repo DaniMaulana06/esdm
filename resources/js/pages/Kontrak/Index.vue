@@ -5,6 +5,14 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,7 +28,7 @@ interface Kontrak {
 }
 
 const deleteItem = (id: number) => {
-    if (confirm('Apakah kamu yakin ingin menghapus BKU ini?')) {
+    if (confirm('Apakah kamu yakin ingin menghapus Kontrak ini?')) {
         router.delete(route('kontrak.destroy', id));
     }
 }
@@ -35,7 +43,7 @@ const user = computed(() => page.props.auth.user);
 const isStafEsdm = computed(() => {
     return user.value?.role === 'staf_dinas';
 });
- 
+
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
 }
@@ -55,6 +63,34 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
+const showDeleteDialog = ref(false);
+const kontrakToDelete = ref<Kontrak | null>(null);
+const deleteConfirmText = ref('');
+
+const openDeleteDialog = (kontrak: Kontrak) => {
+    kontrakToDelete.value = kontrak;
+    deleteConfirmText.value = '';
+    showDeleteDialog.value = true;
+}
+
+const confirmDelete = () => {
+    if (!kontrakToDelete.value) return;
+    const expected = `delete Kontrak ${kontrakToDelete.value.nama}`;
+    if (deleteConfirmText.value.trim() !== expected) return;
+    router.delete(route('kontrak.destroy', kontrakToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteDialog.value = false;
+            kontrakToDelete.value = null;
+            deleteConfirmText.value = '';
+        }
+    });
+}
+
+const cancelDelete = () => {
+    showDeleteDialog.value = false;
+    kontrakToDelete.value = null;
+    deleteConfirmText.value = '';
+}
 </script>
 
 <template>
@@ -79,19 +115,14 @@ const closeFlash = () => {
             </div>
 
             <!-- FLASH SUCCESS -->
-            <div
-                v-if="showFlash && flash.success"
-                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"
-            >
+            <div v-if="showFlash && flash.success"
+                class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
                 <span>
                     {{ flash.success }}
                 </span>
 
-                <button
-                    type="button"
-                    @click="closeFlash"
-                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900"
-                >
+                <button type="button" @click="closeFlash"
+                    class="ml-4 text-lg font-bold text-green-700 hover:text-green-900">
                     ×
                 </button>
             </div>
@@ -142,7 +173,7 @@ const closeFlash = () => {
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ kontrak.keterangan}}
+                                {{ kontrak.keterangan }}
                                 <span v-if="kontrak.keterangan === null" class="text-center"> - </span>
                             </td>
 
@@ -153,7 +184,7 @@ const closeFlash = () => {
                                         Edit
                                     </Link>
 
-                                    <Button @click="deleteItem(kontrak.id)" v-if="isStafEsdm"
+                                    <Button @click="openDeleteDialog(kontrak)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         Hapus
                                     </Button>
@@ -170,5 +201,43 @@ const closeFlash = () => {
                 </table>
             </div>
         </div>
+
+        <!-- DIALOG KONFIRMASI HAPUS KOntrak -->
+        <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="text-red-600">Hapus Kontrak</DialogTitle>
+                    <DialogDescription>
+                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data Kontrak akan dihapus secara permanen.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <DialogDescription class="my-2 space-y-3">
+                    <strong>
+                        <p class="text-sm text-gray-700">
+                            Untuk mengonfirmasi, ketik:
+                            <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
+                                delete Kontrak {{ kontrakToDelete?.nama }}
+                            </code>
+                        </p>
+                    </strong>
+                    <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
+                </DialogDescription>
+
+                <DialogFooter>
+                    <DialogClose>
+                        <button @click="cancelDelete" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
+                            Batal
+                        </button>
+                    </DialogClose>
+                    <button @click="confirmDelete"
+                        :disabled="deleteConfirmText.trim() !== `delete Kontrak ${kontrakToDelete?.nama}`"
+                        class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                        Ya, Hapus
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>
