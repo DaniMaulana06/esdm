@@ -146,6 +146,41 @@ class LaporanHarianController extends Controller
         ]);
     }
 
+    /**
+     * Form create laporan untuk tanggal yang terlewat (backfill).
+     * Hanya operator BKU yang dapat mengaksesnya.
+     */
+    public function createBackfill(Request $request): Response
+    {
+        $user = $request->user();
+
+        $tanggal = $request->query('tanggal');
+
+        // Validasi tanggal: wajib ada, valid, bukan hari ini, bukan masa depan
+        if (! $tanggal || ! strtotime($tanggal)) {
+            abort(400, 'Tanggal tidak valid.');
+        }
+
+        $tgl = Carbon::parse($tanggal)->startOfDay();
+        $today = Carbon::today();
+
+        if ($tgl->gte($today)) {
+            abort(400, 'Backfill hanya untuk tanggal sebelum hari ini.');
+        }
+
+        $query = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama',
+        ])->where('bku_id', $user->bku_id);
+
+        $bkuKontraks = $query->orderBy('bku_id')->get();
+
+        return Inertia::render('LaporanHarian/Create', [
+            'bkuKontraks' => $bkuKontraks,
+            'tanggalBackfill' => $tgl->toDateString(),
+        ]);
+    }
+
     public function edit(LaporanHarian $laporanHarian): Response
     {
         $laporanHarian->load([

@@ -368,6 +368,13 @@ class DashboardController extends Controller
         // $riwayatBkuBelumLapor = $monitoring->getBkuBelumLapor();
 
         // dd($riwayatBkuBelumLapor);
+
+        // Tanggal terlewat khusus untuk operator BKU
+        $missingDatesForOperator = [];
+        if ($user->isOperatorBku() && $user->bku_id) {
+            $missingDatesForOperator = $monitoring->getMissingDatesForBku($user->bku_id);
+        }
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_bku' => $totalBku,
@@ -400,6 +407,7 @@ class DashboardController extends Controller
 
             'missingReports' => $missingReports,
             'latestReports' => $latestReports,
+            'missingDatesForOperator' => $missingDatesForOperator,
         ]);
     }
 }

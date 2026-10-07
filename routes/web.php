@@ -62,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('operator-bku')->group(function () {
         Route::get('laporan-harian/create', [LaporanHarianController::class, 'create'])->name('laporan-harian.create');
+        Route::get('laporan-harian/create-backfill', [LaporanHarianController::class, 'createBackfill'])->name('laporan-harian.create-backfill');
         Route::post('laporan-harian', [LaporanHarianController::class, 'store'])->name('laporan-harian.store');
 
         Route::post(

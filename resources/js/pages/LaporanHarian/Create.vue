@@ -35,7 +35,10 @@ interface BkuKontrak {
 
 const props = defineProps<{
     bkuKontraks: BkuKontrak[];
+    tanggalBackfill?: string; // tanggal masa lalu untuk backfill, jika ada
 }>();
+
+const isBackfill = computed(() => !!props.tanggalBackfill);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,8 +46,10 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('laporan-harian.index'),
     },
     {
-        title: 'Tambah Laporan Harian',
-        href: route('laporan-harian.create'),
+        title: isBackfill.value ? 'Isi Laporan Terlewat' : 'Tambah Laporan Harian',
+        href: isBackfill.value
+            ? route('laporan-harian.create-backfill', { tanggal: props.tanggalBackfill })
+            : route('laporan-harian.create'),
     },
 ];
 
@@ -58,7 +63,7 @@ const getLaporanError = (
 };
 
 const form = useForm({
-    tanggal: new Date().toISOString().split('T')[0],
+    tanggal: props.tanggalBackfill ?? new Date().toISOString().split('T')[0],
     laporan: props.bkuKontraks.map((item) => ({
         bku_kontrak_id: item.id,
         total_produksi: '',
@@ -90,11 +95,22 @@ onMounted(() => {
 const closeFlash = () => {
     showFlash.value = false;
 };
+
+const formatDateDisplay = (dateStr: string): string => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return new Intl.DateTimeFormat('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+};
 </script>
+
 
 <template>
 
-    <Head title="Tambah Laporan Harian" />
+    <Head :title="isBackfill ? 'Isi Laporan Terlewat' : 'Tambah Laporan Harian'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
@@ -103,17 +119,34 @@ const closeFlash = () => {
                 <!-- Header -->
                 <CardHeader>
                     <CardTitle>
-                        Tambah Laporan Harian
+                        {{ isBackfill ? 'Isi Laporan Terlewat' : 'Tambah Laporan Harian' }}
                     </CardTitle>
 
                     <CardDescription>
-                        Isi data laporan produksi dan lifting harian.
+                        {{ isBackfill
+                            ? `Mengisi laporan yang terlewat untuk tanggal ${formatDateDisplay(props.tanggalBackfill!)}.`
+                            : 'Isi data laporan produksi dan lifting harian.'
+                        }}
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent>
                     <form @submit.prevent="submit" class="space-y-6">
-    
+
+                        <!-- Banner peringatan backfill -->
+                        <div v-if="isBackfill"
+                            class="mx-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                            <span class="mt-0.5 text-amber-500">⚠️</span>
+                            <div>
+                                <p class="text-sm font-semibold text-amber-800">Pengisian Laporan Terlewat</p>
+                                <p class="mt-0.5 text-sm text-amber-700">
+                                    Anda sedang mengisi laporan untuk tanggal
+                                    <strong>{{ formatDateDisplay(props.tanggalBackfill!) }}</strong>
+                                    yang sebelumnya belum dilaporkan.
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- 2 KOLOM -->
                         <div class="grid grid-cols-1 gap-3 lg:grid-cols-3 px-6">
     

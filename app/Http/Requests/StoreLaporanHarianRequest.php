@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreLaporanHarianRequest extends FormRequest
 {
@@ -36,10 +35,7 @@ class StoreLaporanHarianRequest extends FormRequest
             'tanggal' => [
                 'required',
                 'date',
-                'date_equals:today',
-                Rule::unique('laporan_harian')->where(function ($query) {
-                    return $query->where('bku_kontrak_id', $this->bku_kontrak_id);
-                }),
+                'before_or_equal:today',
             ],
 
             'laporan' => [
@@ -73,7 +69,7 @@ class StoreLaporanHarianRequest extends FormRequest
         return [
             'tanggal.required' => 'Tanggal laporan wajib diisi.',
             'tanggal.date' => 'Tanggal laporan tidak valid.',
-            'tanggal.date_equals' => 'Laporan hanya dapat dibuat untuk tanggal hari ini.',
+            'tanggal.before_or_equal' => 'Laporan tidak dapat dibuat untuk tanggal yang akan datang.',
 
             'laporan.required' => 'Data laporan wajib diisi.',
             'laporan.array' => 'Format data laporan tidak valid.',
