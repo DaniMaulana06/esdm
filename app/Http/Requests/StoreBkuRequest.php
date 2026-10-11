@@ -15,16 +15,21 @@ class StoreBkuRequest extends FormRequest
     {
         return [
             'nama' => [
-                'required', 
-                'string', 
-                'max:100', 
+                'required',
+                'string',
+                'max:100',
                 'unique:bku,nama',
-        ],
-            'penetapan' => ['required', 'numeric', 'max:10000'],
+            ],
+            'penetapan' => [
+                'required',
+                'numeric',
+                'max:10000',
+                'min:0',
+            ],
         ];
     }
 
-    public function messages(): array 
+    public function messages(): array
     {
         return [
             'nama.required' => 'Nama BKU wajib diisi',
@@ -32,6 +37,7 @@ class StoreBkuRequest extends FormRequest
             'penetapan.required' => 'Jumlah penetapan wajib diisi',
             'penetapan.numeric' => 'Penetapan harus berupa angka',
             'penetapan.max' => 'Penetapan tidak bisa lebih dari 10.000',
-        ];    
+            'penetapan.min' => 'Penetapan tidak boleh kurang dari 1',
+        ];
     }
 }

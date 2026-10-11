@@ -59,7 +59,7 @@ const submit = () => {
                         <!-- Penetapan BKU -->
                         <div class="space-y-2">
                             <Label for="penetapan">Pentapan BKU</Label>
-                            <Input id="penetapan" v-model="form.penetapan" type="number"
+                            <Input id="penetapan" v-model="form.penetapan" type="number" min="0"
                                 placeholder="Masukkan penetapan BKU" />
                             <p v-if="form.errors.penetapan" class="text-sm text-destructive">
                                 {{ form.errors.penetapan }}

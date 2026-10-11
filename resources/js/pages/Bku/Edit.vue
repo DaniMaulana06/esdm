@@ -70,7 +70,7 @@ const submit = () => {
                                 Penetapan
                             </Label>
 
-                            <Input id="penetapan" v-model="form.penetapan" type="number"
+                            <Input id="penetapan" v-model="form.penetapan" type="number" min="0"
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2" />
 
                             <p v-if="form.errors.penetapan" class="mt-1 text-sm text-red-600">
@@ -95,6 +95,6 @@ const submit = () => {
                     </form>
                 </CardContent>
             </Card>
-            </div>
+        </div>
     </AppLayout>
 </template>
