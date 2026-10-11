@@ -43,13 +43,6 @@ defineProps<{
     bkuKontraks: BkuKontrak[];
 }>();
 
-const deleteItem = (id: number) => {
-    if (confirm('Apakah kamu yakin ingin menghapus BKU ini?')) {
-        router.delete(route('bku-kontrak.destroy', id));
-    }
-}
-
-
 const page = usePage<SharedData>();
 const user = computed(() => page.props.auth.user);
 

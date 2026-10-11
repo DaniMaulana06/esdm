@@ -90,16 +90,6 @@ onMounted(() => {
 const closeFlash = () => {
     showFlash.value = false;
 };
-
-const formatDateDisplay = (dateStr: string): string => {
-    const date = new Date(dateStr + 'T00:00:00');
-    return new Intl.DateTimeFormat('id-ID', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    }).format(date);
-};
 </script>
 
 

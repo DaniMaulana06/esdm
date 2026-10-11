@@ -27,12 +27,6 @@ interface Kontrak {
     keterangan: string;
 }
 
-const deleteItem = (id: number) => {
-    if (confirm('Apakah kamu yakin ingin menghapus Kontrak ini?')) {
-        router.delete(route('kontrak.destroy', id));
-    }
-}
-
 defineProps<{
     kontraks: Kontrak[];
 }>();
