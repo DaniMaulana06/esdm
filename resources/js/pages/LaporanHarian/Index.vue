@@ -42,7 +42,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
-import Label from '@/components/ui/label/Label.vue';
+import { Label } from '@/Components/ui/label';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

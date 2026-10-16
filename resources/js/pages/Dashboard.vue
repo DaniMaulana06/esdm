@@ -14,7 +14,6 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
-import Label from '@/components/ui/label/Label.vue';
 import {
     Select,
     SelectContent,
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import { SharedData } from '@/types';
+import { Label } from '@/Components/ui/label';
 
 interface Bku {
     id: number;
@@ -241,6 +241,7 @@ const applyFilter = () => {
         {
             preserveScroll: true,
             preserveState: true,
+            only: ['productionChart', 'stats'],
         },
     );
 };
