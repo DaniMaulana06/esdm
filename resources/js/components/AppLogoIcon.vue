@@ -13,5 +13,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img src="https://desdm.sumselprov.go.id/storage/images/settings/logo.png"/>
+    <img src="/images/logo_esdm.png" alt="Logo ESDM" />
 </template>

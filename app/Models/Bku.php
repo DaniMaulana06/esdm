@@ -15,6 +15,7 @@ class Bku extends Model
 
     protected $fillable = [
         'nama',
+        'kota',
         'penetapan',
     ];
 

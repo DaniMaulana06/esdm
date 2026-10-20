@@ -6,7 +6,7 @@ import Card from '@/components/ui/card/Card.vue';
 import CardFooter from '@/components/ui/card/CardFooter.vue';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import Label from '@/Components/ui/label/Label.vue';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -45,10 +45,10 @@ const submit = () => {
                     <div class="grid gap-2">
                         <Label for="email">Email address</Label>
                         <Input id="email" type="email" required autofocus tabindex="1" autocomplete="email"
-                            v-model="form.email" placeholder="email@example.com"/>
+                            v-model="form.email" placeholder="email@example.com" />
                         <InputError :message="form.errors.email" />
                     </div>
-    
+
                     <div class="grid gap-2">
                         <div class="flex items-center justify-between">
                             <Label for="password">Password</Label>
@@ -59,16 +59,17 @@ const submit = () => {
                             v-model="form.password" placeholder="Password" />
                         <InputError :message="form.errors.password" />
                     </div>
-    
+
                     <div class="flex items-center justify-between" tabindex="3">
                         <Label for="remember" class="flex items-center space-x-3">
                             <Checkbox id="remember" v-model:checked="form.remember" tabindex="4" />
                             <span>Remember me</span>
                         </Label>
                     </div>
-    
+
                     <CardFooter>
-                        <Button type="submit" class="mt-4 w-full bg-yellow-500" tabindex="4" :disabled="form.processing" variant="outline">
+                        <Button type="submit" class="mt-4 w-full bg-yellow-500" tabindex="4" :disabled="form.processing"
+                            variant="outline">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                             Log in
                         </Button>
@@ -77,7 +78,7 @@ const submit = () => {
                 </div>
             </form>
         </Card>
-            
+
 
     </AuthBase>
 </template>

@@ -23,6 +23,11 @@ class UpdateBkuRequest extends FormRequest
                 'max:100',
                 Rule::unique('bku', 'nama')->ignore($bkuId)
             ],
+            'kota' => [
+                'required',
+                'string',
+                'max:100',
+            ],
             'penetapan' => [
                 'required',
                 'integer',
@@ -37,6 +42,8 @@ class UpdateBkuRequest extends FormRequest
         return [
             'nama.required' => 'Nama BKU wajib diisi',
             'nama.unique' => 'Nama BKU sudah ada',
+            'kota.required' => 'Kabupaten / Kota wajib diisi',
+            'kota.string' => 'Kota hanya dapat berupa huruf',
             'penetapan.required' => 'Jumlah penetapan wajib diisi',
             'penetapan.numeric' => 'Penetapan harus berupa angka',
             'penetapan.max' => 'Penetapan tidak bisa lebih dari 10.000',

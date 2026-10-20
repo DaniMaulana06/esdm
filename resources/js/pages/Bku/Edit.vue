@@ -5,14 +5,21 @@ import Card from '@/components/ui/card/Card.vue';
 import CardContent from '@/components/ui/card/CardContent.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/components/ui/label/Label.vue';
+import { Label } from '@/Components/ui/label';
+import { Select } from '@/components/ui/select';
+import SelectContent from '@/components/ui/select/SelectContent.vue';
+import SelectGroup from '@/components/ui/select/SelectGroup.vue';
+import SelectItem from '@/components/ui/select/SelectItem.vue';
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-
+import daftarKota from '@/data/kota_sumsel.json';   
 
 interface Bku {
     id: number;
     nama: string;
+    kota: string;
     penetapan: number;
 }
 
@@ -22,6 +29,7 @@ const props = defineProps<{
 
 const form = useForm({
     nama: props.bku.nama,
+    kota: props.bku.kota,
     penetapan: props.bku.penetapan,
 });
 
@@ -62,6 +70,27 @@ const submit = () => {
 
                             <p v-if="form.errors.nama" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.nama }}
+                            </p>
+                        </div>
+
+                        <!-- Kabupaten / Kota -->
+                        <div class="space-y-2">
+                            <Label for="kota">Kabupaten / Kota</Label>
+                            <Select id="kota" v-model="form.kota">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Pilih Kabupaten/Kota" />
+                                </SelectTrigger>    
+                                
+                                <SelectContent>
+                                    <SelectGroup class="h-[280px]">
+                                        <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">
+                                            {{ item.nama_resmi }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <p v-if="form.errors.kota" class="text-sm text-destructive">
+                                {{ form.errors.kota }}
                             </p>
                         </div>
 

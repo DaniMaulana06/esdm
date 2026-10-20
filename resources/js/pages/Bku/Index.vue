@@ -24,6 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Bku {
     id: number;
     nama: string;
+    kota: string;
     penetapan: number;
     created_at: string;
     updated_at: string;
@@ -151,6 +152,10 @@ const cancelDelete = () => {
                             </th>
 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                Kabupaten / Kota
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Penetapan
                             </th>
 
@@ -168,6 +173,10 @@ const cancelDelete = () => {
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ bku.nama }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ bku.kota }}
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">

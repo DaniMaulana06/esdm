@@ -1,0 +1,186 @@
+[
+  {
+    "id": 1,
+    "nama": "Palembang",
+    "nama_resmi": "Kota Palembang",
+    "tipe": "Kota",
+    "latitude": -2.9761,
+    "longitude": 104.7754
+  },
+  {
+    "id": 2,
+    "nama": "Prabumulih",
+    "nama_resmi": "Kota Prabumulih",
+    "tipe": "Kota",
+    "latitude": -3.4286,
+    "longitude": 104.2300
+  },
+  {
+    "id": 3,
+    "nama": "Pagar Alam",
+    "nama_resmi": "Kota Pagar Alam",
+    "tipe": "Kota",
+    "latitude": -4.0279,
+    "longitude": 103.2505
+  },
+  {
+    "id": 4,
+    "nama": "Lubuklinggau",
+    "nama_resmi": "Kota Lubuklinggau",
+    "tipe": "Kota",
+    "latitude": -3.2964,
+    "longitude": 102.8617
+  },
+  {
+    "id": 5,
+    "nama": "Banyuasin",
+    "nama_resmi": "Kabupaten Banyuasin",
+    "tipe": "Kabupaten",
+    "latitude": -2.8837,
+    "longitude": 104.3811
+  },
+  {
+    "id": 6,
+    "nama": "Empat Lawang",
+    "nama_resmi": "Kabupaten Empat Lawang",
+    "tipe": "Kabupaten",
+    "latitude": -3.7431,
+    "longitude": 102.9995
+  },
+  {
+    "id": 7,
+    "nama": "Lahat",
+    "nama_resmi": "Kabupaten Lahat",
+    "tipe": "Kabupaten",
+    "latitude": -3.7925,
+    "longitude": 103.5413
+  },
+  {
+    "id": 8,
+    "nama": "Muara Enim",
+    "nama_resmi": "Kabupaten Muara Enim",
+    "tipe": "Kabupaten",
+    "latitude": -3.6441,
+    "longitude": 103.7770
+  },
+  {
+    "id": 9,
+    "nama": "Musi Banyuasin",
+    "nama_resmi": "Kabupaten Musi Banyuasin",
+    "tipe": "Kabupaten",
+    "latitude": -2.8943,
+    "longitude": 103.8569
+  },
+  {
+    "id": 10,
+    "nama": "Musi Rawas",
+    "nama_resmi": "Kabupaten Musi Rawas",
+    "tipe": "Kabupaten",
+    "latitude": -3.0805,
+    "longitude": 103.0315
+  },
+  {
+    "id": 11,
+    "nama": "Musi Rawas Utara",
+    "nama_resmi": "Kabupaten Musi Rawas Utara",
+    "tipe": "Kabupaten",
+    "latitude": -2.7483,
+    "longitude": 102.8524
+  },
+  {
+    "id": 12,
+    "nama": "Ogan Ilir",
+    "nama_resmi": "Kabupaten Ogan Ilir",
+    "tipe": "Kabupaten",
+    "latitude": -3.4357,
+    "longitude": 104.6293
+  },
+  {
+    "id": 13,
+    "nama": "Ogan Komering Ilir",
+    "nama_resmi": "Kabupaten Ogan Komering Ilir",
+    "tipe": "Kabupaten",
+    "latitude": -3.3616,
+    "longitude": 104.8398
+  },
+  {
+    "id": 14,
+    "nama": "Ogan Komering Ulu",
+    "nama_resmi": "Kabupaten Ogan Komering Ulu",
+    "tipe": "Kabupaten",
+    "latitude": -4.1293,
+    "longitude": 104.1685
+  },
+  {
+    "id": 15,
+    "nama": "OKU Selatan",
+    "nama_resmi": "Kabupaten Ogan Komering Ulu Selatan",
+    "tipe": "Kabupaten",
+    "latitude": -4.6548,
+    "longitude": 104.0044
+  },
+  {
+    "id": 16,
+    "nama": "OKU Timur",
+    "nama_resmi": "Kabupaten Ogan Komering Ulu Timur",
+    "tipe": "Kabupaten",
+    "latitude": -3.8587,
+    "longitude": 104.5492
+  },
+  {
+    "id": 17,
+    "nama": "Penukal Abab Lematang Ilir",
+    "nama_resmi": "Kabupaten Penukal Abab Lematang Ilir",
+    "tipe": "Kabupaten",
+    "latitude": -3.2166,
+    "longitude": 103.8447
+  },
+  {
+    "id": 18,
+    "nama": "Tanjung Enim",
+    "nama_resmi": "Tanjung Enim (Muara Enim)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -3.7153,
+    "longitude": 103.8015
+  },
+  {
+    "id": 19,
+    "nama": "Keluang",
+    "nama_resmi": "Keluang (Musi Banyuasin)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -2.6778,
+    "longitude": 103.9011
+  },
+  {
+    "id": 20,
+    "nama": "Sekayu",
+    "nama_resmi": "Sekayu (Musi Banyuasin)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -2.8833,
+    "longitude": 103.8333
+  },
+  {
+    "id": 21,
+    "nama": "Sungai Lilin",
+    "nama_resmi": "Sungai Lilin (Musi Banyuasin)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -2.6056,
+    "longitude": 104.0928
+  },
+  {
+    "id": 22,
+    "nama": "Babat Toman",
+    "nama_resmi": "Babat Toman (Musi Banyuasin)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -2.7333,
+    "longitude": 103.5833
+  },
+  {
+    "id": 23,
+    "nama": "Pendopo",
+    "nama_resmi": "Pendopo (PALI)",
+    "tipe": "Wilayah Kerja Migas",
+    "latitude": -3.3108,
+    "longitude": 103.8447
+  }
+]
