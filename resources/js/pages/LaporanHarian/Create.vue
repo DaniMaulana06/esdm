@@ -7,7 +7,7 @@ import CardDescription from '@/components/ui/card/CardDescription.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/Components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
@@ -114,8 +114,6 @@ const closeFlash = () => {
 
                 <CardContent>
                     <form @submit.prevent="submit" class="space-y-6">
-
-
 
                         <!-- 2 KOLOM -->
                         <div class="grid grid-cols-1 gap-3 lg:grid-cols-3 px-6">

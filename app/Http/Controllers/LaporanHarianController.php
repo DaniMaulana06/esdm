@@ -250,6 +250,7 @@ class LaporanHarianController extends Controller
                     'tanggal' => $validated['tanggal'],
                     'total_produksi' => $laporan['total_produksi'],
                     'total_lifting' => $laporan['total_lifting'],
+                    'keterangan' => $laporan['keterangan'] ?? null,
                 ]);
             }
         });

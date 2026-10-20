@@ -8,9 +8,11 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/components/ui/label/Label.vue';
+import Label from '@/Components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface Bku {
     id: number;
@@ -47,6 +49,19 @@ const props = defineProps<{
     bkuKontraks: BkuKontrak[];
 }>();
 
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    {
+        title: 'Sumur',
+        href: route('sumur.index')
+    },
+    {
+        title: 'Edit Sumur',
+        href: route('sumur.edit', { 
+            sumur: props.sumur.id,
+        })
+    }
+]);
+
 const form = useForm({
     bku_kontrak_id: props.sumur.bku_kontrak_id.toString(),
     nama_sumur: props.sumur.nama_sumur,
@@ -73,7 +88,7 @@ const submit = () => {
 
     <Head title="Edit Sumur" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-2xl p-6">
             <Card>
                 <CardHeader>

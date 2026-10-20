@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@/Components/ui/separator';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
@@ -13,10 +13,6 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Password',
         href: '/settings/password',
-    },
-    {
-        title: 'Tampilan',
-        href: '/settings/appearance',
     },
 ];
 

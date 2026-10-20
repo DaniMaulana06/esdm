@@ -6,9 +6,11 @@ import CardDescription from '@/components/ui/card/CardDescription.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/components/ui/label/Label.vue';
+import Label from '@/Components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 
 interface Bku {
@@ -36,6 +38,19 @@ const props = defineProps<{
     kontraks: Kontrak[];
 }>();
 
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    {
+        title: 'BKU Kontrak',
+        href: route('bku-kontrak.index')
+    },
+    {
+        title: 'Edit BKU Kontrak',
+        href: route('bku-kontrak.edit', { 
+            bku_kontrak: props.bkuKontrak.id,
+        })
+    }
+]);
+
 const form = useForm({
     bku_id: props.bkuKontrak.bku_id.toString(),
     kontrak_id: props.bkuKontrak.kontrak_id.toString(),
@@ -59,7 +74,7 @@ const submit = () => {
 
     <Head title="Edit Kontrak" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6 max-w-xl">
             <Card>
 

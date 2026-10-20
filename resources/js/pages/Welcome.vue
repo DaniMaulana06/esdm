@@ -3,6 +3,8 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import masterKota from '@/data/kota_sumsel.json';
+
 
 interface BkuItem {
     id: number;
@@ -31,42 +33,6 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Koordinat referensi Kabupaten / Kota / Kecamatan migas di Sumatera Selatan
-const CITY_COORDINATES: Record<string, [number, number]> = {
-    'Tanjung Enim': [-3.7153, 103.8015],
-    'Keluang': [-2.6778, 103.9011],
-    'Palembang': [-2.9761, 104.7754],
-    'Lahat': [-3.7925, 103.5413],
-    'Prabumulih': [-3.4286, 104.2300],
-    'Muara Enim': [-3.6441, 103.7770],
-    'Musi Banyuasin': [-2.8943, 103.8569],
-    'Sekayu': [-2.8833, 103.8333],
-    'Sungai Lilin': [-2.6056, 104.0928],
-    'Babat Toman': [-2.7333, 103.5833],
-    'Pendopo': [-3.3108, 103.8447],
-    'PALI': [-3.2166, 103.8447],
-    'Penukal Abab Lematang Ilir': [-3.2166, 103.8447],
-    'Banyuasin': [-2.8837, 104.3811],
-    'Ogan Ilir': [-3.4357, 104.6293],
-    'Indralaya': [-3.2389, 104.6469],
-    'Ogan Komering Ilir': [-3.3616, 104.8398],
-    'OKI': [-3.3616, 104.8398],
-    'Kayuagung': [-3.3941, 104.8466],
-    'Ogan Komering Ulu': [-4.1293, 104.1685],
-    'OKU': [-4.1293, 104.1685],
-    'Baturaja': [-4.1293, 104.1685],
-    'OKU Timur': [-3.8587, 104.5492],
-    'Martapura': [-4.3167, 104.3500],
-    'OKU Selatan': [-4.6548, 104.0044],
-    'Muaradua': [-4.5244, 104.0886],
-    'Musi Rawas': [-3.0805, 103.0315],
-    'Muratara': [-2.7483, 102.8524],
-    'Musi Rawas Utara': [-2.7483, 102.8524],
-    'Lubuklinggau': [-3.2964, 102.8617],
-    'Pagar Alam': [-4.0279, 103.2505],
-    'Empat Lawang': [-3.7431, 102.9995],
-};
-
 const cleanCityName = (name?: string | null): string => {
     if (!name) return '';
     return name
@@ -86,14 +52,22 @@ const isSameCity = (cityA?: string | null, cityB?: string | null): boolean => {
 
 const getCoordinates = (cityName: string): [number, number] => {
     const clean = cleanCityName(cityName);
-    for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
-        const keyClean = cleanCityName(key);
-        if (keyClean === clean || keyClean.includes(clean) || clean.includes(keyClean)) {
-            return coords;
-        }
+
+    // Cari kota yang cocok di dalam file kota_sumsel.json
+    const found = masterKota.find(item => {
+        const namaClean = cleanCityName(item.nama);
+        const resmiClean = cleanCityName(item.nama_resmi);
+        return namaClean === clean || resmiClean === clean || clean.includes(namaClean) || namaClean.includes(clean);
+    });
+
+    if (found) {
+        return [found.latitude, found.longitude];
     }
-    return [-3.3194 + (Math.sin(cityName.length) * 0.3), 104.2 + (Math.cos(cityName.length) * 0.4)];
+
+    // Fallback jika tidak ditemukan
+    return [-3.3194, 104.2142];
 };
+
 
 const selectedKabupaten = ref<string | null>(null);
 const mapContainer = ref<HTMLElement | null>(null);
@@ -215,7 +189,7 @@ const resetFilter = () => {
         class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
         <!-- Navigation -->
         <nav
-            class="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
+            class="sticky top-0 z-[1000] flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
             <div class="flex items-center gap-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white">
                     <img src="/images/logo_esdm.png" alt="Logo ESDM" />
@@ -257,7 +231,7 @@ const resetFilter = () => {
                 <!-- Map Section -->
                 <div class="lg:col-span-2">
                     <div
-                        class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                        class="relative z-0 isolate overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                         <div
                             class="border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
                             <h3
@@ -270,7 +244,7 @@ const resetFilter = () => {
                                 Peta Interaktif
                             </h3>
                         </div>
-                        <div class="relative h-[500px] w-full">
+                        <div class="relative h-[500px] w-full z-0">
                             <div ref="mapContainer" class="h-full w-full"></div>
                         </div>
                     </div>
@@ -279,7 +253,7 @@ const resetFilter = () => {
                 <!-- Data List Section -->
                 <div class="flex flex-col">
                     <div
-                        class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                        class="flex h-full max-h-[560px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
                         <div
                             class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
                             <h3

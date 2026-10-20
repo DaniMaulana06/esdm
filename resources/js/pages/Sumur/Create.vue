@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/components/ui/label/Label.vue';
+import Label from '@/Components/ui/label/Label.vue';
 import Select from '@/components/ui/select/Select.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
@@ -16,8 +16,19 @@ import SelectItem from '@/components/ui/select/SelectItem.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Sumur',
+        href: route('sumur.index'),
+    },
+    {
+        title: 'Tambah Sumur',
+        href: route('sumur.create'),
+    },
+];
 interface Bku {
     id: number;
     nama: string;
@@ -62,7 +73,7 @@ const submit = () => {
 
     <Head title="Tambah Sumur" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-2xl p-6">
             <Card>
                 <CardHeader>

@@ -61,6 +61,12 @@ class StoreLaporanHarianRequest extends FormRequest
                 'numeric',
                 'min:0',
             ],
+
+            'laporan.*.keterangan' => [
+                'nullable',
+                'string',
+                'max:500',
+            ],
         ];
     }
 
@@ -104,6 +110,8 @@ class StoreLaporanHarianRequest extends FormRequest
 
             'laporan.*.total_lifting.min' =>
                 'Total lifting tidak boleh kurang dari 0.',
+            'laporan.*.keterangan.max' =>
+                'keterangan tidak boleh lebih dari 500 karakter'
         ];
     }
 }

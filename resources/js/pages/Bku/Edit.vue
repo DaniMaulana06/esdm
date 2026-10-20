@@ -14,7 +14,9 @@ import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import daftarKota from '@/data/kota_sumsel.json';   
+import daftarKota from '@/data/kota_sumsel.json';
+import { BreadcrumbItem } from '@/types';
+import { computed } from 'vue';
 
 interface Bku {
     id: number;
@@ -26,6 +28,18 @@ interface Bku {
 const props = defineProps<{
     bku: Bku;
 }>();
+
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+    { 
+        title: 'Badan Kerja Sama Usaha', 
+        href: route('bku.index') 
+    },
+    {
+        title: 'Edit Badan Kerjasama Usaha',
+        href: route('bku.edit', { bku: props.bku.id }),
+    },
+]);
+
 
 const form = useForm({
     nama: props.bku.nama,
@@ -43,7 +57,7 @@ const submit = () => {
 
     <Head title="Edit BKU" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6 max-w-xl">
             <Card>
 
@@ -79,8 +93,8 @@ const submit = () => {
                             <Select id="kota" v-model="form.kota">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Pilih Kabupaten/Kota" />
-                                </SelectTrigger>    
-                                
+                                </SelectTrigger>
+
                                 <SelectContent>
                                     <SelectGroup class="h-[280px]">
                                         <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">

@@ -14,6 +14,18 @@ import SelectValue from '@/components/ui/select/SelectValue.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import SelectItem from '@/components/ui/select/SelectItem.vue';
+import { BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Badan Kerja Sama usaha',
+        href: route('bku.index'),
+    },
+    {
+        title: 'Tambah Badan Kerjasama Usaha',
+        href: route('bku.create'),
+    },
+];
 
 interface Bku {
     id: number;
@@ -44,7 +56,7 @@ const submit = () => {
 
     <Head title="Tambah BKU" />
 
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6 max-w-xl">
             <Card>
                 <CardHeader>
