@@ -14,6 +14,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Badan Kerjasama Usaha',
@@ -108,8 +110,9 @@ const cancelDelete = () => {
                     </p>
                 </div>
                 <Link :href="route('bku.create')" prefetch v-if="isStafEsdm"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    + Tambah BKU
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    Tambah BKU
                 </Link>
             </div>
 
@@ -186,13 +189,13 @@ const cancelDelete = () => {
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
                                     <Link :href="route('bku.edit', { bku: bku.id })" v-if="isStafEsdm"
-                                        class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-                                        Edit
+                                        class="inline-flex items-center gap-2   rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
+                                        <Pencil :size="16" :stroke-width="3" />
                                     </Link>
 
                                     <button @click="openDeleteDialog(bku)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
-                                        Hapus
+                                       <Trash2 :size="16" :stroke-width="3" />
                                     </button>
                                 </div>
                             </td>

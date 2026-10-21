@@ -3,6 +3,7 @@ import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
+import { MapPin, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -114,8 +115,9 @@ const closeFlash = () => {
                     </p> -->
                 </div>
                 <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku" prefetch
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    + Tambah Sumur
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    Tambah Sumur
                 </Link>
             </div>
 
@@ -231,17 +233,17 @@ const closeFlash = () => {
 
                                         <Button @click="cekLokasi(smr.latitude, smr.longitude)"
                                             class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
-                                            Cek Lokasi
+                                            <MapPin color="#ffffff" :stroke-width="3"/>
                                         </Button>
 
                                         <Link :href="route('sumur.edit', { sumur: smr.id })" v-if="isStafEsdm"
                                             class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-                                            Edit
+                                            <Pencil :size="16" :stroke-width="3" />
                                         </Link>
 
                                         <Button @click="deleteItem(smr.id)" v-if="isStafEsdm"
                                             class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
-                                            Hapus
+                                            <Trash2 :size="16" :stroke-width="3" />
                                         </Button>
                                     </div>
                                 </td>

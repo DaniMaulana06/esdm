@@ -12,6 +12,7 @@ import Label from '@/Components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Upload } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Bku {
@@ -89,7 +90,7 @@ const submit = () => {
     <Head title="Edit Sumur" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-2xl p-6">
+        <div class="flex w-full justify-center p-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Edit Sumur</CardTitle>
@@ -221,6 +222,7 @@ const submit = () => {
                             </Button>
 
                             <Button type="submit" :disabled="form.processing" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                                <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing"/>
                                 {{
                                     form.processing
                                         ? 'Memperbarui...'

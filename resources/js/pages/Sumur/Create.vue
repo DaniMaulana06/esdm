@@ -18,6 +18,7 @@ import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Save } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -74,7 +75,7 @@ const submit = () => {
     <Head title="Tambah Sumur" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-2xl p-6">
+        <div class="flex w-full justify-center p-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Tambah Sumur</CardTitle>
@@ -223,11 +224,8 @@ const submit = () => {
                             </Button>
 
                             <Button type="submit" :disabled="form.processing">
-                                {{
-                                    form.processing
-                                        ? 'Menyimpan...'
-                                        : 'Simpan'
-                                }}
+                                <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing"/>
+                                {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
                             </Button>
                         </div>
 

@@ -13,6 +13,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -103,8 +104,9 @@ const cancelDelete = () => {
                     </p>
                 </div>
                 <Link :href="route('kontrak.create')" prefetch v-if="isStafEsdm"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    + Tambah Kontrak
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    Tambah Kontrak
                 </Link>
             </div>
 
@@ -175,12 +177,12 @@ const cancelDelete = () => {
                                 <div class="flex justify-center gap-2">
                                     <Link :href="route('kontrak.edit', { kontrak: kontrak.id })" v-if="isStafEsdm"
                                         class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-                                        Edit
+                                        <Pencil :size="16" :stroke-width="3" />
                                     </Link>
 
                                     <Button @click="openDeleteDialog(kontrak)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
-                                        Hapus
+                                        <Trash2 :size="16" :stroke-width="3" />
                                     </Button>
                                 </div>
                             </td>

@@ -17,6 +17,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import daftarKota from '@/data/kota_sumsel.json';
 import { BreadcrumbItem } from '@/types';
 import { computed } from 'vue';
+import { Upload } from 'lucide-vue-next';
 
 interface Bku {
     id: number;
@@ -30,9 +31,9 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
-    { 
-        title: 'Badan Kerja Sama Usaha', 
-        href: route('bku.index') 
+    {
+        title: 'Badan Kerja Sama Usaha',
+        href: route('bku.index')
     },
     {
         title: 'Edit Badan Kerjasama Usaha',
@@ -58,86 +59,89 @@ const submit = () => {
     <Head title="Edit BKU" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-6 max-w-xl">
-            <Card>
+        <div class="flex w-full justify-center p-6">
+            <div class="w-full max-w-xl">
+                <Card>
 
-                <CardHeader>
-                    <CardTitle class="text-2xl font-semibold text-gray-900">
-                        Edit Badan Kerjasama Usaha
-                    </CardTitle>
-                    <CardDescription class="mt-1 text-sm text-gray-600">
-                        Perbarui data Badan Kerjasama Usaha.
-                    </CardDescription>
-                </CardHeader>
+                    <CardHeader>
+                        <CardTitle class="text-2xl font-semibold text-gray-900">
+                            Edit Badan Kerjasama Usaha
+                        </CardTitle>
+                        <CardDescription class="mt-1 text-sm text-gray-600">
+                            Perbarui data Badan Kerjasama Usaha.
+                        </CardDescription>
+                    </CardHeader>
 
 
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-5">
+                    <CardContent>
+                        <form @submit.prevent="submit" class="space-y-5">
 
-                        <div>
-                            <Label for="name" class="mb-2 block text-sm font-medium text-gray-700">
-                                Nama BKU
-                            </Label>
+                            <div>
+                                <Label for="name" class="mb-2 block text-sm font-medium text-gray-700">
+                                    Nama BKU
+                                </Label>
 
-                            <Input id="nama" v-model="form.nama" type="text"
-                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2" />
+                                <Input id="nama" v-model="form.nama" type="text"
+                                    class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2" />
 
-                            <p v-if="form.errors.nama" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.nama }}
-                            </p>
-                        </div>
+                                <p v-if="form.errors.nama" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.nama }}
+                                </p>
+                            </div>
 
-                        <!-- Kabupaten / Kota -->
-                        <div class="space-y-2">
-                            <Label for="kota">Kabupaten / Kota</Label>
-                            <Select id="kota" v-model="form.kota">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Pilih Kabupaten/Kota" />
-                                </SelectTrigger>
+                            <!-- Kabupaten / Kota -->
+                            <div class="space-y-2">
+                                <Label for="kota">Kabupaten / Kota</Label>
+                                <Select id="kota" v-model="form.kota">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Pilih Kabupaten/Kota" />
+                                    </SelectTrigger>
 
-                                <SelectContent>
-                                    <SelectGroup class="h-[280px]">
-                                        <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">
-                                            {{ item.nama_resmi }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="form.errors.kota" class="text-sm text-destructive">
-                                {{ form.errors.kota }}
-                            </p>
-                        </div>
+                                    <SelectContent>
+                                        <SelectGroup class="h-[280px]">
+                                            <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">
+                                                {{ item.nama_resmi }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.kota" class="text-sm text-destructive">
+                                    {{ form.errors.kota }}
+                                </p>
+                            </div>
 
-                        <div>
-                            <Label for="penetapan" class="mb-2 block text-sm font-medium text-gray-700">
-                                Penetapan
-                            </Label>
+                            <div>
+                                <Label for="penetapan" class="mb-2 block text-sm font-medium text-gray-700">
+                                    Penetapan
+                                </Label>
 
-                            <Input id="penetapan" v-model="form.penetapan" type="number" min="0"
-                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2" />
+                                <Input id="penetapan" v-model="form.penetapan" type="number" min="0"
+                                    class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 p-2" />
 
-                            <p v-if="form.errors.penetapan" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.penetapan }}
-                            </p>
-                        </div>
+                                <p v-if="form.errors.penetapan" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.penetapan }}
+                                </p>
+                            </div>
 
-                        <!-- Tombol -->
-                        <div class="flex gap-3">
-                            <Link :href="route('bku.index')"
-                                class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                prefetch>
-                                Batal
-                            </Link>
+                            <!-- Tombol -->
+                            <div class="flex gap-3 justify-end">
+                                <Link :href="route('bku.index')"
+                                    class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    prefetch>
+                                    Batal
+                                </Link>
 
-                            <Button type="submit" :disabled="form.processing"
-                                class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                                {{ form.processing ? 'Memperbarui...' : 'Update' }}
-                            </Button>
-                        </div>
+                                <Button type="submit" :disabled="form.processing"
+                                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                                    <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing"/>
+                                    {{ form.processing ? 'Memperbarui...' : 'Update' }}
+                                </Button>
+                            </div>
 
-                    </form>
-                </CardContent>
-            </Card>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     </AppLayout>
 </template>
