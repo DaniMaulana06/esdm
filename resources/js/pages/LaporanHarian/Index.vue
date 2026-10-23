@@ -31,6 +31,7 @@ import {
     CalendarIcon,
     ChevronDown,
     ChevronRight,
+    Search,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref, type Ref } from 'vue';
 import { route } from 'ziggy-js';
@@ -534,7 +535,10 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                     <Button type="button" variant="outline" @click="resetFilter">
                         Reset
                     </Button>
-                    <Button type="button" @click="applyFilter">Cari</Button>
+                    <Button type="button" @click="applyFilter">
+                        <Search />
+                        Cari
+                    </Button>
                 </div>
             </div>
 

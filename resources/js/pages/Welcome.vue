@@ -186,7 +186,7 @@ const resetFilter = () => {
     <Head title="Peta BKU Sumatera Selatan" />
 
     <div
-        class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
+        class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-yellow-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
         <!-- Navigation -->
         <nav
             class="sticky top-0 z-[1000] flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
@@ -195,18 +195,18 @@ const resetFilter = () => {
                     <img src="/images/logo_esdm.png" alt="Logo ESDM" />
                 </div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
-                    ESDM <span class="text-amber-500">Sumsel</span>
+                    ESDM <span class="text-yellow-500">Sumsel</span>
                 </h1>
             </div>
 
             <div class="flex items-center gap-4">
                 <Link v-if="page.props.auth?.user" :href="route('dashboard')"
-                    class="rounded-full bg-amber-500 px-5 py-2 text-sm font-medium text-white shadow-md shadow-amber-500/20 transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/30">
+                    class="rounded-full bg-yellow-500 px-5 py-2 text-sm font-medium text-white shadow-md shadow-yellow-500/20 transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-yellow-500/30">
                     Dashboard
                 </Link>
                 <template v-else>
                     <Link :href="route('login')"
-                        class="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                        class="rounded-full bg-yellow-500 px-5 py-2 text-sm font-medium text-black shadow-md transition-all hover:bg-yellow-600 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                         Log in
                     </Link>
                 </template>
@@ -217,7 +217,7 @@ const resetFilter = () => {
         <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <div class="mb-8 text-center">
                 <h2
-                    class="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-5xl">
+                    class="bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-5xl">
                     Sebaran BKU Sumatera Selatan
                 </h2>
                 <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
@@ -237,7 +237,7 @@ const resetFilter = () => {
                             <h3
                                 class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="h-5 w-5 text-amber-500">
+                                    stroke="currentColor" class="h-5 w-5 text-yellow-500">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
                                 </svg>
@@ -259,7 +259,7 @@ const resetFilter = () => {
                             <h3
                                 class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="h-5 w-5 text-amber-500">
+                                    stroke="currentColor" class="h-5 w-5 text-yellow-500">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                                 </svg>

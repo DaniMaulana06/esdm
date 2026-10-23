@@ -3,6 +3,7 @@ import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 
 interface Bku {
@@ -191,12 +192,12 @@ const deleteUser = (id: number) => {
                                         })
                                             "
                                             class="rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-                                            Edit
+                                            <Pencil :size="16" :stroke-width="3" />
                                         </Link>
 
                                         <Button type="button" @click="deleteUser(user.id)"
                                             class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
-                                            Hapus
+                                            <Trash2 :size="16" :stroke-width="3" />
                                         </Button>
                                     </div>
                                 </td>

@@ -11,8 +11,8 @@ import {
     LandPlot,
     Signature,
     NotepadText,
-    User2,
     FilePenLine,
+    UserRoundCog,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
@@ -68,7 +68,7 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
     {
         title: 'Manajemen User',
         href: '/users',
-        icon: User2,
+        icon: UserRoundCog,
         roles: ['admin'],
     },
 ];

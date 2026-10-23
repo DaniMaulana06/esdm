@@ -10,6 +10,7 @@ import Label from '@/Components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Save } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -189,6 +190,7 @@ const submit = () => {
 
                             <Button type="submit" :disabled="form.processing"
                                 class="rounded-lg bg-blue-600 px-4 py-1 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                                <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
                                 {{
                                     form.processing
                                         ? 'Menyimpan...'
