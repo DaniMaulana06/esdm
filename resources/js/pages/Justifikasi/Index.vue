@@ -115,17 +115,29 @@ const processStatus = ref<
 >('approved');
 
 const catatanDinas = ref('');
+const catatanError = ref('');
 
 const openProcessDialog = (
     justifikasi: Justifikasi,
-    status: 'approved' | 'rejected',
 ) => {
     selectedJustifikasi.value = justifikasi;
-    processStatus.value = status;
     catatanDinas.value =
         justifikasi.catatan_dinas ?? '';
+    catatanError.value = '';
 
     showProcessDialog.value = true;
+};
+
+const handleProcess = (
+    status: 'approved' | 'rejected',
+) => {
+    if (!catatanDinas.value.trim()) {
+        catatanError.value = 'Catatan wajib diisi.';
+        return;
+    }
+    catatanError.value = '';
+    processStatus.value = status;
+    processJustifikasi();
 };
 
 const processJustifikasi = () => {
@@ -227,7 +239,7 @@ const isStafEsdm = computed(() => {
 
     <Head title="Justifikasi Revisi" />
 
-    <AppLayout :breadcrumbs= "breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="py-6">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
@@ -439,22 +451,12 @@ const isStafEsdm = computed(() => {
                                                 justifikasi.status ===
                                                 'pending'
                                             " class="flex justify-end gap-2">
-                                                <Button size="sm" @click="
-                                                    openProcessDialog(
-                                                        justifikasi,
-                                                        'approved',
-                                                    )
-                                                    ">
-                                                    Setujui
-                                                </Button>
-
-                                                <Button size="sm" variant="destructive" @click="
-                                                    openProcessDialog(
-                                                        justifikasi,
-                                                        'rejected',
-                                                    )
-                                                    ">
-                                                    Tolak
+                                                <Button
+                                                    size="sm"
+                                                    class="bg-yellow-500 hover:bg-yellow-600"
+                                                    @click="openProcessDialog(justifikasi)"
+                                                >
+                                                    Konfirmasi
                                                 </Button>
                                             </div>
 
@@ -514,21 +516,11 @@ const isStafEsdm = computed(() => {
             <DialogContent class="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>
-                        {{
-                            processStatus ===
-                                'approved'
-                                ? 'Setujui Justifikasi'
-                                : 'Tolak Justifikasi'
-                        }}
+                        Konfirmasi Justifikasi
                     </DialogTitle>
 
                     <DialogDescription>
-                        {{
-                            processStatus ===
-                                'approved'
-                                ? 'Data laporan harian akan diperbarui sesuai nilai usulan.'
-                                : 'Pengajuan justifikasi akan ditolak.'
-                        }}
+                        Tinjau detail pengajuan di bawah ini, lalu pilih tindakan yang sesuai.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -578,30 +570,42 @@ const isStafEsdm = computed(() => {
                     <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700">
                             Catatan Dinas
+                            <span class="text-red-500">*</span>
                         </label>
 
-                        <Textarea v-model="catatanDinas" rows="4" placeholder="Tambahkan catatan..." />
+                        <Textarea
+                            v-model="catatanDinas"
+                            rows="4"
+                            placeholder="Tambahkan catatan..."
+                            :class="catatanError ? 'border-red-500 focus-visible:ring-red-500' : ''"
+                            @input="catatanError = ''"
+                        />
+
+                        <p v-if="catatanError" class="mt-1 text-xs text-red-500">
+                            {{ catatanError }}
+                        </p>
                     </div>
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" @click="
-                        showProcessDialog = false
-                        ">
+                <DialogFooter class="gap-2 sm:gap-2">
+                    <Button
+                        variant="outline"
+                        @click="showProcessDialog = false"
+                    >
                         Batal
                     </Button>
 
-                    <Button :variant="processStatus ===
-                        'rejected'
-                        ? 'destructive'
-                        : 'default'
-                        " @click="processJustifikasi">
-                        {{
-                            processStatus ===
-                                'approved'
-                                ? 'Setujui'
-                                : 'Tolak'
-                        }}
+                    <Button
+                        variant="destructive"
+                        @click="handleProcess('rejected')"
+                    >
+                        Tolak
+                    </Button>
+
+                    <Button
+                        @click="handleProcess('approved')"
+                    >
+                        Setujui
                     </Button>
                 </DialogFooter>
             </DialogContent>
