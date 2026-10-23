@@ -34,6 +34,12 @@ class JustifikasiController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('tanggal')) {
+            $query->whereHas('laporanHarian', function ($q) use ($request) {
+                $q->whereDate('tanggal', $request->tanggal);
+            });
+        }
+
         $justifikasis = $query
             ->latest()
             ->paginate(15)
@@ -41,7 +47,7 @@ class JustifikasiController extends Controller
 
         return Inertia::render('Justifikasi/Index', [
             'justifikasis' => $justifikasis,
-            'filters' => $request->only(['status']),
+            'filters' => $request->only(['status', 'tanggal']),
         ]);
     }
 

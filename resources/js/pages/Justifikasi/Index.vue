@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { CalendarDate, DateFormatter, DateValue, getLocalTimeZone } from '@internationalized/date';
 import { Head, router, usePage } from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -12,6 +13,12 @@ import {
 } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 
 import {
     Select,
@@ -31,6 +38,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbItem, SharedData } from '@/types';
+import Label from '@/Components/ui/label/Label.vue';
+import { CalendarIcon } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -41,40 +50,29 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Justifikasi {
     id: number;
-
     status: 'pending' | 'approved' | 'rejected';
-
     alasan_revisi: string;
-
     produksi_usulan: number | string;
-
     lifting_usulan: number | string;
-
     catatan_dinas: string | null;
 
     laporan_harian: {
         id: number;
         tanggal: string;
-
         total_produksi: number | string;
-
         total_lifting: number | string;
-
         bku_kontrak: {
             bku: {
                 nama: string;
             };
-
             kontrak: {
                 nama: string;
             };
         };
     };
-
     bku: {
         nama: string;
     };
-
     peninjau: {
         name: string;
     } | null;
@@ -98,11 +96,31 @@ const props = defineProps<{
 
     filters: {
         status?: string;
+        tanggal?: string;
     };
 }>();
 
 const selectedStatus = ref(
     props.filters.status ?? 'all'
+);
+
+const df = new DateFormatter('id-ID', { dateStyle: 'long' });
+
+const parseToCalendarDate = (str?: string): DateValue | undefined => {
+    if (!str) return undefined;
+    const [y, m, d] = str.split('-').map(Number);
+    return new CalendarDate(y, m, d);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const selectedDate = ref<any>(
+    parseToCalendarDate(props.filters.tanggal)
+);
+
+const displayDate = computed(() =>
+    selectedDate.value
+        ? df.format(selectedDate.value.toDate(getLocalTimeZone()))
+        : 'Pilih tanggal'
 );
 
 const showProcessDialog = ref(false);
@@ -167,6 +185,13 @@ const processJustifikasi = () => {
     );
 };
 
+const toDateString = (d?: DateValue): string | undefined => {
+    if (!d) return undefined;
+    const mm = String(d.month).padStart(2, '0');
+    const dd = String(d.day).padStart(2, '0');
+    return `${d.year}-${mm}-${dd}`;
+};
+
 const applyFilter = () => {
     router.get(
         route('justifikasi.index'),
@@ -175,7 +200,21 @@ const applyFilter = () => {
                 selectedStatus.value === 'all'
                     ? undefined
                     : selectedStatus.value,
+            tanggal: toDateString(selectedDate.value),
         },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
+
+const resetFilter = () => {
+    selectedStatus.value = 'all';
+    selectedDate.value = undefined;
+    router.get(
+        route('justifikasi.index'),
+        {},
         {
             preserveState: true,
             preserveScroll: true,
@@ -264,9 +303,9 @@ const isStafEsdm = computed(() => {
                     <CardContent>
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div class="w-full sm:w-64">
-                                <label class="mb-2 block text-sm font-medium text-gray-700">
+                                <Label class="mb-2 block text-sm font-medium text-gray-700">
                                     Status
-                                </label>
+                                </Label>
 
                                 <Select v-model="selectedStatus
                                     ">
@@ -293,10 +332,35 @@ const isStafEsdm = computed(() => {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div class="w-full sm:w-56">
+                                <Label class="mb-2 block text-sm font-medium text-gray-700">
+                                    Tanggal
+                                </Label>
+                                <Popover>
+                                    <PopoverTrigger as-child>
+                                        <Button variant="outline" class="w-full justify-start text-left font-normal"
+                                            :class="!selectedDate && 'text-muted-foreground'">
+                                            <CalendarIcon class="mr-2 h-4 w-4" />
+                                            {{ displayDate }}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent class="w-auto p-0">
+                                        <Calendar v-model="selectedDate" locale="id-ID" initial-focus />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
 
-                            <Button @click="applyFilter">
-                                Terapkan
-                            </Button>
+                            <!-- Tombol Filter -->
+                            <div class="flex gap-2 sm:ml-auto">
+                                <Button variant="outline" @click="resetFilter">
+                                    Reset
+                                </Button>
+
+                                <Button @click="applyFilter">
+                                    Terapkan
+                                </Button>
+
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -534,33 +598,67 @@ const isStafEsdm = computed(() => {
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-xs text-gray-500">
-                                Produksi Usulan
-                            </p>
-
-                            <p class="mt-1 font-medium">
-                                {{
-                                    formatNumber(
-                                        selectedJustifikasi.produksi_usulan,
-                                    )
-                                }}
-                            </p>
+                    <div dir="ltr ">
+                        <!-- Total Produksi dan Lifting awal -->
+                        <div class="ps-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">
+                                    Total Produksi
+                                </p>
+    
+                                <p class="mt-1 font-medium">
+                                    {{
+                                        formatNumber(
+                                            selectedJustifikasi.laporan_harian.total_produksi,
+                                        )
+                                    }}
+                                </p>
+                            </div>
+    
+                            <div>
+                                <p class="text-xs text-gray-500">
+                                    Total Lifting
+                                </p>
+    
+                                <p class="mt-1 font-medium">
+                                    {{
+                                        formatNumber(
+                                            selectedJustifikasi.laporan_harian.total_lifting,
+                                        )
+                                    }}
+                                </p>
+                            </div>
                         </div>
-
-                        <div>
-                            <p class="text-xs text-gray-500">
-                                Lifting Usulan
-                            </p>
-
-                            <p class="mt-1 font-medium">
-                                {{
-                                    formatNumber(
-                                        selectedJustifikasi.lifting_usulan,
-                                    )
-                                }}
-                            </p>
+                        <br>
+                        <!-- Produksi dan Lifting usulan -->
+                        <div class="ps-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">
+                                    Produksi Usulan
+                                </p>
+    
+                                <p class="mt-1 font-medium">
+                                    {{
+                                        formatNumber(
+                                            selectedJustifikasi.produksi_usulan,
+                                        )
+                                    }}
+                                </p>
+                            </div>
+    
+                            <div>
+                                <p class="text-xs text-gray-500">
+                                    Lifting Usulan
+                                </p>
+    
+                                <p class="mt-1 font-medium">
+                                    {{
+                                        formatNumber(
+                                            selectedJustifikasi.lifting_usulan,
+                                        )
+                                    }}
+                                </p>
+                            </div>
                         </div>
                     </div>
 

@@ -53,7 +53,7 @@ const submit = () => {
                         <div class="flex items-center justify-between">
                             <Label for="password">Password</Label>
                             <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm"
-                                tabindex="5"> Forgot password? </TextLink>
+                                :tabindex="5"> Forgot password? </TextLink>
                         </div>
                         <Input id="password" type="password" required tabindex="2" autocomplete="current-password"
                             v-model="form.password" placeholder="Password" />
@@ -68,8 +68,8 @@ const submit = () => {
                     </div>
 
                     <CardFooter>
-                        <Button type="submit" class="mt-4 w-full bg-yellow-500" tabindex="4" :disabled="form.processing"
-                            variant="outline">
+                        <Button type="submit" class="mt-4 w-full bg-yellow-500 hover:bg-yellow-600" tabindex="4"
+                            :disabled="form.processing" variant="outline">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                             Log in
                         </Button>
