@@ -451,11 +451,8 @@ const isStafEsdm = computed(() => {
                                                 justifikasi.status ===
                                                 'pending'
                                             " class="flex justify-end gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    class="bg-yellow-500 hover:bg-yellow-600"
-                                                    @click="openProcessDialog(justifikasi)"
-                                                >
+                                                <Button size="sm" class="bg-yellow-500 hover:bg-yellow-600"
+                                                    @click="openProcessDialog(justifikasi)">
                                                     Konfirmasi
                                                 </Button>
                                             </div>
@@ -573,13 +570,9 @@ const isStafEsdm = computed(() => {
                             <span class="text-red-500">*</span>
                         </label>
 
-                        <Textarea
-                            v-model="catatanDinas"
-                            rows="4"
-                            placeholder="Tambahkan catatan..."
+                        <Textarea v-model="catatanDinas" rows="4" placeholder="Tambahkan catatan..."
                             :class="catatanError ? 'border-red-500 focus-visible:ring-red-500' : ''"
-                            @input="catatanError = ''"
-                        />
+                            @input="catatanError = ''" />
 
                         <p v-if="catatanError" class="mt-1 text-xs text-red-500">
                             {{ catatanError }}
@@ -588,23 +581,15 @@ const isStafEsdm = computed(() => {
                 </div>
 
                 <DialogFooter class="gap-2 sm:gap-2">
-                    <Button
-                        variant="outline"
-                        @click="showProcessDialog = false"
-                    >
+                    <Button variant="outline" @click="showProcessDialog = false">
                         Batal
                     </Button>
 
-                    <Button
-                        variant="destructive"
-                        @click="handleProcess('rejected')"
-                    >
+                    <Button variant="destructive" @click="handleProcess('rejected')">
                         Tolak
                     </Button>
 
-                    <Button
-                        @click="handleProcess('approved')"
-                    >
+                    <Button @click="handleProcess('approved')" class="bg-green-600 hover:bg-green-900">
                         Setujui
                     </Button>
                 </DialogFooter>

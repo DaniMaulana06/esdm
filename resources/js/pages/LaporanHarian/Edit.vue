@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/Components/ui/label';
 import {
     Card,
     CardContent,
@@ -127,15 +127,16 @@ const formatTanggal = (tanggal: string) => {
 
                                             <Input id="bku"
                                                 :model-value="props.laporanHarian.bku_kontrak?.bku?.nama ?? ''" readonly
-                                                class="bg-muted" />
+                                                disabled class="bg-muted" />
                                         </div>
 
                                         <!-- Kontrak -->
                                         <div>
-                                            <Label for="kontrak">Kontrak</Label>
+                                            <Label for="kontrak">Kontrak</Label>    
 
-                                            <Input id="kontrak" :model-value="props.laporanHarian.bku_kontrak?.kontrak?.nama ?? ''
-                                                " readonly class="bg-muted" />
+                                            <Input id="kontrak"
+                                                :model-value="props.laporanHarian.bku_kontrak?.kontrak?.nama ?? ''"
+                                                readonly disabled class="bg-muted" />
                                         </div>
 
                                         <!-- Tanggal -->
@@ -144,7 +145,7 @@ const formatTanggal = (tanggal: string) => {
 
                                             <Input id="tanggal"
                                                 :model-value="formatTanggal(props.laporanHarian.tanggal)" readonly
-                                                class="bg-muted" />
+                                                disabled class="bg-muted" />
                                         </div>
                                     </div>
                                 </div>

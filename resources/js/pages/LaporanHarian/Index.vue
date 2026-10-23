@@ -368,15 +368,15 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
-const deleteItem = (id: number) => {
-    if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
-        router.delete(
-            route('laporan-harian.destroy', {
-                laporan_harian: id,
-            }),
-        );
-    }
-};
+// const deleteItem = (id: number) => {
+//     if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
+//         router.delete(
+//             route('laporan-harian.destroy', {
+//                 laporan_harian: id,
+//             }),
+//         );
+//     }
+// };
 
 // Meta pagination yang dipakai: tergantung tabel yang aktif
 const pager = computed(() =>
@@ -460,7 +460,7 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                         <Label for="bku" class="mb-2 block text-sm font-medium">
                             BKU
                         </Label>
-                        
+
                         <Select v-model="bkuId">
                             <SelectTrigger class="w-[280px]">
                                 <SelectValue placeholder="Pilih BKU" />
@@ -685,11 +685,11 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                                                 </Link>
                                             </Button>
 
-                                            <Button v-if="isStafEsdm"
+                                            <!-- <Button v-if="isStafEsdm"
                                                 class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700"
                                                 @click="deleteItem(laporanHarian.id)">
                                                 Hapus
-                                            </Button>
+                                            </Button> -->
 
                                             <Button v-if="isOperatorBku" variant="outline" size="sm"
                                                 @click="openJustifikasi(laporanHarian)">

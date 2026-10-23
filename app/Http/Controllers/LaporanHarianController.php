@@ -265,6 +265,7 @@ class LaporanHarianController extends Controller
         $validated = $request->validate([
             'total_produksi' => ['required', 'numeric', 'min:0'],
             'total_lifting' => ['required', 'numeric', 'min:0'],
+            'keterangan' => ['nullable', 'string', 'max:100']
         ]);
 
         $laporanHarian->update($validated);

@@ -3,6 +3,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType, SharedData, User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
+import NavUser from './NavUser.vue';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -60,20 +61,22 @@ const formatRole = (role: string) => {
             </template>
         </div>
 
+        <!-- Nama User - Role -->
         <div class="flex items-center gap-3">
-            <div class="flex size-8 items-center justify-center rounded-full bg-gray-200 text-xl font-semibold">
+            <!-- <div class="flex size-8 items-center justify-center rounded-full bg-gray-200 text-xl font-semibold">
                 {{ user.name.charAt(0).toUpperCase() }}
             </div>
 
             <div class="hidden text-right sm:block">
                 <p class="text-base font-medium">
-                    <b>{{ user.name }}</b> | {{formatRole(user.role)}}
+                    <b>{{ user.name }}</b> | {{ formatRole(user.role) }}
                 </p>
 
                 <p class="text-sm text-muted-foreground">
-                    
+
                 </p>
-            </div>
+            </div> -->
+            <NavUser/>
         </div>
     </header>
 </template>
