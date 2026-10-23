@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItemType, SharedData, User } from '@/types';
-import { usePage } from '@inertiajs/vue3';
+import type { BreadcrumbItemType } from '@/types';
 import NavUser from './NavUser.vue';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
 
-const page = usePage<SharedData>();
-const user = page.props.auth.user as User;
 </script>
 
 <template>

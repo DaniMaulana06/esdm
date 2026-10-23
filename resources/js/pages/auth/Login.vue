@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import LoginForm from '@/components/LoginForm.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
 
-const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
-});
+// const form = useForm({
+//     email: '',
+//     password: '',
+//     remember: false,
+// });
 
-const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
-};
+// const submit = () => {
+//     form.post(route('login'), {
+//         onFinish: () => form.reset('password'),
+//     });
+// };
 </script>
 
 <template>
