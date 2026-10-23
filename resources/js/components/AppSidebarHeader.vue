@@ -11,22 +11,6 @@ defineProps<{
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
-
-const formatRole = (role: string) => {
-    switch (role) {
-        case 'admin':
-            return 'Admin';
-
-        case 'staf_dinas':
-            return 'Staf Dinas';
-
-        case 'operator_bku':
-            return 'Operator BKU';
-
-        default:
-            return role;
-    }
-};
 </script>
 
 <template>

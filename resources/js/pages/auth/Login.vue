@@ -1,16 +1,6 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import LoginForm from '@/components/LoginForm.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import Card from '@/components/ui/card/Card.vue';
-import CardFooter from '@/components/ui/card/CardFooter.vue';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import Label from '@/Components/ui/label/Label.vue';
-import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { GalleryVerticalEnd, LoaderCircle } from 'lucide-vue-next';
 
 defineProps<{
     status?: string;

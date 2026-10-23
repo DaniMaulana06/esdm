@@ -112,7 +112,7 @@ const parseToCalendarDate = (str?: string): DateValue | undefined => {
     return new CalendarDate(y, m, d);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const selectedDate = ref<any>(
     parseToCalendarDate(props.filters.tanggal)
 );
