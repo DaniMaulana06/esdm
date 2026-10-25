@@ -62,8 +62,6 @@ const submit = () => {
                     <FieldLabel for="password">
                         Password
                     </FieldLabel>
-
-
                 </div>
 
                 <Input id="password" v-model="form.password" type="password" placeholder="Password"
@@ -75,7 +73,7 @@ const submit = () => {
             <!-- Remember me -->
             <div class="flex items-center">
                 <Label for="remember" class="flex cursor-pointer items-center gap-2">
-                    <Checkbox id="remember" v-model:checked="form.remember" :tabindex="4" />
+                    <Checkbox id="remember" v-model:checked="form.remember" :tabindex="3" />
 
                     <span>Remember me</span>
                 </Label>
@@ -83,13 +81,13 @@ const submit = () => {
 
             <!-- Tombol Login -->
             <Field>
-                <Button type="submit" class="w-full bg-yellow-500 text-black hover:bg-yellow-600"
+                <Button type="submit" class="w-full bg-yellow-500 text-black hover:bg-yellow-600" :tabindex="4"
                     :disabled="form.processing">
                     {{ form.processing ? 'Logging in...' : 'Login' }}
                 </Button>
             </Field>
             <FieldSeparator>
-                <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="3">
+                <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
                     Lupa password?
                 </TextLink>
             </FieldSeparator>

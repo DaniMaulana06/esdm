@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\EmailOtpVerificationController;
 use App\Http\Controllers\BkuController;
 use App\Http\Controllers\BkuKontrakController;
 use App\Http\Controllers\DashboardController;
@@ -27,11 +28,26 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// Route::get('dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get(
+        '/verifikasi-email',
+        [EmailOtpVerificationController::class, 'show']
+    )->name('email-otp.show');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post(
+        '/verifikasi-email/kirim',
+        [EmailOtpVerificationController::class, 'send']
+    )->middleware('throttle:3,1')
+        ->name('email-otp.send');
+
+    Route::post(
+        '/verifikasi-email/konfirmasi',
+        [EmailOtpVerificationController::class, 'verify']
+    )->middleware('throttle:10,1')
+        ->name('email-otp.verify');
+});
+
+Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('admin')->group(function () {

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\Admin;
 use App\Http\Middleware\AdminOrStaf;
+use App\Http\Middleware\EnsureOperatorEmailIsVerified;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OperatorBku;
 use App\Http\Middleware\StafEsdm;
@@ -28,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => Admin::class,
             'admin-or-staf' => AdminOrStaf::class,
             'staf-or-operator-bku' => StafOrOperatorBku::class,
+
+            'email.verified' => EnsureOperatorEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

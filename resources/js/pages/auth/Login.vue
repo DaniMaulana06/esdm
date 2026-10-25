@@ -29,7 +29,7 @@ defineProps<{
         <div class="flex flex-col p-6 md:p-10">
             <div class="flex justify-center gap-2 md:justify-start">
                 <a href="/login" class="flex items-center gap-2 font-medium">
-                    <img src="images/logo_esdm.png" height="120" width="120" />
+                    <img src="images/logo_esdm.png" height="120" width="120"/>
                     Pelaporan Produksi & Lifting harian SUMAS
                 </a>
             </div>

@@ -33,12 +33,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // dd([
-        //     'auth_id' => auth()->id(),
-        //     'auth_name' => auth()->user()?->name,
-        //     'auth_bku_id' => auth()->user()?->bku_id,
-        //     'session_id' => $request->session()->getId(),
-        // ]);
+        $user = $request->user();
+
+        if(
+            $user->role === 'operator_bku' &&
+            $user->email_verified_at === null
+        ) {
+            return redirect()->route('email-otp.show');
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
