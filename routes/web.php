@@ -17,9 +17,9 @@ Route::get('/', function () {
     $bkuList = Bku::query()
         ->leftJoin('bku_kontrak', 'bku.id', '=', 'bku_kontrak.bku_id')
         ->leftJoin('laporan_harian', 'bku_kontrak.id', '=', 'laporan_harian.bku_kontrak_id')
-        ->select('bku.id', 'bku.nama', 'bku.kota', 'bku.penetapan')
+        ->select('bku.id', 'bku.nama', 'bku.kota', 'bku.kategori', 'bku.penetapan')
         ->selectRaw('COALESCE(SUM(laporan_harian.total_produksi), 0) as total_produksi')
-        ->groupBy('bku.id', 'bku.nama', 'bku.kota', 'bku.penetapan')
+        ->groupBy('bku.id', 'bku.nama', 'bku.kota', 'bku.kategori', 'bku.penetapan')
         ->orderBy('bku.nama')
         ->get();
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\KategoriBku;
 use App\Http\Requests\StoreBkuRequest;
 use App\Http\Requests\UpdateBkuRequest;
 use App\Models\Bku;
@@ -31,6 +32,7 @@ class BkuController extends Controller
 
         return Inertia::render('Bku/Create', [
             'bkus' => $bkus,
+            'kategoris' => KategoriBku::values(),
         ]);
     }
 
@@ -48,6 +50,7 @@ class BkuController extends Controller
     {
         return Inertia::render('Bku/Edit', [
             'bku' => $bku,
+            'kategoris' => KategoriBku::values(),
         ]);
     }
 

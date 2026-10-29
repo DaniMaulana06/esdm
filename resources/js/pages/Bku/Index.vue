@@ -27,6 +27,7 @@ interface Bku {
     id: number;
     nama: string;
     kota: string;
+    kategori: string | null;
     penetapan: number;
     created_at: string;
     updated_at: string;
@@ -155,6 +156,10 @@ const cancelDelete = () => {
                             </th>
 
                             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                Kategori
+                            </th>
+
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                                 Kabupaten / Kota
                             </th>
 
@@ -176,6 +181,13 @@ const cancelDelete = () => {
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ bku.nama }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                <span v-if="bku.kategori" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ bku.kategori }}
+                                </span>
+                                <span v-else class="text-gray-400">-</span>
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
@@ -202,7 +214,7 @@ const cancelDelete = () => {
                         </tr>
 
                         <tr v-if="bkus.length === 0">
-                            <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">
                                 Belum ada data Bku.
                             </td>
                         </tr>

@@ -32,16 +32,19 @@ interface Bku {
     id: number;
     nama: string;
     kota: string;
+    kategori: string;
     penetapan: number;
 }
 
 defineProps<{
     bkus: Bku[];
+    kategoris: string[];
 }>();
 
 const form = useForm({
     nama: '',
     kota: '',
+    kategori: '',
     penetapan: '',
 });
 
@@ -77,7 +80,27 @@ const submit = () => {
                                     {{ form.errors.nama }}
                                 </p>
                             </div>
-    
+                            
+                            <!-- Kategori -->
+                            <div class="space-y-2">
+                                <Label for="kategori">Kategori</Label>
+                                <Select id="kategori" v-model="form.kategori">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Pilih Kategori" />
+                                    </SelectTrigger>    
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem v-for="item in kategoris" :key="item" :value="item">
+                                                {{ item }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.kategori" class="text-sm text-destructive">
+                                    {{ form.errors.kategori }}
+                                </p>
+                            </div>
+                            
                             <!-- Kabupaten / Kota -->
                             <div class="space-y-2">
                                 <Label for="kota">Kabupaten / Kota</Label>

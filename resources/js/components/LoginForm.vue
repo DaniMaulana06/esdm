@@ -87,7 +87,7 @@ const submit = () => {
                 </Button>
             </Field>
             <FieldSeparator>
-                <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
+                <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm no-underline" :tabindex="5">
                     Lupa password?
                 </TextLink>
             </FieldSeparator>

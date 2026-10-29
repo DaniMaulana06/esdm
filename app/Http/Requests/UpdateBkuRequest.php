@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KategoriBku;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,6 +28,11 @@ class UpdateBkuRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
+            ],
+            'kategori' => [
+                'required',
+                'string',
+                Rule::enum(KategoriBku::class),
             ],
             'penetapan' => [
                 'required',

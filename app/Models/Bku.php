@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KategoriBku;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,14 +17,19 @@ class Bku extends Model
     protected $fillable = [
         'nama',
         'kota',
+        'kategori',
         'penetapan',
+    ];
+
+    protected $casts = [
+        'kategori' => KategoriBku::class,
     ];
 
     public function kontraks(): BelongsToMany
     {
         return $this->belongsToMany(Kontrak::class, 'bku_kontrak', 'bku_id', 'kontrak_id')
-                    ->withPivot('id', 'jumlah_sumur')
-                    ->withTimestamps();
+            ->withPivot('id', 'jumlah_sumur')
+            ->withTimestamps();
     }
 
     public function bkuKontraks(): HasMany

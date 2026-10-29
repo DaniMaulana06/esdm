@@ -1,17 +1,40 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import masterKota from '@/data/kota_sumsel.json';
-
+import {
+    MapPin,
+    PieChart as PieChartIcon,
+    RotateCcw,
+    Building2,
+    Fuel,
+    Layers,
+    Briefcase,
+    Store,
+    HelpCircle
+} from 'lucide-vue-next';
+import { Barrel, LucideBarrel } from '@lucide/vue';
 
 interface BkuItem {
     id: number;
     nama: string;
     kota: string | null;
+    kategori: string | null;
     penetapan: number;
     total_produksi: number | string;
+}
+
+interface CategorySegment {
+    name: string;
+    count: number;
+    percentage: number;
+    color: string;
+    bgClass: string;
+    textClass: string;
+    strokeDash: string;
+    strokeOffset: number;
 }
 
 const props = withDefaults(
@@ -25,7 +48,7 @@ const props = withDefaults(
 
 const page = usePage<any>();
 
-// Fix leaflet icon path issue with Vite
+// Perbaikan icon leaflet untuk Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -33,6 +56,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Helper normalisasi nama kota untuk pencarian
 const cleanCityName = (name?: string | null): string => {
     if (!name) return '';
     return name
@@ -52,8 +76,6 @@ const isSameCity = (cityA?: string | null, cityB?: string | null): boolean => {
 
 const getCoordinates = (cityName: string): [number, number] => {
     const clean = cleanCityName(cityName);
-
-    // Cari kota yang cocok di dalam file kota_sumsel.json
     const found = masterKota.find(item => {
         const namaClean = cleanCityName(item.nama);
         const resmiClean = cleanCityName(item.nama_resmi);
@@ -63,17 +85,50 @@ const getCoordinates = (cityName: string): [number, number] => {
     if (found) {
         return [found.latitude, found.longitude];
     }
-
-    // Fallback jika tidak ditemukan
-    return [-3.3194, 104.2142];
+    return [-3.3194, 104.2142]; // Fallback koordinat tengah Sumsel
 };
 
-
+// State
 const selectedKabupaten = ref<string | null>(null);
+const hoveredCategory = ref<string | null>(null);
 const mapContainer = ref<HTMLElement | null>(null);
 let leafletMap: L.Map | null = null;
 let markersLayer: L.LayerGroup | null = null;
 
+// Konfigurasi Warna Kategori
+const CATEGORY_COLORS: Record<string, { hex: string; bg: string; text: string; badge: string }> = {
+    Perusahaan: {
+        hex: '#3B82F6',
+        bg: 'bg-blue-500',
+        text: 'text-blue-600 dark:text-blue-400',
+        badge: 'bg-blue-50 text-blue-700 ring-blue-700/10 dark:bg-blue-900/20 dark:text-blue-300'
+    },
+    Koperasi: {
+        hex: '#10B981',
+        bg: 'bg-emerald-500',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        badge: 'bg-emerald-50 text-emerald-700 ring-emerald-700/10 dark:bg-emerald-900/20 dark:text-emerald-300'
+    },
+    UMKM: {
+        hex: '#F59E0B',
+        bg: 'bg-amber-500',
+        text: 'text-amber-600 dark:text-amber-400',
+        badge: 'bg-amber-50 text-amber-700 ring-amber-700/10 dark:bg-amber-900/20 dark:text-amber-300'
+    },
+    Lainnya: {
+        hex: '#8B5CF6',
+        bg: 'bg-purple-500',
+        text: 'text-purple-600 dark:text-purple-400',
+        badge: 'bg-purple-50 text-purple-700 ring-purple-700/10 dark:bg-purple-900/20 dark:text-purple-300'
+    },
+};
+
+const getCategoryMeta = (cat?: string | null) => {
+    if (!cat) return CATEGORY_COLORS.Lainnya;
+    return CATEGORY_COLORS[cat] || CATEGORY_COLORS.Lainnya;
+};
+
+// Data terfilter berdasarkan kabupaten yang dipilih
 const filteredBku = computed(() => {
     if (!selectedKabupaten.value) {
         return props.bkuList;
@@ -81,28 +136,88 @@ const filteredBku = computed(() => {
     return props.bkuList.filter(bku => isSameCity(bku.kota, selectedKabupaten.value));
 });
 
+// Total Produksi wilayah aktif
+const totalProduksiFiltered = computed(() => {
+    return filteredBku.value.reduce((acc, curr) => acc + (Number(curr.total_produksi) || 0), 0);
+});
+
+// Hitung Pembagian Kategori untuk Pie Chart
+const categoryStats = computed<CategorySegment[]>(() => {
+    const list = filteredBku.value;
+    const total = list.length;
+    if (total === 0) return [];
+
+    const counts: Record<string, number> = {};
+    list.forEach(bku => {
+        const cat = bku.kategori && bku.kategori.trim() ? bku.kategori.trim() : 'Lainnya';
+        counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    let accumulatedOffset = 0;
+    const segments: CategorySegment[] = [];
+
+    // Urutkan dari jumlah terbanyak
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+    sorted.forEach(([catName, count]) => {
+        const percentage = Math.round((count / total) * 100);
+        const meta = getCategoryMeta(catName);
+
+        segments.push({
+            name: catName,
+            count,
+            percentage,
+            color: meta.hex,
+            bgClass: meta.bg,
+            textClass: meta.text,
+            strokeDash: `${percentage} ${100 - percentage}`,
+            strokeOffset: -accumulatedOffset,
+        });
+
+        accumulatedOffset += percentage;
+    });
+
+    return segments;
+});
+
+// Data kategori yang sedang di-hover di pie chart
+const activeHoveredData = computed(() => {
+    if (!hoveredCategory.value) return null;
+    return categoryStats.value.find(s => s.name === hoveredCategory.value) || null;
+});
+
+// Render Marker pada Peta
 const renderMarkers = () => {
     if (!leafletMap || !markersLayer) return;
 
     markersLayer.clearLayers();
 
-    const locationMap = new Map<string, { displayName: string; coords: [number, number]; count: number; totalProd: number }>();
+    const locationMap = new Map<string, {
+        displayName: string;
+        coords: [number, number];
+        count: number;
+        totalProd: number;
+        categories: Record<string, number>;
+    }>();
 
     (props.bkuList || []).forEach(bku => {
         if (!bku.kota || !bku.kota.trim()) return;
         const normalizedKey = cleanCityName(bku.kota);
         const prod = Number(bku.total_produksi) || 0;
+        const cat = bku.kategori || 'Lainnya';
 
         if (locationMap.has(normalizedKey)) {
             const item = locationMap.get(normalizedKey)!;
             item.count += 1;
             item.totalProd += prod;
+            item.categories[cat] = (item.categories[cat] || 0) + 1;
         } else {
             locationMap.set(normalizedKey, {
                 displayName: bku.kota.trim(),
                 coords: getCoordinates(bku.kota),
                 count: 1,
                 totalProd: prod,
+                categories: { [cat]: 1 },
             });
         }
     });
@@ -110,14 +225,26 @@ const renderMarkers = () => {
     locationMap.forEach(loc => {
         const marker = L.marker(loc.coords as L.LatLngExpression);
 
+        const categoryText = Object.entries(loc.categories)
+            .map(([cat, cnt]) => `${cat}: ${cnt}`)
+            .join(', ');
+
         marker.bindPopup(`
-            <div class="text-xs">
-                <b class="text-sm font-semibold text-slate-800">${loc.displayName}</b><br>
-                <div class="mt-1 space-y-0.5">
-                    <div>Jumlah BKU: <b class="text-slate-700">${loc.count}</b></div>
-                    <div>Total Produksi: <b class="text-emerald-700">${loc.totalProd.toLocaleString('id-ID')} Barel</b></div>
+            <div class="text-xs p-0.5">
+                <div class="text-sm font-bold text-slate-800">${loc.displayName}</div>
+                <div class="mt-2 space-y-1 text-slate-600">
+                    <div class="flex justify-between gap-4">
+                        <span>Jumlah BKU:</span>
+                        <b class="text-slate-800">${loc.count}</b>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <span>Total Produksi:</span>
+                        <b class="text-emerald-600">${loc.totalProd.toLocaleString('id-ID')} Barel</b>
+                    </div>
+                    <div class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                        ${categoryText}
+                    </div>
                 </div>
-                <div class="mt-2 text-amber-600 font-medium">Klik untuk filter daftar BKU</div>
             </div>
         `);
 
@@ -146,7 +273,6 @@ const renderMarkers = () => {
 
 onMounted(() => {
     if (mapContainer.value) {
-        // Hapus leaflet ID jika ada dari HMR sebelumnya untuk mencegah error
         if ((mapContainer.value as any)._leaflet_id) {
             (mapContainer.value as any)._leaflet_id = null;
         }
@@ -159,8 +285,14 @@ onMounted(() => {
         }).addTo(leafletMap);
 
         markersLayer = L.layerGroup().addTo(leafletMap);
-
         renderMarkers();
+    }
+});
+
+onUnmounted(() => {
+    if (leafletMap) {
+        leafletMap.remove();
+        leafletMap = null;
     }
 });
 
@@ -186,145 +318,276 @@ const resetFilter = () => {
     <Head title="Peta BKU Sumatera Selatan" />
 
     <div
-        class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-yellow-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
-        <!-- Navigation -->
-        <nav
-            class="sticky top-0 z-[1000] flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white">
-                    <img src="/images/logo_esdm.png" alt="Logo ESDM" />
+        class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
+        <!-- Navigation Bar -->
+        <nav class="sticky top-0 z-[1000] border-b border-slate-200/80 bg-white/80 px-6 py-4 
+            backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
+            <div class="mx-auto flex max-w-8xl items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-15 w-15 items-center justify-center">
+                        <img src="/images/logo_esdm.png" alt="Logo ESDM" class="h-8 w-auto object-contain" />
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
+                            ESDM <span class="text-amber-500">Sumsel</span>
+                        </h1>
+                    </div>
                 </div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
-                    ESDM <span class="text-yellow-500">Sumsel</span>
-                </h1>
-            </div>
 
-            <div class="flex items-center gap-4">
-                <Link v-if="page.props.auth?.user" :href="route('dashboard')"
-                    class="rounded-full bg-yellow-500 px-5 py-2 text-sm font-medium text-white shadow-md shadow-yellow-500/20 transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-yellow-500/30">
-                    Dashboard
-                </Link>
-                <template v-else>
-                    <Link :href="route('login')"
-                        class="rounded-full bg-yellow-500 px-5 py-2 text-sm font-medium text-black shadow-md transition-all hover:bg-yellow-600 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                <div class="flex items-end gap-4">
+                    <Link v-if="page.props.auth?.user" :href="route('dashboard')"
+                        class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-amber-500/20 transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/30">
+                        <Layers class="h-4 w-4" />
+                        Dashboard
+                    </Link>
+                    <Link v-else :href="route('login')"
+                        class="rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-amber-00 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                         Log in
                     </Link>
-                </template>
+                </div>
             </div>
         </nav>
 
         <!-- Main Content -->
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div class="mb-8 text-center">
+        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+            <!-- Header Title & Overview Stats -->
+            <div class="text-center">
                 <h2
-                    class="bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-5xl">
+                    class="mt-3 bg-amber-500 via-amber-600 to-orange-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-5xl dark:from-white dark:via-amber-400 dark:to-orange-400">
                     Sebaran BKU Sumatera Selatan
                 </h2>
-                <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-                    Peta interaktif wilayah operasi produksi minyak bumi. Klik pada marker kabupaten/kota untuk melihat
-                    daftar
-                    BKU di wilayah tersebut.
+                <p class="mx-auto mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-400">
+                    Klik pada marker kabupaten/kota di peta untuk memfilter data BKU dan melihat proporsi kategori usaha
+                    (Perusahaan, Koperasi, UMKM).
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                <!-- Map Section -->
-                <div class="lg:col-span-2">
-                    <div
-                        class="relative z-0 isolate overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                        <div
-                            class="border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
-                            <h3
-                                class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="h-5 w-5 text-yellow-500">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-                                </svg>
-                                Peta Interaktif
-                            </h3>
+            <!-- Ringkasan Filter & Quick Stats -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium uppercase tracking-wider text-slate-500">Wilayah
+                            Terpilih</span>
+                        <MapPin class="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-between">
+                        <div class="text-xl font-bold text-slate-800 dark:text-white">
+                            {{ selectedKabupaten || 'Seluruh Sumatera Selatan' }}
                         </div>
-                        <div class="relative h-[500px] w-full z-0">
+                    </div>
+                </div>
+
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium uppercase tracking-wider text-slate-500">Jumlah BKU</span>
+                        <Building2 class="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-slate-800 dark:text-white">
+                        {{ filteredBku.length }} <span class="text-sm font-normal text-slate-500">Unit Usaha</span>
+                    </div>
+                </div>
+
+                <div
+                    class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium uppercase tracking-wider text-slate-500">Total Produksi</span>
+                        <Barrel class="h-5 w-5 text-emerald-500" />
+                    </div>
+                    <div class="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {{ totalProduksiFiltered.toLocaleString('id-ID') }} <span
+                            class="text-sm font-normal text-slate-500">Barel</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid: Peta (Kiri) & Sidebar Statistik + Daftar (Kanan) -->
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                <!-- Kolom Peta Interaktif (7 cols di desktop) -->
+                <div class="lg:col-span-7">
+                    <div
+                        class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div
+                            class="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
+                            <h3
+                                class="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-200">
+                                <MapPin class="h-5 w-5 text-amber-500" />
+                                Peta Sebaran Wilayah
+                            </h3>
+                            <button v-if="selectedKabupaten" @click="resetFilter"
+                                class="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-300">
+                                <RotateCcw class="h-3 w-3" />
+                                Reset
+                            </button>
+                        </div>
+                        <div class="relative h-[620px] w-full z-0">
                             <div ref="mapContainer" class="h-full w-full"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Data List Section -->
-                <div class="flex flex-col">
+                <!-- Kolom Statistik Pie Chart & Daftar BKU (5 cols di desktop) -->
+                <div class="space-y-6 lg:col-span-5">
+                    <!-- KARTU PIE CHART: Distribusi Kategori -->
                     <div
-                        class="flex h-full max-h-[560px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                        class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                         <div
-                            class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
+                            class="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
                             <h3
-                                class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="h-5 w-5 text-yellow-500">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                </svg>
-                                Daftar BKU
+                                class="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-200">
+                                <PieChartIcon class="h-5 w-5 text-blue-500" />
+                                Proporsi Kategori BKU
                             </h3>
-                            <button v-if="selectedKabupaten" @click="resetFilter"
-                                class="flex items-center gap-1 rounded-full bg-slate-200 px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                    class="h-3 w-3">
-                                    <path
-                                        d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                                </svg>
-                                Reset Filter
-                            </button>
+                            <span v-if="selectedKabupaten"
+                                class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
+                                {{ selectedKabupaten }}
+                            </span>
+                            <span v-else class="text-xs text-slate-500">
+                                Semua Wilayah
+                            </span>
                         </div>
 
-                        <div class="bg-amber-50/50 px-6 py-3 dark:bg-amber-900/10" v-if="selectedKabupaten">
-                            <p class="text-sm text-amber-800 dark:text-amber-400">
-                                Menampilkan BKU di <span class="font-bold">{{ selectedKabupaten }}</span>
-                            </p>
-                        </div>
+                        <div class="p-6">
+                            <div v-if="categoryStats.length > 0">
+                                <!-- Donut Chart SVG -->
+                                <div class="relative flex items-center justify-center py-2">
+                                    <div class="relative h-44 w-44">
+                                        <svg viewBox="0 0 42 42" class="h-full w-full">
+                                            <!-- Background Ring -->
+                                            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                stroke="currentColor" stroke-width="5"
+                                                class="text-slate-100 dark:text-slate-800" />
 
-                        <div class="flex-1 overflow-y-auto p-2">
-                            <ul v-if="filteredBku.length > 0" class="space-y-2">
-                                <li v-for="(bku, index) in filteredBku" :key="bku.id"
-                                    class="group rounded-xl border border-transparent bg-white p-4 transition-all hover:border-amber-200 hover:bg-amber-50 hover:shadow-md dark:bg-slate-900 dark:hover:border-amber-900/50 dark:hover:bg-slate-800/80">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <h4
-                                                class="font-semibold text-slate-800 transition-colors group-hover:text-amber-600 dark:text-slate-200 dark:group-hover:text-amber-400">
-                                                {{ bku.nama }}
-                                            </h4>
-                                            <div
-                                                class="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                    fill="currentColor" class="h-3.5 w-3.5">
-                                                    <path fill-rule="evenodd"
-                                                        d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                {{ bku.kota || 'Tidak ada data kota' }}
-                                            </div>
+                                            <!-- Category Slices -->
+                                            <circle v-for="slice in categoryStats" :key="slice.name" cx="21" cy="21"
+                                                r="15.91549430918954" fill="transparent" :stroke="slice.color"
+                                                :stroke-width="hoveredCategory === slice.name ? '6.5' : '5'"
+                                                :stroke-dasharray="slice.strokeDash"
+                                                :stroke-dashoffset="slice.strokeOffset" transform="rotate(-90 21 21)"
+                                                class="transition-all duration-300 cursor-pointer"
+                                                :class="{ 'opacity-40': hoveredCategory && hoveredCategory !== slice.name }"
+                                                @mouseenter="hoveredCategory = slice.name"
+                                                @mouseleave="hoveredCategory = null" />
+                                        </svg>
+
+                                        <!-- Center Text Inside Donut -->
+                                        <div
+                                            class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                                            <template v-if="activeHoveredData">
+                                                <span
+                                                    class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
+                                                    {{ activeHoveredData.percentage }}%
+                                                </span>
+                                                <span
+                                                    class="max-w-[100px] truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                                    {{ activeHoveredData.name }}
+                                                </span>
+                                            </template>
+                                            <template v-else>
+                                                <span
+                                                    class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
+                                                    {{ filteredBku.length }}
+                                                </span>
+                                                <span
+                                                    class="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                                                    Total BKU
+                                                </span>
+                                            </template>
                                         </div>
-                                        <div class="items-end gap-1.5">
+                                    </div>
+                                </div>
+
+                                <!-- Legend Daftar Kategori -->
+                                <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <div v-for="cat in categoryStats" :key="cat.name"
+                                        @mouseenter="hoveredCategory = cat.name" @mouseleave="hoveredCategory = null"
+                                        class="flex items-center justify-between rounded-xl border p-2.5 transition-all cursor-pointer"
+                                        :class="hoveredCategory === cat.name
+                                            ? 'border-slate-300 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800'
+                                            : 'border-slate-100 bg-slate-50/50 hover:bg-slate-50 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:bg-slate-800/60'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="h-3 w-3 rounded-full flex-shrink-0"
+                                                :style="{ backgroundColor: cat.color }" />
+                                            <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                {{ cat.name }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-xs">
+                                            <span class="font-bold text-slate-900 dark:text-white">{{ cat.count
+                                                }}</span>
                                             <span
-                                                class="items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-400 dark:ring-amber-400/20">
-                                                Produksi: {{ Number(bku.total_produksi).toLocaleString('id-ID') }} Barel
+                                                class="rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ cat.percentage }}%
                                             </span>
                                         </div>
                                     </div>
-                                    <hr v-if="index !== filteredBku.length - 1"
-                                        class="mt-2 border-slate-200/60 dark:border-slate-800" />
+                                </div>
+                            </div>
+
+                            <div v-else class="py-8 text-center text-sm text-slate-500">
+                                Belum ada data kategori untuk wilayah ini.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU DAFTAR BKU -->
+                    <div
+                        class="flex flex-col rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div
+                            class="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
+                            <h3
+                                class="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-200">
+                                <Building2 class="h-5 w-5 text-amber-500" />
+                                Daftar Unit BKU
+                            </h3>
+                            <span class="text-xs font-medium text-slate-500">
+                                {{ filteredBku.length }} BKU
+                            </span>
+                        </div>
+
+                        <div class="max-h-[360px] overflow-y-auto p-3">
+                            <ul v-if="filteredBku.length > 0" class="space-y-2">
+                                <li v-for="bku in filteredBku" :key="bku.id"
+                                    class="group rounded-xl border border-slate-100 bg-slate-50/40 p-3.5 transition-all hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-amber-900/40 dark:hover:bg-slate-800/60">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <h4
+                                                    class="truncate font-semibold text-slate-800 transition-colors group-hover:text-amber-600 dark:text-slate-200 dark:group-hover:text-amber-400">
+                                                    {{ bku.nama }}
+                                                </h4>
+                                                <!-- Badge Kategori -->
+                                                <span
+                                                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset"
+                                                    :class="getCategoryMeta(bku.kategori).badge">
+                                                    {{ bku.kategori || 'Umum' }}
+                                                </span>
+                                            </div>
+                                            <div
+                                                class="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                                <MapPin class="h-3.5 w-3.5 flex-shrink-0" />
+                                                <span class="truncate">{{ bku.kota || 'Tidak ada data kota' }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex-shrink-0 text-right">
+                                            <span
+                                                class="inline-flex items-center rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                                {{ Number(bku.total_produksi).toLocaleString('id-ID') }} Barel
+                                            </span>
+                                        </div>
+                                    </div>
                                 </li>
                             </ul>
-                            <div v-else class="flex h-full flex-col items-center justify-center py-12 text-center">
+
+                            <div v-else class="flex flex-col items-center justify-center py-10 text-center">
                                 <div class="rounded-full bg-slate-100 p-3 dark:bg-slate-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="h-6 w-6 text-slate-400">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
+                                    <Building2 class="h-6 w-6 text-slate-400" />
                                 </div>
-                                <h4 class="mt-4 font-medium text-slate-900 dark:text-slate-200">Tidak ada data BKU</h4>
-                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                    Belum ada data BKU untuk wilayah ini.
+                                <h4 class="mt-3 font-medium text-slate-800 dark:text-slate-200">Tidak ada data BKU</h4>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                    Belum ada data BKU untuk wilayah terpilih.
                                 </p>
                             </div>
                         </div>
@@ -336,10 +599,12 @@ const resetFilter = () => {
 </template>
 
 <style>
-/* Adjust Leaflet popup styles to match the premium theme */
+/* Kustomisasi gaya Popup Leaflet agar serasi dengan antarmuka modern */
 .leaflet-popup-content-wrapper {
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    padding: 0;
 }
 
 .leaflet-popup-content {
@@ -347,10 +612,12 @@ const resetFilter = () => {
     font-family: inherit;
     font-size: 0.875rem;
     color: #1e293b;
+    line-height: 1.4;
 }
 
 .dark .leaflet-popup-content-wrapper {
     background-color: #0f172a;
+    border-color: #1e293b;
     color: #f1f5f9;
 }
 

@@ -23,11 +23,13 @@ interface Bku {
     id: number;
     nama: string;
     kota: string;
+    kategori: string;
     penetapan: number;
 }
 
 const props = defineProps<{
     bku: Bku;
+    kategoris: string[];
 }>();
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
@@ -45,6 +47,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 const form = useForm({
     nama: props.bku.nama,
     kota: props.bku.kota,
+    kategori: props.bku.kategori ?? '',
     penetapan: props.bku.penetapan,
 });
 
@@ -86,6 +89,27 @@ const submit = () => {
 
                                 <p v-if="form.errors.nama" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.nama }}
+                                </p>
+                            </div>
+
+                            <!-- Kategori -->
+                            <div class="space-y-2">
+                                <Label for="kategori">Kategori</Label>
+                                <Select id="kategori" v-model="form.kategori">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Pilih Kategori" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem v-for="item in kategoris" :key="item" :value="item">
+                                                {{ item }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.kategori" class="text-sm text-destructive">
+                                    {{ form.errors.kategori }}
                                 </p>
                             </div>
 

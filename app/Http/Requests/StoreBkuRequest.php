@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KategoriBku;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreBkuRequest extends FormRequest
 {
@@ -25,6 +27,11 @@ class StoreBkuRequest extends FormRequest
                 'string',
                 'max:100',
             ],
+            'kategori' => [
+                'required',
+                'string',
+                Rule::enum(KategoriBku::class),
+            ],
             'penetapan' => [
                 'required',
                 'numeric',
@@ -40,6 +47,7 @@ class StoreBkuRequest extends FormRequest
             'nama.required' => 'Nama BKU wajib diisi',
             'nama.unique' => 'Nama BKU sudah ada',
             'kota.required' => 'Kabupaten / Kota wajib dipilih',
+            'kategori.required' => 'Kategori wajib diisi',
             'penetapan.required' => 'Jumlah penetapan wajib diisi',
             'penetapan.numeric' => 'Penetapan harus berupa angka',
             'penetapan.max' => 'Penetapan tidak bisa lebih dari 10.000',
