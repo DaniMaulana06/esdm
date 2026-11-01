@@ -393,7 +393,7 @@ const resetFilter = () => {
                     class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-medium uppercase tracking-wider text-slate-500">Total Produksi</span>
-                        <Barrel class="h-5 w-5 text-emerald-500" />
+                        <Barrel class="h-5 w-5 text-amber-900" />
                     </div>
                     <div class="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                         {{ totalProduksiFiltered.toLocaleString('id-ID') }} <span
