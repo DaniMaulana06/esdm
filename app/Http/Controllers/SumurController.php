@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSumurRequest;
 use App\Http\Requests\UpdateSumurRequest;
+use App\Models\Bku;
 use App\Models\BkuKontrak;
+use App\Models\Kontrak;
 use App\Models\Sumur;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,31 +20,56 @@ class SumurController extends Controller
     {
         $user = $request->user();
 
-            $query = Sumur::with([
-                'bkuKontrak.bku:id,nama',
-                'bkuKontrak.kontrak:id,nama',
-            ]);
+        $filters = [
+            'search' => $request->input('search', ''),
+            'bku_id' => $request->input('bku_id', ''),
+            'kontrak_id' => $request->input('kontrak_id', ''),
+        ];
 
-            // Operator hanya boleh melihat sumur milik BKU-nya
-            if ($user->isOperatorBku()) {
-                $query->whereHas('bkuKontrak', function ($q) use ($user) {
-                    $q->where('bku_id', $user->bku_id);
-                });
+        $query = Sumur::with([
+            'bkuKontrak.bku:id,nama',
+            'bkuKontrak.kontrak:id,nama',
+        ]);
+
+        // Operator hanya boleh melihat sumur milik BKU-nya
+        if ($user->isOperatorBku()) {
+            $query->whereHas('bkuKontrak', function ($q) use ($user) {
+                $q->where('bku_id', $user->bku_id);
+            });
+
+            $filters['bku_id'] = '';
         }
 
-        $sumurs = $query->latest()->get();
+        $sumurs = $query
+            ->filter($filters)
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
-        // return Inertia::render('Sumur/Index', [
-        //     'sumurs' => $sumurs,
-        // ]);
+        $bkus = collect();
+        
+        if(!$user->isOperatorBku()){
+            $bkus = Bku::select('id', 'nama')->orderBy('nama')->get();
+        }
+
+        $kontrakQuery = Kontrak::select('id', 'nama')->orderBy('nama');
+        
+        if($user->isOperatorBku()){
+            $kontrakIds = BkuKontrak::where(
+                'bku_id',
+                $user->bku_id
+            )->pluck('kontrak_id');
+
+            $kontrakQuery->whereIn('id', $kontrakIds);
+        }
+
+        $kontraks = $kontrakQuery->get();
 
         return Inertia::render('Sumur/Index', [
             'sumurs' => $sumurs,
-            'debugUser' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'bku_id' => $user->bku_id,
-            ],
+            'bkus' => $bkus,
+            'kontraks' => $kontraks,
+            'filters' =>$filters
         ]);
     }
 

@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
+import Input from '@/components/ui/input/Input.vue';
+import Label from '@/Components/ui/label/Label.vue';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
-import { MapPin, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { MapPin, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -45,6 +49,28 @@ interface Sumur {
     bku_kontrak: BkuKontrak;
 }
 
+interface PaginationData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}
+
+interface Filters {
+    search: string;
+    bku_id: string | number;
+    kontrak_id: string | number;
+}
+
+
 const deleteItem = (id: number) => {
     if (confirm('apakah kamu yakin ingin menghapus sumur ini?')) {
         router.delete(route('sumur.destroy', id));
@@ -60,9 +86,71 @@ const cekLokasi = (latitude: number | null, longitude: number | null) => {
     }
 }
 
-defineProps<{
-    sumurs: Sumur[];
+const props = defineProps<{
+    sumurs: PaginationData<Sumur>;
+    bkus: Bku[];
+    kontraks: Kontrak[];
+    filters: Filters;
 }>();
+
+const search = ref(props.filters.search ?? '');
+const bkuId = ref(
+    props.filters.bku_id ? String(props.filters.bku_id) : 'all'
+);
+const kontrakId = ref(
+    props.filters.kontrak_id ? String(props.filters.kontrak_id) : 'all'
+);
+
+const currentQuery = () => ({
+    search: search.value || undefined,
+    bku_id: isStafEsdmOrAdmin.value && bkuId.value !== 'all'
+        ? bkuId.value
+        : undefined,
+    kontrak_id: kontrakId.value !== 'all'
+        ? kontrakId.value
+        : undefined,
+});
+
+const applyFilter = () => {
+    router.get(route('sumur.index'), currentQuery(), {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+
+const resetFilter = () => {
+    search.value = '';
+    bkuId.value = 'all';
+    kontrakId.value = 'all';
+
+    router.get(route('sumur.index'), {}, {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+
+const goToPage = (page: number) => {
+    router.get(
+        route('sumur.index'),
+        {
+            search: search.value || undefined,
+            bku_id: isStafEsdmOrAdmin.value && bkuId.value !== 'all'
+                ? bkuId.value
+                : undefined,
+            kontrak_id: kontrakId.value !== 'all'
+                ? kontrakId.value
+                : undefined,
+            page,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
 
 const page = usePage<SharedData>();
 
@@ -75,9 +163,6 @@ const isStafEsdm = computed(() => {
 const isStafEsdmOrOperatorBku = computed(() => {
     return (user.value?.role === 'staf_dinas' || (user.value?.role === 'operator_bku' && user.value?.bku_id != null));
 });
-
-// console.log('USER DARI INERTIA:', page.props.auth?.user);
-// console.log('SUMUR DARI INERTIA:', page.props.sumurs);
 
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
@@ -96,6 +181,16 @@ onMounted(() => {
 const closeFlash = () => {
     showFlash.value = false;
 };
+
+const isAdmin = computed(() => user.value?.role === 'admin');
+
+const isStafEsdmOrAdmin = computed(() => {
+    return isAdmin.value || isStafEsdm.value;
+});
+
+const isOperatorBku = computed(() => {
+    return user.value?.role === 'operator_bku';
+});
 
 </script>
 
@@ -116,7 +211,7 @@ const closeFlash = () => {
                 </div>
                 <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku" prefetch
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah Sumur
                 </Link>
             </div>
@@ -146,6 +241,87 @@ const closeFlash = () => {
                     ×
                 </button>
             </div>
+
+
+            <!-- FILTER DATA SUMUR -->
+            <div class="mb-4 rounded-lg border bg-card p-4 shadow-sm">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+                    <!-- Pencarian Nama Sumur -->
+                    <div :class="isStafEsdmOrAdmin ? 'lg:col-span-2' : 'lg:col-span-2'">
+                        <Label for="search" class="mb-2 block text-sm font-medium">
+                            Nama Sumur
+                        </Label>
+
+                        <Input id="search" v-model="search" type="text" placeholder="Cari nama sumur..."
+                            @keyup.enter="applyFilter" />
+                    </div>
+
+                    <!-- Filter BKU: Admin dan Staf Dinas -->
+                    <div v-if="isStafEsdmOrAdmin">
+                        <Label for="bku" class="mb-2 block text-sm font-medium">
+                            BKU
+                        </Label>
+
+                        <Select v-model="bkuId">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Pilih BKU" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="all">
+                                        Semua BKU
+                                    </SelectItem>
+
+                                    <SelectItem v-for="bku in bkus" :key="bku.id" :value="String(bku.id)">
+                                        {{ bku.nama }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <!-- Filter Kontrak: Semua Role -->
+                    <div>
+                        <Label for="kontrak" class="mb-2 block text-sm font-medium">
+                            Kontrak
+                        </Label>
+
+                        <Select v-model="kontrakId">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Pilih Kontrak" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="all">
+                                        Semua Kontrak
+                                    </SelectItem>
+
+                                    <SelectItem v-for="kontrak in kontraks" :key="kontrak.id"
+                                        :value="String(kontrak.id)">
+                                        {{ kontrak.nama }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <!-- Tombol Filter -->
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button type="button" variant="outline" @click="resetFilter">
+                        Reset
+                    </Button>
+
+                    <Button type="button" @click="applyFilter">
+                        <Search class="mr-2 h-4 w-4" />
+                        Terapkan Filter
+                    </Button>
+                </div>
+            </div>
+
 
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <div class="w-full">
@@ -193,9 +369,9 @@ const closeFlash = () => {
                         </thead>
 
                         <tbody class="divide-y">
-                            <tr v-for="(smr, index) in sumurs" :key="smr.id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ index + 1 }}
+                            <tr v-for="(smr, index) in props.sumurs.data" :key="smr.id" class="hover:bg-gray-50">
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                    {{ (sumurs.current_page - 1) * sumurs.per_page + index + 1 }}
                                 </td>
 
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
@@ -233,7 +409,7 @@ const closeFlash = () => {
 
                                         <Button @click="cekLokasi(smr.latitude, smr.longitude)"
                                             class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
-                                            <MapPin color="#ffffff" :stroke-width="3"/>
+                                            <MapPin color="#ffffff" :stroke-width="3" />
                                         </Button>
 
                                         <Link :href="route('sumur.edit', { sumur: smr.id })" v-if="isStafEsdm"
@@ -249,7 +425,7 @@ const closeFlash = () => {
                                 </td>
                             </tr>
 
-                            <tr v-if="sumurs.length === 0">
+                            <tr v-if="sumurs.data.length === 0">
                                 <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
                                     Belum ada data Sumur.
                                 </td>
@@ -257,6 +433,29 @@ const closeFlash = () => {
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <!-- Pagination -->
+            <div v-if="sumurs.last_page > 1"
+                class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+
+                <!-- Navigasi halaman -->
+                <Pagination v-slot="{ page: activePage }" :items-per-page="sumurs.per_page" :total="sumurs.total"
+                    :page="sumurs.current_page" @update:page="goToPage">
+                    <PaginationContent v-slot="{ items }">
+                        <PaginationPrevious />
+
+                        <template v-for="(item, index) in items" :key="index">
+                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                :is-active="item.value === activePage">
+                                {{ item.value }}
+                            </PaginationItem>
+
+                            <PaginationEllipsis v-else :index="index" />
+                        </template>
+
+                        <PaginationNext />
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     </AppLayout>
