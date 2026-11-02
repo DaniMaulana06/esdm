@@ -399,7 +399,7 @@ const isBku = computed(() => {
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <div>
-                                <CardTitle>Laporan Terlewat Bulan Ini</CardTitle>
+                                <CardTitle>Laporan Terlewat</CardTitle>
                                 <p class="mt-1 text-sm text-gray-500">
                                     Tanggal hari kerja yang belum ada laporan. Klik tanggal untuk mengisi.
                                 </p>
@@ -415,7 +415,7 @@ const isBku = computed(() => {
                         <!-- Semua sudah dilaporkan -->
                         <div v-if="missingDatesForOperator.length === 0"
                             class="rounded-lg border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-700">
-                            ✅ Semua laporan hari kerja bulan ini sudah terisi. Bagus!
+                            ✅ Semua laporan hari kerja sudah terisi!
                         </div>
 
                         <!-- Daftar tanggal terlewat -->

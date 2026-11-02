@@ -14,23 +14,40 @@ class LaporanMonitoringService
 
         $hariIni = Carbon::today();
 
-        /*
-         * Mulai dari awal bulan sampai kemarin.
-         *
-         * Sabtu dan Minggu tidak diperiksa.
-         */
-        $tanggal = $hariIni->copy()->startOfMonth();
-
         $bkus = Bku::query()
             ->with([
                 'bkuKontraks.kontrak',
             ])
             ->get();
 
+        /*
+         * Batas maksimal lookback adalah 6 bulan ke belakang.
+         * Filter created_at di dalam loop sudah menangani kontrak yang
+         * baru dibuat setelah tanggal ini, sehingga setiap BKU secara
+         * otomatis hanya diperiksa sejak kontraknya aktif.
+         */
+        $tanggal = $hariIni->copy()->subMonths(6)->startOfMonth();
+
+        /*
+         * Pre-load semua laporan dalam rentang tanggal sekaligus
+         * untuk menghindari N+1 query di dalam loop.
+         */
+        $sudahMelaporMap = [];
+        LaporanHarian::query()
+            ->whereDate('tanggal', '>=', $tanggal)
+            ->whereDate('tanggal', '<', $hariIni)
+            ->get(['bku_kontrak_id', 'tanggal'])
+            ->each(function ($laporan) use (&$sudahMelaporMap) {
+                $tgl = Carbon::parse($laporan->tanggal)->toDateString();
+                $sudahMelaporMap[$tgl][] = $laporan->bku_kontrak_id;
+            });
+
         while ($tanggal->lt($hariIni)) {
 
             // Sabtu dan Minggu dilewati
             if ($tanggal->isWeekday()) {
+
+                $sudahMelaporPadaTanggal = $sudahMelaporMap[$tanggal->toDateString()] ?? [];
 
                 foreach ($bkus as $bku) {
 
@@ -42,17 +59,11 @@ class LaporanMonitoringService
                         continue;
                     }
 
-                    $kontrakIds = $bku->bkuKontraks
-                        ->pluck('id');
+                    $kontrakIds = $bku->bkuKontraks->pluck('id');
 
-                    /*
-                     * Ambil BKU Kontrak yang SUDAH memiliki
-                     * laporan pada tanggal tersebut.
-                     */
-                    $sudahMelaporIds = LaporanHarian::query()
-                        ->whereIn('bku_kontrak_id', $kontrakIds)
-                        ->whereDate('tanggal', $tanggal)
-                        ->pluck('bku_kontrak_id');
+                    $sudahMelaporIds = array_values(
+                        array_intersect($sudahMelaporPadaTanggal, $kontrakIds->all())
+                    );
 
                     /*
                      * Cari kontrak yang BELUM memiliki laporan.
@@ -60,8 +71,8 @@ class LaporanMonitoringService
                     $belumMelapor = $bku->bkuKontraks
                         ->whereNotIn('id', $sudahMelaporIds)
                         ->filter(function ($bkuKontrak) use ($tanggal) {
-                            return $bkuKontrak->created_at 
-                                ? $bkuKontrak->created_at->startOfDay()->lt($tanggal) 
+                            return $bkuKontrak->created_at
+                                ? $bkuKontrak->created_at->startOfDay()->lt($tanggal)
                                 : true;
                         });
 
@@ -73,7 +84,7 @@ class LaporanMonitoringService
                             'bku' => $bku->nama,
                             'missing_count' => $belumMelapor->count(),
                             'contracts' => $belumMelapor
-                                ->map(fn ($bkuKontrak) => [
+                                ->map(fn($bkuKontrak) => [
                                     'id' => $bkuKontrak->id,
                                     'nama' => $bkuKontrak->kontrak->nama,
                                 ])
@@ -86,6 +97,7 @@ class LaporanMonitoringService
 
             $tanggal->addDay();
         }
+
         return $hasil;
     }
 
@@ -97,42 +109,67 @@ class LaporanMonitoringService
     {
         $hasil = [];
 
-        $hariIni = Carbon::today();
-
-        // Mulai dari awal bulan sampai kemarin
-        $tanggal = $hariIni->copy()->startOfMonth();
-
         $bku = Bku::with(['bkuKontraks.kontrak'])
             ->find($bkuId);
 
-        if (! $bku || $bku->bkuKontraks->isEmpty()) {
+        if (!$bku || $bku->bkuKontraks->isEmpty()) {
             return [];
         }
 
         $kontrakIds = $bku->bkuKontraks->pluck('id');
 
+        $hariIni = Carbon::today();
+
+        /*
+         * Titik mulai pengecekan: tanggal kontrak terlama milik BKU ini,
+         * dibatasi maksimal 6 bulan ke belakang dari hari ini.
+         * Artinya: jika kontrak dibuat 2 bulan lalu, cek dari saat kontrak dibuat.
+         * Jika kontrak sudah ada sejak setahun lalu, cek maksimal 6 bulan ke belakang.
+         */
+        $batasanMaksimal = $hariIni->copy()->subMonths(6)->startOfMonth();
+        $tanggalKontrakTerlama = $bku->bkuKontraks->min('created_at');
+
+        if ($tanggalKontrakTerlama) {
+            $tanggalMulaiKontrak = Carbon::parse($tanggalKontrakTerlama)->startOfDay();
+            // Ambil yang lebih baru: tanggal kontrak dibuat vs batas 6 bulan
+            $tanggal = $tanggalMulaiKontrak->gt($batasanMaksimal)
+                ? $tanggalMulaiKontrak
+                : $batasanMaksimal;
+        } else {
+            $tanggal = $batasanMaksimal;
+        }
+
+        // Ambil data laporan harian yang sudah ada dalam rentang tanggal untuk mengoptimalkan performa (menghindari query di dalam loop)
+        $sudahMelaporMap = [];
+        LaporanHarian::query()
+            ->whereIn('bku_kontrak_id', $kontrakIds)
+            ->whereDate('tanggal', '>=', $tanggal)
+            ->whereDate('tanggal', '<', $hariIni)
+            ->get(['bku_kontrak_id', 'tanggal'])
+            ->each(function ($laporan) use (&$sudahMelaporMap) {
+                $tgl = Carbon::parse($laporan->tanggal)->toDateString();
+                $sudahMelaporMap[$tgl][] = $laporan->bku_kontrak_id;
+            });
+
         while ($tanggal->lt($hariIni)) {
             if ($tanggal->isWeekday()) {
-                $sudahMelaporIds = LaporanHarian::query()
-                    ->whereIn('bku_kontrak_id', $kontrakIds)
-                    ->whereDate('tanggal', $tanggal)
-                    ->pluck('bku_kontrak_id');
+                $sudahMelaporIds = $sudahMelaporMap[$tanggal->toDateString()] ?? [];
 
                 $belumMelapor = $bku->bkuKontraks
                     ->whereNotIn('id', $sudahMelaporIds)
                     ->filter(function ($bkuKontrak) use ($tanggal) {
-                        return $bkuKontrak->created_at 
-                            ? $bkuKontrak->created_at->startOfDay()->lt($tanggal) 
+                        return $bkuKontrak->created_at
+                            ? $bkuKontrak->created_at->startOfDay()->lt($tanggal)
                             : true;
                     });
 
                 if ($belumMelapor->isNotEmpty()) {
                     $hasil[] = [
-                        'tanggal'       => $tanggal->toDateString(),
+                        'tanggal' => $tanggal->toDateString(),
                         'missing_count' => $belumMelapor->count(),
-                        'contracts'     => $belumMelapor
-                            ->map(fn ($bkuKontrak) => [
-                                'id'   => $bkuKontrak->id,
+                        'contracts' => $belumMelapor
+                            ->map(fn($bkuKontrak) => [
+                                'id' => $bkuKontrak->id,
                                 'nama' => $bkuKontrak->kontrak->nama,
                             ])
                             ->values()

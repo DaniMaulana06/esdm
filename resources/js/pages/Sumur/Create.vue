@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import daftarKota from '@/data/kota_sumsel.json';
 import Input from '@/components/ui/input/Input.vue';
 import Label from '@/Components/ui/label/Label.vue';
 import Select from '@/components/ui/select/Select.vue';
@@ -143,16 +144,24 @@ const submit = () => {
                             </p>
                         </div>
 
-                        <!-- Desa -->
+                        <!-- Kabupaten / Kota -->
                         <div class="space-y-2">
-                            <Label for="desa">
-                                Desa
-                            </Label>
+                            <Label for="kota">Kabupaten / Kota</Label>
+                            <Select id="kota" v-model="form.kabupaten">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Pilih Kabupaten/Kota" />
+                                </SelectTrigger>
 
-                            <Input id="desa" v-model="form.desa" type="text" placeholder="Masukkan desa" />
-
-                            <p v-if="form.errors.desa" class="text-sm text-destructive">
-                                {{ form.errors.desa }}
+                                <SelectContent>
+                                    <SelectGroup class="h-[280px]">
+                                        <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">
+                                            {{ item.nama_resmi }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <p v-if="form.errors.kabupaten" class="text-sm text-destructive">
+                                {{ form.errors.kabupaten }}
                             </p>
                         </div>
 
@@ -169,20 +178,20 @@ const submit = () => {
                                 {{ form.errors.kecamatan }}
                             </p>
                         </div>
-
-                        <!-- Kabupaten -->
+                        
+                        <!-- Desa -->
                         <div class="space-y-2">
-                            <Label for="kabupaten">
-                                Kabupaten
+                            <Label for="desa">
+                                Desa
                             </Label>
 
-                            <Input id="kabupaten" v-model="form.kabupaten" type="text"
-                                placeholder="Masukkan kabupaten" />
+                            <Input id="desa" v-model="form.desa" type="text" placeholder="Masukkan desa" />
 
-                            <p v-if="form.errors.kabupaten" class="text-sm text-destructive">
-                                {{ form.errors.kabupaten }}
+                            <p v-if="form.errors.desa" class="text-sm text-destructive">
+                                {{ form.errors.desa }}
                             </p>
                         </div>
+
 
                         <!-- Latitude -->
                         <div class="space-y-2">
@@ -224,7 +233,7 @@ const submit = () => {
                             </Button>
 
                             <Button type="submit" :disabled="form.processing">
-                                <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing"/>
+                                <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
                                 {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
                             </Button>
                         </div>
