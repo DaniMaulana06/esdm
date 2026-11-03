@@ -14,13 +14,10 @@ class KontrakController extends Controller
 {
     public function index(): Response
     {
-        // $kontraks = Kontrak::withCount('bkus')
-        //     ->latest()
-        //     ->get();
-
-        $kontraks = Cache::remember('kontrak.all', 60 * 60, function(){
-            return Kontrak::withCount('bkus')->latest()->get();
-        });
+        $kontraks = Kontrak::withCount('bkus')
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Kontrak/Index', [
             'kontraks' => $kontraks,

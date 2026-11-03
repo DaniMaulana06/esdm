@@ -15,10 +15,11 @@ class BkuController extends Controller
 {
     public function index(): Response
     {
-        $bkus = Cache::remember('bku.all', 60 * 60, function(){
-            return Bku::latest()->get();
-        });
-
+        $bkus = Bku::query()
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+        
         return Inertia::render('Bku/Index', [
             'bkus' => $bkus,
         ]);

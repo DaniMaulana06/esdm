@@ -15,6 +15,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,11 +34,47 @@ interface Bku {
     updated_at: string;
 }
 
-defineProps<{
-    bkus: Bku[];
+interface PaginationData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}
+
+const props = defineProps<{
+    bkus: PaginationData<Bku>;
 }>();
 
+const currentQuery = () => {
+    const query = new URLSearchParams(window.location.search);
+    const result: Record<string, string> = {};
+    query.forEach((value, key) => {
+        result[key] = value;
+    });
+    return result;
+};
+
 const page = usePage<SharedData>();
+    
+const goToPage = (page: number) => {
+    router.get(
+        route('bku.index'),
+        {
+            ...currentQuery(),
+            page,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
 
 const user = computed(() => page.props.auth.user);
 
@@ -112,7 +149,7 @@ const cancelDelete = () => {
                 </div>
                 <Link :href="route('bku.create')" prefetch v-if="isStafEsdm"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah BKU
                 </Link>
             </div>
@@ -174,9 +211,9 @@ const cancelDelete = () => {
                     </thead>
 
                     <tbody class="divide-y">
-                        <tr v-for="(bku, index) in bkus" :key="bku.id" class="hover:bg-gray-50">
+                        <tr v-for="(bku, index) in (props.bkus?.data ?? [])" :key="bku.id" class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ index + 1 }}
+                                {{ (props.bkus.current_page - 1) * props.bkus.per_page + index + 1 }}
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
@@ -184,7 +221,8 @@ const cancelDelete = () => {
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                <span v-if="bku.kategori" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <span v-if="bku.kategori"
+                                    class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                                     {{ bku.kategori }}
                                 </span>
                                 <span v-else class="text-gray-400">-</span>
@@ -201,26 +239,50 @@ const cancelDelete = () => {
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
                                     <Link :href="route('bku.edit', { bku: bku.id })" v-if="isStafEsdm"
-                                        class="inline-flex items-center gap-2   rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
+                                        class="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
                                         <Pencil :size="16" :stroke-width="3" />
                                     </Link>
 
                                     <button @click="openDeleteDialog(bku)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
-                                       <Trash2 :size="16" :stroke-width="3" />
+                                        <Trash2 :size="16" :stroke-width="3" />
                                     </button>
                                 </div>
                             </td>
                         </tr>
 
-                        <tr v-if="bkus.length === 0">
+                        <tr v-if="!props.bkus?.data?.length">
                             <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">
-                                Belum ada data Bku.
+                                Belum ada data BKU.
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="bkus.last_page > 1"
+            class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+
+            <!-- Navigasi halaman -->
+            <Pagination v-slot="{ page: activePage }" :items-per-page="bkus.per_page" :total="bkus.total"
+                :page="bkus.current_page" @update:page="goToPage">
+                <PaginationContent v-slot="{ items }">
+                    <PaginationPrevious />
+
+                    <template v-for="(item, index) in items" :key="index">
+                        <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                            :is-active="item.value === activePage">
+                            {{ item.value }}
+                        </PaginationItem>
+
+                        <PaginationEllipsis v-else :index="index" />
+                    </template>
+
+                    <PaginationNext />
+                </PaginationContent>
+            </Pagination>
         </div>
 
         <!-- DIALOG KONFIRMASI HAPUS BKU -->
@@ -238,8 +300,8 @@ const cancelDelete = () => {
                         <p class="text-sm text-gray-700">
                             Untuk mengonfirmasi, ketik:
                             <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                                delete BKU {{ bkuToDelete?.nama }}
-                            </code>
+                        delete BKU {{ bkuToDelete?.nama }}
+                    </code>
                         </p>
                     </strong>
                     <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."

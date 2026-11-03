@@ -1,5 +1,5 @@
-    <script setup lang="ts">
-import { computed, reactive, ref, Ref } from 'vue';
+<script setup lang="ts">
+import { computed, reactive, ref, Ref, watchEffect } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,12 @@ import {
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import { SharedData } from '@/types';
 import { Label } from '@/Components/ui/label';
+import {
+    VisAxis,
+    VisGroupedBar,
+    VisXYContainer,
+} from '@unovis/vue';
+import ChartContainer from '@/components/ui/chart/ChartContainer.vue';
 
 interface Bku {
     id: number;
@@ -134,6 +140,43 @@ const props = defineProps<{
     latestReports: LatestReport[];
     missingDatesForOperator: MissingDateForOperator[];
 }>();
+
+interface ChartData {
+    tanggal: number;
+    total_produksi: number;
+    total_lifting: number;
+}
+
+const chartData = computed<ChartData[]>(() => {
+    return props.productionLiftingChart.map((item) => ({
+        tanggal: new Date(item.tanggal).getTime(),
+        total_produksi: Number(item.total_produksi),
+        total_lifting: Number(item.total_lifting),
+    }));
+});
+
+watchEffect(() => {
+    console.log('DATA PERTAMA BACKEND:', props.productionLiftingChart[0]);
+    console.log('HASIL CHART DATA:', chartData.value);
+    console.log('HASIL KONVERSI TANGGAL:', chartData.value[0]?.tanggal);
+});
+
+const chartConfig = {
+    total_produksi: {
+        label: 'Produksi',
+        color: '#EAB308',
+    },
+    total_lifting: {
+        label: 'Lifting',
+        color: '#166534',
+    },
+};
+
+const chartColors = (d: ChartData, index: number): string => {
+    return index === 0
+        ? chartConfig.total_produksi.color
+        : chartConfig.total_lifting.color;
+};
 
 const defaultPlaceholder = today(getLocalTimeZone())
 
@@ -420,12 +463,9 @@ const isBku = computed(() => {
 
                         <!-- Daftar tanggal terlewat -->
                         <div v-else class="space-y-3">
-                            <Link
-                                v-for="item in missingDatesForOperator"
-                                :key="item.tanggal"
+                            <Link v-for="item in missingDatesForOperator" :key="item.tanggal"
                                 :href="route('laporan-harian.create-backfill', { tanggal: item.tanggal })"
-                                class="block"
-                            >
+                                class="block">
                                 <div
                                     class="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 transition hover:border-red-300 hover:bg-red-100 cursor-pointer">
                                     <div class="flex items-center gap-4">
@@ -694,6 +734,66 @@ const isBku = computed(() => {
                         </div>
                     </CardContent>
                 </Card>
+
+
+                <!-- Grafik Perbandingan Produksi & Lifting -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Perbandingan Produksi & Lifting</CardTitle>
+                        <p class="text-sm text-muted-foreground">
+                            Perbandingan produksi dan lifting berdasarkan tanggal.
+                        </p>
+                    </CardHeader>
+
+                    <CardContent>
+                        <div v-if="chartData.length === 0"
+                            class="flex h-80 items-center justify-center text-sm text-muted-foreground">
+                            Belum ada data produksi pada periode ini.
+                        </div>
+
+                        <div v-else class="h-[350px] w-full">
+                            <VisXYContainer :data="chartData" :height="320"
+                                :margin="{ top: 20, right: 20, bottom: 40, left: 60 }">
+                                <VisGroupedBar :x="(d: ChartData) => d.tanggal" :y="[
+                                    (d: ChartData) => d.total_produksi,
+                                    (d: ChartData) => d.total_lifting,
+                                ]" :color="chartColors" :rounded-corners="4" :group-padding="0.2" :bar-padding="0.1" />
+
+                                <VisAxis type="x" :x="(d: ChartData) => d.tanggal" :tick-format="(value: number) =>
+                                    new Date(value).toLocaleDateString('id-ID', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        timeZone: 'Asia/Jakarta',
+                                    })
+                                    " />
+
+                                <VisAxis type="y" :tick-format="(value: number) =>
+                                    new Intl.NumberFormat('id-ID', {
+                                        notation: 'compact',
+                                    }).format(value)
+                                    " />
+                            </VisXYContainer>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="mt-4 flex justify-center gap-6">
+                            <div class="flex items-center gap-2">
+                                <span class="h-3 w-3 rounded-sm bg-yellow-500"></span>
+                                <span class="text-sm text-muted-foreground">
+                                    Produksi
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span class="h-3 w-3 rounded-sm bg-green-800"></span>
+                                <span class="text-sm text-muted-foreground">
+                                    Lifting
+                                </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
 
                 <!-- Produksi vs Lifting -->
                 <Card>

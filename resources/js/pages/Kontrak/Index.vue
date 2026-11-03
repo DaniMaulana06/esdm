@@ -14,6 +14,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,11 +29,48 @@ interface Kontrak {
     keterangan: string;
 }
 
-defineProps<{
-    kontraks: Kontrak[];
+interface PaginationData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}
+
+const props = defineProps<{
+    kontraks: PaginationData<Kontrak>;
 }>();
 
+const currentQuery = () => {
+    const query = new URLSearchParams(window.location.search);
+    const result: Record<string, string> = {};
+    query.forEach((value, key) => {
+        result[key] = value;
+    });
+    return result;
+};
+
 const page = usePage<SharedData>();
+
+const goToPage = (page: number) => {
+    router.get(
+        route('kontrak.index'),
+        {
+            ...currentQuery(),
+            page,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
+
 const user = computed(() => page.props.auth.user);
 
 const isStafEsdm = computed(() => {
@@ -105,7 +143,7 @@ const cancelDelete = () => {
                 </div>
                 <Link :href="route('kontrak.create')" prefetch v-if="isStafEsdm"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    <Plus class="h-4 w-4" :stroke-width="2.5"/> 
+                    <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah Kontrak
                 </Link>
             </div>
@@ -159,9 +197,9 @@ const cancelDelete = () => {
                     </thead>
 
                     <tbody class="divide-y">
-                        <tr v-for="(kontrak, index) in kontraks" :key="kontrak.id" class="hover:bg-gray-50">
+                        <tr v-for="(kontrak, index) in props.kontraks.data" :key="kontrak.id" class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ index + 1 }}
+                                {{ (props.kontraks.current_page - 1) * props.kontraks.per_page + index + 1}}
                             </td>
 
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
@@ -188,7 +226,7 @@ const cancelDelete = () => {
                             </td>
                         </tr>
 
-                        <tr v-if="kontraks.length === 0">
+                        <tr v-if="!props.kontraks.data.length">
                             <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
                                 Belum ada data Kontrak.
                             </td>
@@ -196,7 +234,31 @@ const cancelDelete = () => {
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination -->
+            <div v-if="kontraks.last_page > 1"
+                class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+
+                <!-- Navigasi halaman -->
+                <Pagination v-slot="{ page: activePage }" :items-per-page="kontraks.per_page" :total="kontraks.total"
+                    :page="kontraks.current_page" @update:page="goToPage">
+                    <PaginationContent v-slot="{ items }">
+                        <PaginationPrevious />
+
+                        <template v-for="(item, index) in items" :key="index">
+                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                :is-active="item.value === activePage">
+                                {{ item.value }}
+                            </PaginationItem>
+
+                            <PaginationEllipsis v-else :index="index" />
+                        </template>
+
+                        <PaginationNext />
+                    </PaginationContent>
+                </Pagination>
+            </div>
         </div>
+
 
         <!-- DIALOG KONFIRMASI HAPUS KOntrak -->
         <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
@@ -213,8 +275,8 @@ const cancelDelete = () => {
                         <p class="text-sm text-gray-700">
                             Untuk mengonfirmasi, ketik:
                             <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                                delete Kontrak {{ kontrakToDelete?.nama }}
-                            </code>
+                        delete Kontrak {{ kontrakToDelete?.nama }}
+                    </code>
                         </p>
                     </strong>
                     <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
