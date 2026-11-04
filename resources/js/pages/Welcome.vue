@@ -9,13 +9,9 @@ import {
     PieChart as PieChartIcon,
     RotateCcw,
     Building2,
-    Fuel,
     Layers,
-    Briefcase,
-    Store,
-    HelpCircle
 } from 'lucide-vue-next';
-import { Barrel, LucideBarrel } from '@lucide/vue';
+import { Barrel } from '@lucide/vue';
 
 interface BkuItem {
     id: number;
@@ -341,7 +337,7 @@ const resetFilter = () => {
                         Dashboard
                     </Link>
                     <Link v-else :href="route('login')"
-                        class="rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-amber-00 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                        class="rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-amber-600 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                         Log in
                     </Link>
                 </div>
@@ -515,7 +511,7 @@ const resetFilter = () => {
                                         </div>
                                         <div class="flex items-center gap-1.5 text-xs">
                                             <span class="font-bold text-slate-900 dark:text-white">{{ cat.count
-                                                }}</span>
+                                            }}</span>
                                             <span
                                                 class="rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                                 {{ cat.percentage }}%

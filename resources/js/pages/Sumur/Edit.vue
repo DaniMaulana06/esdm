@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';

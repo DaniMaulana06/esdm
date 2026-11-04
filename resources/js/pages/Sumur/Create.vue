@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import daftarKota from '@/data/kota_sumsel.json';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import Label from '@/components/ui/label/Label.vue';
 import Select from '@/components/ui/select/Select.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';

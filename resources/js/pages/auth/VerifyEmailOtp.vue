@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue'
 import { Button } from '@/components/ui/button'
 import Input from '@/components/ui/input/Input.vue'
-import Label from '@/Components/ui/label/Label.vue'
-import Separator from '@/Components/ui/separator/Separator.vue'
+import { Label } from '@/components/ui/label'
 import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 

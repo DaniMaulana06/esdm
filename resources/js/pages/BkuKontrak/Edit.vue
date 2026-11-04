@@ -6,7 +6,7 @@ import CardDescription from '@/components/ui/card/CardDescription.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -159,7 +159,7 @@ const submit = () => {
 
                                 <Button type="submit" :disabled="form.processing"
                                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                                    <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing"/>
+                                    <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing" />
                                     {{
                                         form.processing
                                             ? 'Meperbarui...'

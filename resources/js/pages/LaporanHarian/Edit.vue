@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/Components/ui/label';
+import { Label } from '@/components/ui/label';
 import {
     Card,
     CardContent,

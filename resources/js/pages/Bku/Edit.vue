@@ -5,7 +5,7 @@ import Card from '@/components/ui/card/Card.vue';
 import CardContent from '@/components/ui/card/CardContent.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import Input from '@/components/ui/input/Input.vue';
-import { Label } from '@/Components/ui/label';
+import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';

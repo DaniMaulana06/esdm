@@ -7,8 +7,10 @@ use App\Models\Bku;
 use App\Models\BkuKontrak;
 use App\Models\Kontrak;
 use App\Models\LaporanHarian;
+use App\Models\User;
 use App\Services\LaporanMonitoringService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,63 +29,82 @@ class DashboardController extends Controller
         $bkuId = $request->validated('bku_id');
         $kontrakId = $request->validated('kontrak_id');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Query dasar laporan
-        |--------------------------------------------------------------------------
-        */
+        $laporanQuery = $this->buildLaporanQuery($user, $startDate, $endDate, $bkuId, $kontrakId);
 
-        $laporanQuery = LaporanHarian::query()
-            ->whereBetween('tanggal', [$startDate, $endDate]);
+        $reporting = $this->buildReportingStatus($user);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Scope operator ke BKU miliknya
-        |--------------------------------------------------------------------------
-        */
+        return Inertia::render('Dashboard', [
+            'stats' => $this->buildStats($laporanQuery, $user, $bkuId, $kontrakId),
 
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'bku_id' => $bkuId,
+                'kontrak_id' => $kontrakId,
+            ],
+
+            'bkus' => $this->getBkus($user),
+            'kontraks' => $this->getKontraks($user, $bkuId),
+            'bkuBelumLapor' => $monitoring->getBkuBelumLapor(),
+
+            'productionChart' => $this->getProductionChart($laporanQuery),
+            'productionLiftingChart' => $this->getProductionLiftingChart($laporanQuery),
+            'productionMonthlyChart' => $this->getProductionMonthlyChart($user, $bkuId, $kontrakId),
+            'productionByBku' => $this->getProductionByBku($laporanQuery),
+
+            'reportingStatus' => $reporting['status'],
+            'missingReports' => $reporting['missing'],
+
+            'latestReports' => $this->getLatestReports($laporanQuery),
+            'missingDatesForOperator' => $this->getMissingDatesForOperator($user, $monitoring),
+        ]);
+    }
+
+    /**
+     * Scope laporan: operator BKU hanya BKU miliknya, plus filter BKU & kontrak.
+     */
+    private function applyLaporanScope(Builder $query, User $user, $bkuId, $kontrakId): void
+    {
         if ($user->isOperatorBku()) {
-            $laporanQuery->whereHas(
+            $query->whereHas(
                 'bkuKontrak',
-                fn(Builder $query) =>
-                    $query->where('bku_id', $user->bku_id)
+                fn(Builder $q) => $q->where('bku_id', $user->bku_id)
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filter BKU
-        |--------------------------------------------------------------------------
-        */
 
         if ($bkuId) {
-            $laporanQuery->whereHas(
+            $query->whereHas(
                 'bkuKontrak',
-                fn(Builder $query) =>
-                    $query->where('bku_id', $bkuId)
+                fn(Builder $q) => $q->where('bku_id', $bkuId)
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filter kontrak
-        |--------------------------------------------------------------------------
-        */
 
         if ($kontrakId) {
-            $laporanQuery->whereHas(
+            $query->whereHas(
                 'bkuKontrak',
-                fn(Builder $query) =>
-                    $query->where('kontrak_id', $kontrakId)
+                fn(Builder $q) => $q->where('kontrak_id', $kontrakId)
             );
         }
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | KPI
-        |--------------------------------------------------------------------------
-        */
+    /**
+     * Query dasar laporan (rentang tanggal + scope user + filter).
+     */
+    private function buildLaporanQuery(User $user, string $startDate, string $endDate, $bkuId, $kontrakId): Builder
+    {
+        $query = LaporanHarian::query()
+            ->whereBetween('tanggal', [$startDate, $endDate]);
 
+        $this->applyLaporanScope($query, $user, $bkuId, $kontrakId);
+
+        return $query;
+    }
+
+    /**
+     * KPI: total BKU, total kontrak, rata-rata produksi & lifting.
+     */
+    private function buildStats(Builder $laporanQuery, User $user, $bkuId, $kontrakId): array
+    {
         $totalProduksi = (clone $laporanQuery)->sum('total_produksi');
         $totalLifting = (clone $laporanQuery)->sum('total_lifting');
 
@@ -100,12 +121,7 @@ class DashboardController extends Controller
             ? $totalLifting / $jumlahHari
             : 0;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Total BKU
-        |--------------------------------------------------------------------------
-        */
-
+        // Total BKU
         $bkuQuery = Bku::query();
 
         if ($user->isOperatorBku()) {
@@ -118,12 +134,7 @@ class DashboardController extends Controller
 
         $totalBku = $bkuQuery->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Total kontrak
-        |--------------------------------------------------------------------------
-        */
-
+        // Total kontrak
         $bkuKontrakQuery = BkuKontrak::query();
 
         if ($user->isOperatorBku()) {
@@ -142,13 +153,20 @@ class DashboardController extends Controller
             ->distinct('kontrak_id')
             ->count('kontrak_id');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Grafik produksi harian
-        |--------------------------------------------------------------------------
-        */
+        return [
+            'total_bku' => $totalBku,
+            'total_kontrak' => $totalKontrak,
+            'average_produksi' => round($averageProduksi, 2),
+            'average_lifting' => round($averageLifting, 2),
+        ];
+    }
 
-        $productionChart = (clone $laporanQuery)
+    /**
+     * Grafik produksi harian.
+     */
+    private function getProductionChart(Builder $laporanQuery): Collection
+    {
+        return (clone $laporanQuery)
             ->selectRaw('DATE(tanggal) as tanggal')
             ->selectRaw('SUM(total_produksi) as total_produksi')
             ->groupBy('tanggal')
@@ -159,14 +177,14 @@ class DashboardController extends Controller
                 'total_produksi' => (float) $item->total_produksi,
             ])
             ->values();
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Grafik produksi vs lifting
-        |--------------------------------------------------------------------------
-        */
-
-        $productionLiftingChart = (clone $laporanQuery)
+    /**
+     * Data produksi vs lifting per tanggal.
+     */
+    private function getProductionLiftingChart(Builder $laporanQuery): Collection
+    {
+        return (clone $laporanQuery)
             ->selectRaw('DATE(tanggal) as tanggal')
             ->selectRaw('SUM(total_produksi) as total_produksi')
             ->selectRaw('SUM(total_lifting) as total_lifting')
@@ -179,14 +197,52 @@ class DashboardController extends Controller
                 'total_lifting' => (float) $item->total_lifting,
             ])
             ->values();
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Produksi berdasarkan BKU
-        |--------------------------------------------------------------------------
-        */
+    /**
+     * Grafik produksi vs lifting per bulan (12 bulan, total semua BKU).
+     */
+    private function getProductionMonthlyChart(User $user, $bkuId, $kontrakId): Collection
+    {
+        $chartStart = now()->startOfMonth()->subMonthNoOverflow(11);
+        $chartEnd = now()->endOfMonth();
 
-        $productionByBku = (clone $laporanQuery)
+        $monthlyQuery = LaporanHarian::query()
+            ->whereBetween('tanggal', [$chartStart->toDateString(), $chartEnd->toDateString()]);
+
+        $this->applyLaporanScope($monthlyQuery, $user, $bkuId, $kontrakId);
+
+        $monthlyRows = $monthlyQuery
+            ->selectRaw('EXTRACT(YEAR FROM tanggal) as tahun')
+            ->selectRaw('EXTRACT(MONTH FROM tanggal) as bulan')
+            ->selectRaw('SUM(total_produksi) as total_produksi')
+            ->selectRaw('SUM(total_lifting) as total_lifting')
+            ->groupBy('tahun', 'bulan')
+            ->get()
+            ->keyBy(fn($row) => sprintf('%04d-%02d', $row->tahun, $row->bulan));
+
+        // Isi semua bulan (bulan tanpa data = 0) agar grafik tidak bolong
+        return collect(range(0, 11))
+            ->map(function ($i) use ($chartStart, $monthlyRows) {
+                $month = $chartStart->copy()->addMonths($i);
+                $key = $month->format('Y-m');
+                $row = $monthlyRows->get($key);
+
+                return [
+                    'bulan' => $key,
+                    'total_produksi' => (float) ($row->total_produksi ?? 0),
+                    'total_lifting' => (float) ($row->total_lifting ?? 0),
+                ];
+            })
+            ->values();
+    }
+
+    /**
+     * Produksi berdasarkan BKU.
+     */
+    private function getProductionByBku(Builder $laporanQuery): Collection
+    {
+        return (clone $laporanQuery)
             ->join(
                 'bku_kontrak',
                 'laporan_harian.bku_kontrak_id',
@@ -218,13 +274,13 @@ class DashboardController extends Controller
                 'total_produksi' => (float) $item->total_produksi,
             ])
             ->values();
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Data BKU untuk filter
-        |--------------------------------------------------------------------------
-        */
-
+    /**
+     * Data BKU untuk filter.
+     */
+    private function getBkus(User $user): Collection
+    {
         $bkusQuery = Bku::query()
             ->select('id', 'nama')
             ->orderBy('nama');
@@ -233,14 +289,14 @@ class DashboardController extends Controller
             $bkusQuery->where('id', $user->bku_id);
         }
 
-        $bkus = $bkusQuery->get();
+        return $bkusQuery->get();
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Data kontrak untuk filter
-        |--------------------------------------------------------------------------
-        */
-
+    /**
+     * Data kontrak untuk filter.
+     */
+    private function getKontraks(User $user, $bkuId): Collection
+    {
         $kontraksQuery = Kontrak::query()
             ->select('id', 'nama')
             ->orderBy('nama');
@@ -261,18 +317,19 @@ class DashboardController extends Controller
             );
         }
 
-        $kontraks = $kontraksQuery->get();
+        return $kontraksQuery->get();
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Status pelaporan hari ini
-        |--------------------------------------------------------------------------
-        |
-        | Satu BKU dianggap "sudah melapor" apabila SEMUA kontraknya
-        | sudah memiliki laporan untuk hari ini.
-        |
-        */
-
+    /**
+     * Status pelaporan hari ini.
+     *
+     * Satu BKU dianggap "sudah melapor" apabila SEMUA kontraknya
+     * sudah memiliki laporan untuk hari ini.
+     *
+     * @return array{status: array, missing: Collection}
+     */
+    private function buildReportingStatus(User $user): array
+    {
         $today = now()->toDateString();
 
         $reportingBkusQuery = Bku::query()
@@ -345,13 +402,23 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Laporan terbaru
-        |--------------------------------------------------------------------------
-        */
+        return [
+            'status' => [
+                'total_bku' => $totalReportingBku,
+                'sudah_melapor' => $sudahMelapor,
+                'belum_melapor' => $belumMelapor,
+                'percentage' => $reportingPercentage,
+            ],
+            'missing' => $missingReports,
+        ];
+    }
 
-        $latestReports = (clone $laporanQuery)
+    /**
+     * 10 laporan terbaru.
+     */
+    private function getLatestReports(Builder $laporanQuery): Collection
+    {
+        return (clone $laporanQuery)
             ->with([
                 'bkuKontrak.bku',
                 'bkuKontrak.kontrak',
@@ -368,50 +435,17 @@ class DashboardController extends Controller
                 'total_produksi' => (float) $laporan->total_produksi,
                 'total_lifting' => (float) $laporan->total_lifting,
             ]);
+    }
 
-        // $riwayatBkuBelumLapor = $monitoring->getBkuBelumLapor();
-
-        // dd($riwayatBkuBelumLapor);
-
-        // Tanggal terlewat khusus untuk operator BKU
-        $missingDatesForOperator = [];
+    /**
+     * Tanggal terlewat khusus untuk operator BKU.
+     */
+    private function getMissingDatesForOperator(User $user, LaporanMonitoringService $monitoring): array|Collection
+    {
         if ($user->isOperatorBku() && $user->bku_id) {
-            $missingDatesForOperator = $monitoring->getMissingDatesForBku($user->bku_id);
+            return $monitoring->getMissingDatesForBku($user->bku_id);
         }
 
-        return Inertia::render('Dashboard', [
-            'stats' => [
-                'total_bku' => $totalBku,
-                'total_kontrak' => $totalKontrak,
-                'average_produksi' => round($averageProduksi, 2),
-                'average_lifting' => round($averageLifting, 2),
-            ],
-
-            'filters' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'bku_id' => $bkuId,
-                'kontrak_id' => $kontrakId,
-            ],
-
-            'bkus' => $bkus,
-            'kontraks' => $kontraks,
-            'bkuBelumLapor' => $monitoring->getBkuBelumLapor(),
-
-            'productionChart' => $productionChart,
-            'productionLiftingChart' => $productionLiftingChart,
-            'productionByBku' => $productionByBku,
-
-            'reportingStatus' => [
-                'total_bku' => $totalReportingBku,
-                'sudah_melapor' => $sudahMelapor,
-                'belum_melapor' => $belumMelapor,
-                'percentage' => $reportingPercentage,
-            ],
-
-            'missingReports' => $missingReports,
-            'latestReports' => $latestReports,
-            'missingDatesForOperator' => $missingDatesForOperator,
-        ]);
+        return [];
     }
 }

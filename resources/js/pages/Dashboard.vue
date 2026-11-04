@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, Ref, watchEffect } from 'vue';
+import { computed, reactive, ref, Ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -23,13 +23,14 @@ import {
 } from '@/components/ui/select';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import { SharedData } from '@/types';
-import { Label } from '@/Components/ui/label';
+import { Label } from '@/components/ui/label';
 import {
     VisAxis,
     VisGroupedBar,
+    VisTooltip,
     VisXYContainer,
 } from '@unovis/vue';
-import ChartContainer from '@/components/ui/chart/ChartContainer.vue';
+import { GroupedBar } from '@unovis/ts';
 
 interface Bku {
     id: number;
@@ -121,6 +122,12 @@ interface MissingDateForOperator {
     }[];
 }
 
+interface ProductionMonthlyItem {
+    bulan: string; // "2026-11"
+    total_produksi: number;
+    total_lifting: number;
+}
+
 const props = defineProps<{
     stats: Stats;
     filters: {
@@ -133,6 +140,7 @@ const props = defineProps<{
     kontraks: Kontrak[];
     productionChart: ProductionChartItem[];
     productionLiftingChart: ProductionLiftingItem[];
+    productionMonthlyChart: ProductionMonthlyItem[];
     productionByBku: ProductionByBku[];
     reportingStatus: ReportingStatus;
     missingReports: MissingReport[];
@@ -142,41 +150,55 @@ const props = defineProps<{
 }>();
 
 interface ChartData {
-    tanggal: number;
+    index: number;
+    label: string;
     total_produksi: number;
     total_lifting: number;
 }
 
-const chartData = computed<ChartData[]>(() => {
-    return props.productionLiftingChart.map((item) => ({
-        tanggal: new Date(item.tanggal).getTime(),
+const chartData = computed<ChartData[]>(() =>
+    props.productionMonthlyChart.map((item, index) => ({
+        index,
+        label: new Intl.DateTimeFormat('id-ID', {
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'UTC',
+        }).format(new Date(`${item.bulan}-01T00:00:00Z`)),
         total_produksi: Number(item.total_produksi),
         total_lifting: Number(item.total_lifting),
-    }));
-});
+    })),
+);
 
-watchEffect(() => {
-    console.log('DATA PERTAMA BACKEND:', props.productionLiftingChart[0]);
-    console.log('HASIL CHART DATA:', chartData.value);
-    console.log('HASIL KONVERSI TANGGAL:', chartData.value[0]?.tanggal);
-});
+const isChartEmpty = computed(() =>
+    chartData.value.every((d) => d.total_produksi === 0 && d.total_lifting === 0),
+);
 
-const chartConfig = {
-    total_produksi: {
-        label: 'Produksi',
-        color: '#EAB308',
-    },
-    total_lifting: {
-        label: 'Lifting',
-        color: '#166534',
-    },
+const seriesColors = ['#EAB308', '#166534'];
+
+const chartColors = (_d: ChartData, i: number): string => seriesColors[i];
+
+const tooltipTriggers = {
+    [GroupedBar.selectors.bar]: (d: ChartData): string => `
+        <div style="min-width:170px">
+            <div style="font-weight:600;margin-bottom:6px">${d.label}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <span style="display:flex;align-items:center;gap:6px">
+                    <span style="width:10px;height:10px;border-radius:2px;background:${seriesColors[0]}"></span>
+                    Produksi
+                </span>
+                <strong>${formatNumber(d.total_produksi)}</strong>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px">
+                <span style="display:flex;align-items:center;gap:6px">
+                    <span style="width:10px;height:10px;border-radius:2px;background:${seriesColors[1]}"></span>
+                    Lifting
+                </span>
+                <strong>${formatNumber(d.total_lifting)}</strong>
+            </div>
+        </div>
+    `,
 };
-
-const chartColors = (d: ChartData, index: number): string => {
-    return index === 0
-        ? chartConfig.total_produksi.color
-        : chartConfig.total_lifting.color;
-};
+const xTickValues = computed(() => chartData.value.map((d) => d.index));
 
 const defaultPlaceholder = today(getLocalTimeZone())
 
@@ -284,7 +306,7 @@ const applyFilter = () => {
         {
             preserveScroll: true,
             preserveState: true,
-            only: ['productionChart', 'stats'],
+            only: ['filters', 'stats', 'productionChart', 'productionLiftingChart', 'productionMonthlyChart', 'productionByBku'],
         },
     );
 };
@@ -735,7 +757,6 @@ const isBku = computed(() => {
                     </CardContent>
                 </Card>
 
-
                 <!-- Grafik Perbandingan Produksi & Lifting -->
                 <Card>
                     <CardHeader>
@@ -746,32 +767,26 @@ const isBku = computed(() => {
                     </CardHeader>
 
                     <CardContent>
-                        <div v-if="chartData.length === 0"
+                        <div v-if="isChartEmpty"
                             class="flex h-80 items-center justify-center text-sm text-muted-foreground">
-                            Belum ada data produksi pada periode ini.
+                            Belum ada data produksi.
                         </div>
 
                         <div v-else class="h-[350px] w-full">
                             <VisXYContainer :data="chartData" :height="320"
                                 :margin="{ top: 20, right: 20, bottom: 40, left: 60 }">
-                                <VisGroupedBar :x="(d: ChartData) => d.tanggal" :y="[
+                                <VisGroupedBar :x="(d: ChartData) => d.index" :y="[
                                     (d: ChartData) => d.total_produksi,
                                     (d: ChartData) => d.total_lifting,
                                 ]" :color="chartColors" :rounded-corners="4" :group-padding="0.2" :bar-padding="0.1" />
 
-                                <VisAxis type="x" :x="(d: ChartData) => d.tanggal" :tick-format="(value: number) =>
-                                    new Date(value).toLocaleDateString('id-ID', {
-                                        day: '2-digit',
-                                        month: 'short',
-                                        timeZone: 'Asia/Jakarta',
-                                    })
-                                    " />
+                                <VisAxis type="x" :tick-values="xTickValues"
+                                    :tick-format="(i: number) => chartData[i]?.label ?? ''" />
 
-                                <VisAxis type="y" :tick-format="(value: number) =>
-                                    new Intl.NumberFormat('id-ID', {
-                                        notation: 'compact',
-                                    }).format(value)
-                                    " />
+                                <VisAxis type="y" :tick-format="(v: number) =>
+                                    new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(v)" />
+
+                                <VisTooltip :triggers="tooltipTriggers" />
                             </VisXYContainer>
                         </div>
 

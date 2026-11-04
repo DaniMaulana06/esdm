@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -186,10 +186,6 @@ const isAdmin = computed(() => user.value?.role === 'admin');
 
 const isStafEsdmOrAdmin = computed(() => {
     return isAdmin.value || isStafEsdm.value;
-});
-
-const isOperatorBku = computed(() => {
-    return user.value?.role === 'operator_bku';
 });
 
 </script>

@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import daftarKota from '@/data/kota_sumsel.json';
 import Select from '@/components/ui/select/Select.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import { Label } from '@/components/ui/label';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';

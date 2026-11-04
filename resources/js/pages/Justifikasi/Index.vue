@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbItem, SharedData } from '@/types';
-import Label from '@/Components/ui/label/Label.vue';
+import { Label } from '@/components/ui/label';
 import { CalendarIcon } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [

@@ -8,7 +8,7 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import InputError from './InputError.vue';
 import Checkbox from './ui/checkbox/Checkbox.vue';
-import Label from '@/Components/ui/label/Label.vue';
+import Label from '@/components/ui/label/Label.vue';
 import TextLink from './TextLink.vue';
 import FieldSeparator from './ui/field/FieldSeparator.vue';
 
