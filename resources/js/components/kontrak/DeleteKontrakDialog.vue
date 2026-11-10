@@ -40,7 +40,7 @@ watch(
 );
 
 const expectedText = () => {
-    return `delete BKU ${props.kontrak?.nama ?? ''}`;
+    return `delete Kontrak ${props.kontrak?.nama ?? ''}`;
 };
 
 const confirmDelete = () => {
