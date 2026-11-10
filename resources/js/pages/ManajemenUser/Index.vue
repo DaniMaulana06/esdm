@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -79,6 +80,29 @@ const deleteUser = (id: number) => {
             }),
         );
     }
+};
+
+const currentQuery = () => {
+    const query = new URLSearchParams(window.location.search);
+    const result: Record<string, string> = {};
+    query.forEach((value, key) => {
+        result[key] = value;
+    });
+    return result;
+};
+
+const goToPage = (page: number) => {
+    router.get(
+        route('users.index'),
+        {
+            ...currentQuery(),
+            page,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 </script>
 
@@ -213,31 +237,27 @@ const deleteUser = (id: number) => {
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="props.users.last_page > 1" class="flex items-center justify-between border-t px-6 py-4">
-                    <div class="text-sm text-gray-600">
-                        Menampilkan
-                        {{ props.users.from ?? 0 }}
-                        -
-                        {{ props.users.to ?? 0 }}
-                        dari
-                        {{ props.users.total }}
-                        user
-                    </div>
+                <div v-if="props.users.last_page > 1"
+                    class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
 
-                    <div class="flex gap-1">
-                        <template v-for="(link, index) in props.users.links" :key="index">
-                            <Link v-if="link.url" :href="link.url"
-                                class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50" :class="{
-                                    'bg-blue-600 text-white hover:bg-blue-600':
-                                        link.active,
-                                }"> {{ link.label }}</Link>
+                    <!-- Navigasi halaman -->
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="users.per_page" :total="users.total"
+                        :page="users.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
 
-                            <span v-else
-                                class="rounded-md border px-3 py-1.5 text-sm text-gray-400">
-                                {{ link.label }}
-                            </span>
-                        </template>
-                    </div>
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
+
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
+
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </div>

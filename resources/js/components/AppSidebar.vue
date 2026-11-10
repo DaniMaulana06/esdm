@@ -1,25 +1,38 @@
 <script setup lang="ts">
-import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarRail,
+} from '@/components/ui/sidebar';
+import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import type { NavItem, SharedData } from '@/types';
-import { 
-    LayoutGrid, 
-    Home,
-    Building2, 
-    LandPlot,
-    Signature,
-    NotepadText,
-    FilePenLine,
-    UserRoundCog,
-} from 'lucide-vue-next';
+import { Building2, Home, NotepadText, UserRoundCog } from 'lucide-vue-next';
+import { computed, type Component } from 'vue';
 import AppLogo from './AppLogo.vue';
-import { computed } from 'vue';
+import NavCollapsible from './NavCollapsible.vue';
+
+interface NavChild {
+    title: string;
+    href: string;
+    roles: string[];
+}
+interface NavGroup {
+    title: string;
+    icon: Component;
+    href?: string;
+    roles?: string[]; // untuk menu tunggal
+    items?: NavChild[]; // untuk grup
+}
 
 const page = usePage<SharedData>();
 
-const mainNavItems: (NavItem & { roles: string[]})[]= [
+const navMain: NavGroup[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -27,44 +40,23 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         roles: ['admin', 'staf_dinas', 'operator_bku'],
     },
     {
-        title: 'BKU',
-        href: '/bku',
+        title: 'Data Master',
         icon: Building2,
-        roles: ['admin', 'staf_dinas'],
+        items: [
+            { title: 'BKU', href: '/bku', roles: ['admin', 'staf_dinas'] },
+            { title: 'Sumur', href: '/sumur', roles: ['admin', 'staf_dinas', 'operator_bku'] },
+            { title: 'Kontrak', href: '/kontrak', roles: ['admin', 'staf_dinas'] },
+            { title: 'BKU Kontrak', href: '/bku-kontrak', roles: ['admin', 'staf_dinas'] },
+        ],
     },
     {
-        title: 'Sumur',
-        href: '/sumur',
-        icon: LandPlot,
-        roles: ['admin', 'staf_dinas','operator_bku'],
-    },
-    {
-        title: 'Kontrak',
-        href: '/kontrak',
-        icon: Signature,
-        roles: ['admin', 'staf_dinas'],
-    },
-    {
-        title: 'BKU Kontrak',
-        href: '/bku-kontrak',
-        icon: LayoutGrid,
-        roles: ['admin', 'staf_dinas'],
-    },
-
-    {
-        title: 'Laporan Harian',
-        href: '/laporan-harian',
+        title: 'Laporan',
         icon: NotepadText,
-        roles: ['admin', 'staf_dinas', 'operator_bku'],
+        items: [
+            { title: 'Laporan Harian', href: '/laporan-harian', roles: ['admin', 'staf_dinas', 'operator_bku'] },
+            { title: 'Justifikasi', href: '/justifikasi', roles: ['admin', 'staf_dinas'] },
+        ],
     },
-
-    {
-        title: 'Justifikasi',
-        href: '/justifikasi',
-        icon: FilePenLine,
-        roles: ['admin', 'staf_dinas'],
-    },
-    
     {
         title: 'Manajemen User',
         href: '/users',
@@ -72,12 +64,15 @@ const mainNavItems: (NavItem & { roles: string[]})[]= [
         roles: ['admin'],
     },
 ];
-const visibleMenuItems = computed(() => {
-    const role = page.props.auth.user?.role;
 
-    return mainNavItems.filter((item) =>
-        item.roles.includes(role)
-    );
+const visibleMenuItems = computed(() => {
+    const role = page.props.auth.user?.role ?? '';
+
+    return navMain
+        .map((group) =>
+            group.items ? { ...group, items: group.items.filter((c) => c.roles.includes(role)) } : group,
+        )
+        .filter((group) => (group.items ? group.items.length > 0 : group.roles?.includes(role)));
 });
 </script>
 
@@ -96,12 +91,13 @@ const visibleMenuItems = computed(() => {
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="visibleMenuItems" />
+            <NavCollapsible :items="visibleMenuItems" />
         </SidebarContent>
 
         <SidebarFooter>
             <NavUser />
         </SidebarFooter>
+        <SidebarRail />
     </Sidebar>
     <slot />
 </template>

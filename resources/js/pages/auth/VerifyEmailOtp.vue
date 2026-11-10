@@ -4,6 +4,7 @@ import Input from '@/components/ui/input/Input.vue'
 import { Label } from '@/components/ui/label'
 import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
+import { PinInput, PinInputGroup, PinInputSlot } from '@/components/ui/pin-input'
 
 const page = usePage<{
     status?: string | null
@@ -25,9 +26,19 @@ function sendOtp() {
     })
 }
 
+const otpValue = computed({
+    get: () => otpForm.otp.split(''),
+    set: (val: string[]) => {
+        otpForm.otp = val.join('')
+    },
+})
+
 function verifyOtp() {
     otpForm.post(route('email-otp.verify'), {
         preserveScroll: true,
+        onError: () => {
+            otpForm.reset('otp')
+        },
     })
 }
 </script>
@@ -72,19 +83,26 @@ function verifyOtp() {
             </form>
 
             <div class="border-t pt-5">
-                <form @submit.prevent="verifyOtp" class="space-y-3">
-                    <Label for="otp" class="block text-sm font-medium text-gray-700">
+
+                <form @submit.prevent="verifyOtp" class="space-y-4">
+                    <Label class="block text-center text-sm font-medium text-gray-700">
                         Kode OTP
                     </Label>
 
-                    <Input id="otp" v-model="otpForm.otp" type="text" inputmode="numeric" autocomplete="one-time-code"
-                        maxlength="6" pattern="[0-9]{6}" required placeholder="Masukkan 6 digit kode"
-                        class="w-full tracking-widest focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-0" />
-                    <p v-if="otpForm.errors.otp" class="text-sm text-red-600">
+                    <div class="flex justify-center">
+                        <PinInput :v-model="otpValue" type="number" placeholder="○" otp @complete="verifyOtp">
+                            <PinInputGroup class="gap-2">
+                                <PinInputSlot v-for="(id, index) in 6" :key="id" :index="index"
+                                    class="h-12 w-11 rounded-md border text-lg font-semibold" />
+                            </PinInputGroup>
+                        </PinInput>
+                    </div>
+
+                    <p v-if="otpForm.errors.otp" class="text-center text-sm text-red-600">
                         {{ otpForm.errors.otp }}
                     </p>
 
-                    <Button type="submit" :disabled="otpForm.processing"
+                    <Button type="submit" :disabled="otpForm.processing || otpForm.otp.length < 6"
                         class="w-full rounded-md bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:opacity-60">
                         {{ otpForm.processing ? 'Memverifikasi...' : 'Verifikasi Email' }}
                     </Button>

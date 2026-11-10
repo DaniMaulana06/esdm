@@ -15,9 +15,7 @@ use Inertia\Response;
 
 class EmailOtpVerificationController extends Controller
 {
-    /**
-     * Menampilkan halaman verifikasi email.
-     */
+    // show halaman verifikasi email
     public function show(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
@@ -35,9 +33,7 @@ class EmailOtpVerificationController extends Controller
         ]);
     }
 
-    /**
-     * Mengirim kode OTP ke email aktif yang dimasukkan operator.
-     */
+    //send kode otp ke email yang di input
     public function send(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -109,9 +105,7 @@ class EmailOtpVerificationController extends Controller
         );
     }
 
-    /**
-     * Memvalidasi OTP dan mengaktifkan email operator.
-     */
+    //memvalidasi OTP dan mengaktifkan email operator
     public function verify(Request $request): RedirectResponse
     {
         $user = $request->user();

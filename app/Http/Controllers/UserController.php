@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Bku;
 use App\Models\User;
-use Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         $users = User::with('bku:id,nama')
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
         return Inertia::render('ManajemenUser/Index', [
             'users' => $users,
