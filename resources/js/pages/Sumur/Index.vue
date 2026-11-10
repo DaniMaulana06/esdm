@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DeleteSumurDialog from '@/components/sumur/DeleteSumurDialog.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import { Label } from '@/components/ui/label';
@@ -68,13 +69,6 @@ interface Filters {
     search: string;
     bku_id: string | number;
     kontrak_id: string | number;
-}
-
-
-const deleteItem = (id: number) => {
-    if (confirm('apakah kamu yakin ingin menghapus sumur ini?')) {
-        router.delete(route('sumur.destroy', id));
-    }
 }
 
 const cekLokasi = (latitude: number | null, longitude: number | null) => {
@@ -170,6 +164,13 @@ const flash = computed(() => page.props.flash as {
 
 const showFlash = ref(true);
 
+const showDeleteDialog = ref(false);
+const sumurToDelete = ref<Sumur | null>(null);
+const openDeleteDialog = (sumur: Sumur) => {
+    sumurToDelete.value = sumur;
+    showDeleteDialog.value = true;
+}
+
 onMounted(() => {
     if (flash.value.success || flash.value.error) {
         setTimeout(() => {
@@ -237,7 +238,6 @@ const isStafEsdmOrAdmin = computed(() => {
                     ×
                 </button>
             </div>
-
 
             <!-- FILTER DATA SUMUR -->
             <div class="mb-4 rounded-lg border bg-card p-4 shadow-sm">
@@ -317,7 +317,6 @@ const isStafEsdmOrAdmin = computed(() => {
                     </Button>
                 </div>
             </div>
-
 
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <div class="w-full">
@@ -413,7 +412,7 @@ const isStafEsdmOrAdmin = computed(() => {
                                             <Pencil :size="16" :stroke-width="3" />
                                         </Link>
 
-                                        <Button @click="deleteItem(smr.id)" v-if="isStafEsdm"
+                                        <Button @click="openDeleteDialog(smr)" v-if="isStafEsdm"
                                             class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                             <Trash2 :size="16" :stroke-width="3" />
                                         </Button>
@@ -454,5 +453,8 @@ const isStafEsdmOrAdmin = computed(() => {
                 </Pagination>
             </div>
         </div>
+
+        <DeleteSumurDialog :open="showDeleteDialog" :sumur="sumurToDelete" @update:open="showDeleteDialog = $event"
+            @deleted="sumurToDelete = null" />
     </AppLayout>
 </template>

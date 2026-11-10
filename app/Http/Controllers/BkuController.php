@@ -22,6 +22,7 @@ class BkuController extends Controller
         
         return Inertia::render('Bku/Index', [
             'bkus' => $bkus,
+            'kategoris' => KategoriBku::values(),
         ]);
     }
 

@@ -57,6 +57,13 @@ const getLaporanError = (
     ];
 };
 
+const getTotalProduksiLifting = (index: number) => {
+    const produksi = Number(form.laporan[index].total_produksi) || 0;
+    const lifting = Number(form.laporan[index].total_lifting) || 0;
+
+    return produksi + lifting;
+}
+
 const form = useForm({
     tanggal: new Date().toISOString().split('T')[0],
     laporan: props.bkuKontraks.map((item) => ({
@@ -256,6 +263,17 @@ const closeFlash = () => {
                                                 <InputError :message="getLaporanError(index, 'total_lifting')"
                                                     class="mt-2" />
                                             </div>
+
+                                            <p class="text-sm font-bold text-gray-700 tabular-nums px-4 pb-4">
+                                                Total:
+                                                {{
+                                                    getTotalProduksiLifting(index).toLocaleString('id-ID', {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })
+                                                }}
+                                                <span class="text-sm font-medium">Barel</span>
+                                            </p>
                                         </div>
 
                                     </div>

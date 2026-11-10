@@ -4,18 +4,11 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
-
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import DeleteBkuDialog from '@/components/bku/DeleteBkuDialog.vue';
+import AddBkuDialog from '@/components/bku/AddBkuDialog.vue';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -49,7 +42,9 @@ interface PaginationData<T> {
 
 const props = defineProps<{
     bkus: PaginationData<Bku>;
+    kategoris: string[];
 }>();
+const kategoris = props.kategoris;
 
 const currentQuery = () => {
     const query = new URLSearchParams(window.location.search);
@@ -61,7 +56,7 @@ const currentQuery = () => {
 };
 
 const page = usePage<SharedData>();
-    
+
 const goToPage = (page: number) => {
     router.get(
         route('bku.index'),
@@ -103,33 +98,13 @@ const closeFlash = () => {
 };
 
 const showDeleteDialog = ref(false);
+const showAddDialog = ref(false);
 const bkuToDelete = ref<Bku | null>(null);
-const deleteConfirmText = ref('');
 
 const openDeleteDialog = (bku: Bku) => {
     bkuToDelete.value = bku;
-    deleteConfirmText.value = '';
     showDeleteDialog.value = true;
-}
-
-const confirmDelete = () => {
-    if (!bkuToDelete.value) return;
-    const expected = `delete BKU ${bkuToDelete.value.nama}`;
-    if (deleteConfirmText.value.trim() !== expected) return;
-    router.delete(route('bku.destroy', bkuToDelete.value.id), {
-        onSuccess: () => {
-            showDeleteDialog.value = false;
-            bkuToDelete.value = null;
-            deleteConfirmText.value = '';
-        }
-    });
-}
-
-const cancelDelete = () => {
-    showDeleteDialog.value = false;
-    bkuToDelete.value = null;
-    deleteConfirmText.value = '';
-}
+};
 </script>
 
 <template>
@@ -147,11 +122,17 @@ const cancelDelete = () => {
                         Kelola data BKU.
                     </p>
                 </div>
-                <Link :href="route('bku.create')" prefetch v-if="isStafEsdm"
+                <!-- <Link :href="route('bku.create')" prefetch v-if="isStafEsdm"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah BKU
-                </Link>
+                </Link> -->
+                <Button
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    v-if="isStafEsdm" @click="showAddDialog = true">
+                    <Plus :size="18" />
+                    Tambah BKU
+                </Button>
             </div>
 
             <!-- FLASH SUCCESS -->
@@ -285,42 +266,9 @@ const cancelDelete = () => {
             </Pagination>
         </div>
 
-        <!-- DIALOG KONFIRMASI HAPUS BKU -->
-        <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
-            <DialogContent class="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle class="text-red-600">Hapus BKU</DialogTitle>
-                    <DialogDescription>
-                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data BKU akan dihapus secara permanen.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <DialogDescription class="my-2 space-y-3">
-                    <strong>
-                        <p class="text-sm text-gray-700">
-                            Untuk mengonfirmasi, ketik:
-                            <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                        delete BKU {{ bkuToDelete?.nama }}
-                    </code>
-                        </p>
-                    </strong>
-                    <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
-                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
-                </DialogDescription>
-
-                <DialogFooter>
-                    <DialogClose>
-                        <button @click="cancelDelete" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
-                            Batal
-                        </button>
-                    </DialogClose>
-                    <button @click="confirmDelete"
-                        :disabled="deleteConfirmText.trim() !== `delete BKU ${bkuToDelete?.nama}`"
-                        class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-                        Ya, Hapus
-                    </button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <DeleteBkuDialog :open="showDeleteDialog" :bku="bkuToDelete" @update:open="showDeleteDialog = $event"
+            @deleted="bkuToDelete = null" />
+        <AddBkuDialog v-model:open="showAddDialog" :kategoris="kategoris"
+            @created="router.reload({ only: ['bkus'] })" />
     </AppLayout>
 </template>

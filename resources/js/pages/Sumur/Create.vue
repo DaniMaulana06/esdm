@@ -94,19 +94,6 @@ const submit = () => {
                             <Label for="bku_kontrak_id">
                                 Kontrak
                             </Label>
-                            <!-- 
-                            <select id="bku_kontrak_id" v-model="form.bku_kontrak_id"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                                <option value="" disabled>
-                                    Pilih Kontrak
-                                </option>
-
-                                <option v-for="item in props.bkuKontraks" :key="item.id" :value="item.id">
-                                    {{ item.bku.nama }}
-                                    -
-                                    {{ item.kontrak.nama }}
-                                </option>
-                            </select> -->
 
                             <Select v-model="form.bku_kontrak_id">
                                 <SelectTrigger class="w-[280px]">
@@ -227,7 +214,7 @@ const submit = () => {
                         <!-- Button -->
                         <div class="flex justify-end gap-3 md:col-span-2">
                             <Button variant="outline" as-child>
-                                <Link :href="route('sumur.index')">
+                                <Link :href="route('sumur.index')" prefetch>
                                     Batal
                                 </Link>
                             </Button>
