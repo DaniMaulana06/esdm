@@ -39,7 +39,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon } from 'lucide-vue-next';
+import { CalendarIcon, RotateCw, Search } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -112,7 +112,7 @@ const parseToCalendarDate = (str?: string): DateValue | undefined => {
     return new CalendarDate(y, m, d);
 };
 
- 
+
 const selectedDate = ref<any>(
     parseToCalendarDate(props.filters.tanggal)
 );
@@ -353,10 +353,12 @@ const isStafEsdm = computed(() => {
                             <!-- Tombol Filter -->
                             <div class="flex gap-2 sm:ml-auto">
                                 <Button variant="outline" @click="resetFilter">
+                                    <RotateCw/>
                                     Reset
                                 </Button>
 
-                                <Button @click="applyFilter">
+                                <Button @click="applyFilter" variant="submit">
+                                    <Search/>
                                     Terapkan
                                 </Button>
 
@@ -515,7 +517,7 @@ const isStafEsdm = computed(() => {
                                                 justifikasi.status ===
                                                 'pending'
                                             " class="flex justify-end gap-2">
-                                                <Button size="sm" class="bg-yellow-500 hover:bg-yellow-600"
+                                                <Button size="sm" variant="submit"
                                                     @click="openProcessDialog(justifikasi)">
                                                     Konfirmasi
                                                 </Button>
@@ -605,7 +607,7 @@ const isStafEsdm = computed(() => {
                                 <p class="text-xs text-gray-500">
                                     Total Produksi
                                 </p>
-    
+
                                 <p class="mt-1 font-medium">
                                     {{
                                         formatNumber(
@@ -614,12 +616,12 @@ const isStafEsdm = computed(() => {
                                     }}
                                 </p>
                             </div>
-    
+
                             <div>
                                 <p class="text-xs text-gray-500">
                                     Total Lifting
                                 </p>
-    
+
                                 <p class="mt-1 font-medium">
                                     {{
                                         formatNumber(
@@ -636,7 +638,7 @@ const isStafEsdm = computed(() => {
                                 <p class="text-xs text-gray-500">
                                     Produksi Usulan
                                 </p>
-    
+
                                 <p class="mt-1 font-medium">
                                     {{
                                         formatNumber(
@@ -645,12 +647,12 @@ const isStafEsdm = computed(() => {
                                     }}
                                 </p>
                             </div>
-    
+
                             <div>
                                 <p class="text-xs text-gray-500">
                                     Lifting Usulan
                                 </p>
-    
+
                                 <p class="mt-1 font-medium">
                                     {{
                                         formatNumber(
@@ -687,7 +689,7 @@ const isStafEsdm = computed(() => {
                         Tolak
                     </Button>
 
-                    <Button @click="handleProcess('approved')" class="bg-green-600 hover:bg-green-900">
+                    <Button @click="handleProcess('approved')" class="bg-green-600 hover:bg-green-900 text-white">
                         Setujui
                     </Button>
                 </DialogFooter>

@@ -16,6 +16,7 @@ import { Building2, Home, NotepadText, UserRoundCog } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 import AppLogo from './AppLogo.vue';
 import NavCollapsible from './NavCollapsible.vue';
+import Separator from './ui/separator/Separator.vue';
 
 interface NavChild {
     title: string;
@@ -94,6 +95,7 @@ const visibleMenuItems = computed(() => {
             <NavCollapsible :items="visibleMenuItems" />
         </SidebarContent>
 
+        <Separator/>
         <SidebarFooter>
             <NavUser />
         </SidebarFooter>

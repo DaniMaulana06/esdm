@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
+import { RotateCw } from '@lucide/vue';
 import { MapPin, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
@@ -199,15 +200,15 @@ const isStafEsdmOrAdmin = computed(() => {
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900">
-                        Kelola Data Sumur
+                        Sumur
                     </h1>
-                    <!-- 
+                    
                     <p class="mt-1 text-sm text-gray-600">
-                        Kelola data BKU.
-                    </p> -->
+                        Kelola data Sumur Minyak.
+                    </p>
                 </div>
                 <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku" prefetch
-                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah Sumur
                 </Link>
@@ -308,11 +309,12 @@ const isStafEsdmOrAdmin = computed(() => {
                 <!-- Tombol Filter -->
                 <div class="mt-4 flex justify-end gap-2">
                     <Button type="button" variant="outline" @click="resetFilter">
+                        <RotateCw />
                         Reset
                     </Button>
 
-                    <Button type="button" @click="applyFilter">
-                        <Search class="mr-2 h-4 w-4" />
+                    <Button type="button" @click="applyFilter" class="hover:bg-yellow-600">
+                        <Search class="mr-1 h-4 w-4"/>
                         Terapkan Filter
                     </Button>
                 </div>

@@ -223,7 +223,7 @@ const submit = () => {
                             Batal
                         </Button>
 
-                        <Button type="submit" :disabled="form.processing">
+                        <Button type="submit" :disabled="form.processing" variant="submit">
                             {{
                                 form.processing
                                     ? 'Mengirim...'

@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/select';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import { Label } from '@/components/ui/label';
+import { Plus, RotateCw } from '@lucide/vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -416,8 +417,9 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                 </div>
 
                 <Link v-if="isOperatorBku" :href="route('laporan-harian.create')" prefetch
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                    + Buat Laporan Harian
+                    class="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    <Plus class="h-5 w-5 mr-2" />
+                    Buat Laporan Harian
                 </Link>
             </div>
 
@@ -500,9 +502,9 @@ const openJustifikasi = (laporan: LaporanHarian) => {
 
                     <!-- Tanggal -->
                     <div>
-                        <label class="mb-2 block text-sm font-medium">
+                        <Label class="mb-2 block text-sm font-medium">
                             Tanggal
-                        </label>
+                        </Label>
 
                         <Popover>
                             <PopoverTrigger as-child>
@@ -533,9 +535,10 @@ const openJustifikasi = (laporan: LaporanHarian) => {
 
                 <div class="mt-4 flex justify-end gap-2 items-end">
                     <Button type="button" variant="outline" @click="resetFilter">
+                        <RotateCw />
                         Reset
                     </Button>
-                    <Button type="button" @click="applyFilter">
+                    <Button type="button" @click="applyFilter" variant="submit">
                         <Search />
                         Cari
                     </Button>

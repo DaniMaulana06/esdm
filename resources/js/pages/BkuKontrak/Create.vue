@@ -143,8 +143,8 @@ const submit = () => {
                                     </Link>
                                 </Button>
 
-                                <Button type="submit" :disabled="form.processing">
-                                    <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
+                                <Button type="submit" :disabled="form.processing" variant="submit" >
+                                    <Save color="#000000" :stroke-width="2.5" v-if="!form.processing" />
                                     {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
                                 </Button>
                             </div>

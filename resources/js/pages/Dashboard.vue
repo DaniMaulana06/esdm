@@ -31,6 +31,7 @@ import {
     VisXYContainer,
 } from '@unovis/vue';
 import { GroupedBar } from '@unovis/ts';
+import { RotateCw, Search } from 'lucide-vue-next';
 
 interface Bku {
     id: number;
@@ -626,10 +627,12 @@ const isBku = computed(() => {
 
                         <div class="mt-4 flex justify-end gap-2">
                             <Button type="button" variant="outline" @click="resetFilter">
+                                <RotateCw/>
                                 Reset
                             </Button>
 
-                            <Button type="button" @click="applyFilter">
+                            <Button type="button" @click="applyFilter" variant="submit">
+                                <Search/>
                                 Terapkan Filter
                             </Button>
                         </div>

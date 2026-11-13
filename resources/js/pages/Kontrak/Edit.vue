@@ -13,7 +13,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-
 interface Kontrak {
     id: number;
     nama: string;
@@ -30,7 +29,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
         href: route('kontrak.index')
     },
     {
-        title: 'Edit BKU Kontrak',
+        title: 'Edit Kontrak',
         href: route('kontrak.edit', {
             kontrak: props.kontrak.id,
         })
@@ -104,7 +103,7 @@ const submit = () => {
 
                                 <Button type="submit" :disabled="form.processing"
                                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                                    <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing"/>
+                                    <Upload color="#ffffff" :stroke-width="3" v-if="!form.processing" />
                                     {{ form.processing ? 'Memperbarui...' : 'Update' }}
                                 </Button>
                             </div>

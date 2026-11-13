@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -198,10 +199,10 @@ const cancelDelete = () => {
                                         <Pencil :size="16" :stroke-width="3" />
                                     </Link>
 
-                                    <button @click="openDeleteDialog(bkuKontrak)" v-if="isStafEsdm"
+                                    <Button @click="openDeleteDialog(bkuKontrak)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700">
                                         <Trash2 :size="16" :stroke-width="3" />
-                                    </button>
+                                    </Button>
                                 </div>
                             </td>
                         </tr>

@@ -129,7 +129,7 @@ const openDeleteDialog = (bku: Bku) => {
                 </Link> -->
                 <Button
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                    v-if="isStafEsdm" @click="showAddDialog = true">
+                    v-if="isStafEsdm" @click="showAddDialog = true" >
                     <Plus :size="18" />
                     Tambah BKU
                 </Button>
@@ -224,10 +224,10 @@ const openDeleteDialog = (bku: Bku) => {
                                         <Pencil :size="16" :stroke-width="3" />
                                     </Link>
 
-                                    <button @click="openDeleteDialog(bku)" v-if="isStafEsdm"
+                                    <Button @click="openDeleteDialog(bku)" v-if="isStafEsdm"
                                         class="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700">
                                         <Trash2 :size="16" :stroke-width="3" />
-                                    </button>
+                                    </Button>
                                 </div>
                             </td>
                         </tr>

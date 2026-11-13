@@ -201,7 +201,7 @@ const submit = () => {
                         Batal
                     </Button>
 
-                    <Button type="submit" :disabled="form.processing">
+                    <Button type="submit" :disabled="form.processing" variant="submit">
                         <Save
                             v-if="!form.processing"
                             :size="18"
