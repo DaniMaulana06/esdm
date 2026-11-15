@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\KategoriBku;
+use App\Filters\BkuFilter;
 use App\Http\Requests\StoreBkuRequest;
 use App\Http\Requests\UpdateBkuRequest;
 use App\Models\Bku;
@@ -10,19 +11,23 @@ use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class BkuController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $bkus = Bku::query()
+        $filter = new BkuFilter($request);
+
+        $bkus = $filter->apply(Bku::query())
             ->latest()
             ->paginate(10)
             ->withQueryString();
-        
+
         return Inertia::render('Bku/Index', [
-            'bkus' => $bkus,
+            'bkus'      => $bkus,
             'kategoris' => KategoriBku::values(),
+            'filters'   => $request->only(['search', 'kategori']),
         ]);
     }
 

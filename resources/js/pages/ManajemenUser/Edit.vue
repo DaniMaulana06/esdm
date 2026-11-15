@@ -92,7 +92,7 @@ const submit = () => {
                             Nama
                         </Label>
 
-                        <input id="name" v-model="form.name" type="text"
+                        <Input id="name" v-model="form.name" type="text"
                             class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
 
                         <p v-if="form.errors.name" class="text-sm text-red-600">
@@ -106,7 +106,7 @@ const submit = () => {
                             Email
                         </Label>
 
-                        <input id="email" v-model="form.email" type="email"
+                        <Input id="email" v-model="form.email" type="email"
                             class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
 
                         <p v-if="form.errors.email" class="text-sm text-red-600">

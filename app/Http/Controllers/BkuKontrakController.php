@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\BkuKontrakFilter;
 use App\Http\Requests\StoreBkuKontrakRequest;
 use App\Http\Requests\UpdateBkuKontrakRequest;
 use App\Models\Bku;
@@ -15,28 +16,27 @@ use Illuminate\Http\Request;
 
 class BkuKontrakController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $bkuKontraks = Cache::remember('bku_kontrak.all', 60 * 60, function () {
-            logger()->info('CACHE MISS - QUERY DATABASE DIJALANKAN');
+        $filter = new BkuKontrakFilter($request);
 
-            return BkuKontrak::with([
-                'bku:id,nama',
-                'kontrak:id,nama',
-            ])
-                ->withCount('sumurs')
-                ->latest()
-                ->get();
-        });
+        $query = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama',
+        ])
+            ->withCount('sumurs')
+            ->latest();
 
-        logger()->info('DATA DIAMBIL DARI CACHE ATAU HASIL QUERY');
+        $bkuKontraks = $filter->apply($query)
+            ->paginate(10)
+            ->withQueryString();
 
+        $kontraks = Kontrak::orderBy('nama')->get(['id', 'nama']);
+        
         return Inertia::render('BkuKontrak/Index', [
             'bkuKontraks' => $bkuKontraks,
-
-            //dibutuhkan jika ingin menampilkan dropdown list untuk memilih BKU dan Kontrak saat membuat atau mengedit BkuKontrak
-            // 'bkus' => Bku::select('id', 'nama')->get(),
-            // 'kontraks' => Kontrak::select('id', 'nama')->get(),
+            'kontraks' => $kontraks,
+            'filters' => $request->only(['search', 'kontrak_id']),
         ]);
     }
 
@@ -51,8 +51,6 @@ class BkuKontrakController extends Controller
             'id',
             'nama',
         ]);
-
-        Cache::forget('bku_kontrak.all');
 
         return Inertia::render('BkuKontrak/Create', [
             'bkus' => $bkus,
@@ -78,8 +76,6 @@ class BkuKontrakController extends Controller
     {
         BkuKontrak::create($request->validated());
 
-        Cache::forget('bku_kontrak.all');
-        
         return redirect()->route('bku-kontrak.index')->with('success', 'Penetapan Kontrak ke BKU berhasil disimpan.');
     }
 
@@ -89,19 +85,15 @@ class BkuKontrakController extends Controller
     ): RedirectResponse {
         $bkuKontrak->update($request->validated());
 
-        Cache::forget('bku_kontrak.all');
-
         return redirect()
             ->route('bku-kontrak.index')
             ->with('success', 'Data BKU Kontrak berhasil diperbarui.');
     }
-    
+
     public function destroy(BkuKontrak $bkuKontrak): RedirectResponse
     {
         // dd($bkuKontrak);    
         $bkuKontrak->delete();
-
-        Cache::forget('bku_kontrak.all');
 
         return redirect()->route('bku-kontrak.index')->with('success', 'Penetapan BKU Kontrak berhasil dihapus.');
     }

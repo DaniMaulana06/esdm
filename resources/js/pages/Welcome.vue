@@ -316,7 +316,7 @@ const resetFilter = () => {
     <div
         class="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white dark:bg-slate-950 dark:text-slate-100">
         <!-- Navigation Bar -->
-        <nav class="sticky top-0 z-[1000] border-b border-slate-200/80 bg-white/80 px-6 py-4 
+        <nav class="sticky top-0 z-[1000] border-b border-slate-200/80 bg-white/80 shadow-md px-6 py-4 
             backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
             <div class="mx-auto flex max-w-8xl items-center justify-between">
                 <div class="flex items-center gap-3">

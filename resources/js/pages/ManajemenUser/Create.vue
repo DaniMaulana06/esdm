@@ -7,6 +7,7 @@ import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import Input from '@/components/ui/input/Input.vue';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -109,24 +110,24 @@ const submit = () => {
                                 Role
                             </Label>
 
-                            <select id="role" v-model="form.role"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
-                                <option value="" disabled>
-                                    Pilih Role
-                                </option>
-
-                                <option value="admin">
-                                    Admin
-                                </option>
-
-                                <option value="staf_dinas">
-                                    Staf Dinas
-                                </option>
-
-                                <option value="operator_bku">
-                                    Operator BKU
-                                </option>
-                            </select>
+                            <Select v-model="form.role">
+                                <SelectTrigger id="role" class="w-full">
+                                    <SelectValue placeholder="Pilih Role" />
+                                </SelectTrigger>
+                                <SelectContent class="w-[--reka-select-trigger-width]">
+                                    <SelectGroup>
+                                        <SelectItem value="admin">
+                                            Admin
+                                        </SelectItem>
+                                        <SelectItem value="staf_dinas">
+                                            Staf Dinas
+                                        </SelectItem>
+                                        <SelectItem value="operator_bku">
+                                            Operator BKU
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
 
                             <p v-if="form.errors.role" class="text-sm text-red-600">
                                 {{ form.errors.role }}
@@ -139,16 +140,18 @@ const submit = () => {
                                 BKU
                             </Label>
 
-                            <select id="bku_id" v-model="form.bku_id"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
-                                <option value="" disabled>
-                                    Pilih BKU
-                                </option>
-
-                                <option v-for="bku in props.bkus" :key="bku.id" :value="bku.id">
-                                    {{ bku.nama }}
-                                </option>
-                            </select>
+                            <Select id="bku_id" v-model="form.bku_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Pilih BKU" />
+                                </SelectTrigger>
+                                <SelectContent class="w-[--reka-select-trigger-width]">
+                                    <SelectGroup>
+                                        <SelectItem v-for="bku in props.bkus" :key="bku.id" :value="bku.id">
+                                            {{ bku.nama }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
 
                             <p v-if="form.errors.bku_id" class="text-sm text-red-600">
                                 {{ form.errors.bku_id }}
@@ -161,7 +164,7 @@ const submit = () => {
                                 Password
                             </Label>
 
-                            <input id="password" v-model="form.password" type="password"
+                            <Input id="password" v-model="form.password" type="password"
                                 placeholder="Minimal 8 karakter"
                                 class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
 
@@ -176,7 +179,7 @@ const submit = () => {
                                 Konfirmasi Password
                             </Label>
 
-                            <input id="password_confirmation" v-model="form.password_confirmation" type="password"
+                            <Input id="password_confirmation" v-model="form.password_confirmation" type="password"
                                 placeholder="Ulangi password"
                                 class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
                         </div>

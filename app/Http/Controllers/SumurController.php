@@ -10,7 +10,6 @@ use App\Models\Kontrak;
 use App\Models\Sumur;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 

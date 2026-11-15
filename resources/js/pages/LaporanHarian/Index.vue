@@ -93,7 +93,7 @@ interface LaporanHarian {
     justifikasi_terbaru: Justifikasi | null;
 }
 
-// 1 kelompok = 1 BKU pada 1 tanggal, berisi beberapa laporan kontrak
+// interface grouping laporan per tanggal
 interface LaporanGroup {
     key: string;
     bku: Bku;
@@ -132,9 +132,7 @@ interface Filters {
     direction?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/* Props & state                                                       */
-/* ------------------------------------------------------------------ */
+//props & satte
 
 const props = defineProps<{
     // Admin / staf dinas: data terkelompok per BKU + tanggal
@@ -158,9 +156,7 @@ const df = new DateFormatter('id-ID', {
     dateStyle: 'long',
 });
 
-/* ------------------------------------------------------------------ */
-/* Opsi dropdown                                                       */
-/* ------------------------------------------------------------------ */
+//opsi dropdown
 
 const bkus = computed(() => {
     const uniqueBku = new Map<number, Bku>();
@@ -184,9 +180,7 @@ const kontrakOptions = computed(() => {
     );
 });
 
-/* ------------------------------------------------------------------ */
-/* Filter, sorting, pagination                                         */
-/* ------------------------------------------------------------------ */
+//filter, sorting, paginate
 
 const currentQuery = () => ({
     search: search.value || undefined,
@@ -266,9 +260,7 @@ const goToPage = (page: number) => {
     );
 };
 
-/* ------------------------------------------------------------------ */
-/* Buka / tutup kelompok                                               */
-/* ------------------------------------------------------------------ */
+// buka tutup kelompok (Buka semua)
 
 const expandedKeys = ref<string[]>([]);
 
@@ -293,9 +285,7 @@ const toggleAll = () => {
         : (props.groups?.data.map((group) => group.key) ?? []);
 };
 
-/* ------------------------------------------------------------------ */
-/* Helper tampilan                                                     */
-/* ------------------------------------------------------------------ */
+//helper tampilan
 
 const formatTanggal = (value: string) => {
     return new Date(value).toLocaleDateString('id-ID', {
@@ -332,9 +322,7 @@ const statusMeta = (justifikasi: Justifikasi | null) => {
     }[justifikasi.status];
 };
 
-/* ------------------------------------------------------------------ */
-/* Role, flash, aksi                                                   */
-/* ------------------------------------------------------------------ */
+//role, flash, aksi
 
 const page = usePage<SharedData>();
 
@@ -369,16 +357,6 @@ onMounted(() => {
 const closeFlash = () => {
     showFlash.value = false;
 };
-
-// const deleteItem = (id: number) => {
-//     if (confirm('Apakah kamu yakin ingin menghapus Laporan ini?')) {
-//         router.delete(
-//             route('laporan-harian.destroy', {
-//                 laporan_harian: id,
-//             }),
-//         );
-//     }
-// };
 
 // Meta pagination yang dipakai: tergantung tabel yang aktif
 const pager = computed(() =>

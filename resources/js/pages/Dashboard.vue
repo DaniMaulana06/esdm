@@ -413,6 +413,7 @@ const isBku = computed(() => {
                         <CardContent>
                             <div class="text-2xl font-bold">
                                 {{ formatNumber(stats.average_produksi) }}
+                                <span>Barel</span>
                             </div>
 
                             <p class="mt-1 text-xs text-gray-500">

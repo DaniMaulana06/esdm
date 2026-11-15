@@ -202,7 +202,7 @@ const isStafEsdmOrAdmin = computed(() => {
                     <h1 class="text-2xl font-semibold text-gray-900">
                         Sumur
                     </h1>
-                    
+
                     <p class="mt-1 text-sm text-gray-600">
                         Kelola data Sumur Minyak.
                     </p>
@@ -314,7 +314,7 @@ const isStafEsdmOrAdmin = computed(() => {
                     </Button>
 
                     <Button type="button" @click="applyFilter" class="hover:bg-yellow-600">
-                        <Search class="mr-1 h-4 w-4"/>
+                        <Search class="mr-1 h-4 w-4" />
                         Terapkan Filter
                     </Button>
                 </div>

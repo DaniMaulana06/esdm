@@ -12,8 +12,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -41,9 +45,60 @@ interface BkuKontrak {
     kontrak: Kontrak;
 }
 
-defineProps<{
-    bkuKontraks: BkuKontrak[];
+interface PaginationData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}
+interface Filters {
+    search?: string;
+    kontrak_id?: string | number;
+}
+const props = defineProps<{
+    bkuKontraks: PaginationData<BkuKontrak>;
+    kontraks: Kontrak[];
+    filters: Filters;
 }>();
+
+//filter dan search
+const search = ref(props.filters.search ?? '');
+const kontrakId = ref(props.filters.kontrak_id ? String(props.filters.kontrak_id) : 'all');
+
+const currentQuery = () => ({
+    search: search.value || undefined,
+    kontrak_id: kontrakId.value !== 'all' ? kontrakId.value : undefined,
+});
+const applyFilter = () => {
+    router.get(route('bku-kontrak.index'), currentQuery(), {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+const resetFilter = () => {
+    search.value = '';
+    kontrakId.value = 'all';
+    router.get(route('bku-kontrak.index'), {}, {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+
+const goToPage = (page: number) => {
+    router.get(
+        route('bku-kontrak.index'),
+        { ...currentQuery(), page },
+        { preserveState: true, preserveScroll: true, replace: true },
+    );
+};
 
 const page = usePage<SharedData>();
 const user = computed(() => page.props.auth.user);
@@ -70,6 +125,7 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
+//delete dialog
 const showDeleteDialog = ref(false);
 const bkuKontrakToDelete = ref<BkuKontrak | null>(null);
 const deleteConfirmText = ref('');
@@ -110,7 +166,6 @@ const cancelDelete = () => {
                     <h1 class="text-2xl font-semibold text-gray-900">
                         BKU dengan Kontrak
                     </h1>
-
                     <p class="mt-1 text-sm text-gray-600">
                         Kelola data BKU yang berkontrak.
                     </p>
@@ -125,10 +180,7 @@ const cancelDelete = () => {
             <!-- FLASH SUCCESS -->
             <div v-if="showFlash && flash.success"
                 class="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
-                <span>
-                    {{ flash.success }}
-                </span>
-
+                <span>{{ flash.success }}</span>
                 <button type="button" @click="closeFlash"
                     class="ml-4 text-lg font-bold text-green-700 hover:text-green-900">
                     ×
@@ -138,59 +190,88 @@ const cancelDelete = () => {
             <!-- FLASH ERROR -->
             <div v-if="showFlash && flash.error"
                 class="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
-                <span>
-                    {{ flash.error }}
-                </span>
-
+                <span>{{ flash.error }}</span>
                 <button type="button" @click="closeFlash"
                     class="ml-4 text-lg font-bold text-red-700 hover:text-red-900">
                     ×
                 </button>
             </div>
 
+            <!-- FILTER DATA BKU KONTRAK -->
+            <div class="mb-4 rounded-lg border bg-card p-4 shadow-sm">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <!-- Search Nama BKU -->
+                    <div>
+                        <Label for="search" class="mb-2 block text-sm font-medium">
+                            Nama BKU
+                        </Label>
+                        <Input id="search" v-model="search" type="text" placeholder="Cari nama BKU..."
+                            @keyup.enter="applyFilter" />
+                    </div>
+
+                    <!-- Filter Kontrak -->
+                    <div>
+                        <Label for="kontrak" class="mb-2 block text-sm font-medium">
+                            Kontrak
+                        </Label>
+                        <Select v-model="kontrakId">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Pilih Kontrak" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="all">Semua Kontrak</SelectItem>
+                                    <SelectItem v-for="kontrak in props.kontraks" :key="kontrak.id"
+                                        :value="String(kontrak.id)">
+                                        {{ kontrak.nama }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <!-- Tombol Action Filter -->
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button type="button" variant="outline" @click="resetFilter">
+                        <RotateCcw />
+                        Reset
+                    </Button>
+                    <Button type="button" @click="applyFilter" class="hover:bg-yellow-600">
+                        <Search class="mr-1 h-4 w-4" />
+                        Terapkan Filter
+                    </Button>
+                </div>
+            </div>
+
+            <!-- TABEL DATA -->
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                No
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Nama BKU
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Kontrak
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                Jumlah Sumur
-                            </th>
-                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">
-                                Aksi
-                            </th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">No</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Nama BKU</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Kontrak</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Jumlah Sumur</th>
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody class="divide-y">
-                        <tr v-for="(bkuKontrak, index) in bkuKontraks" :key="bkuKontrak.bku_id"
+                        <tr v-for="(bkuKontrak, index) in bkuKontraks.data" :key="bkuKontrak.id"
                             class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ index + 1 }}
-                            </td>
-
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ bkuKontrak.bku.nama }}
+                                {{ (bkuKontraks.current_page - 1) * bkuKontraks.per_page + index + 1 }}
                             </td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ bkuKontrak.kontrak.nama }}
+                                {{ bkuKontrak.bku?.nama }}
                             </td>
-
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ bkuKontrak.kontrak?.nama }}
+                            </td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                 {{ bkuKontrak.jumlah_sumur }}
                             </td>
-
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
                                     <Link :href="route('bku-kontrak.edit', { bku_kontrak: bkuKontrak.id })"
@@ -207,17 +288,39 @@ const cancelDelete = () => {
                             </td>
                         </tr>
 
-                        <tr v-if="bkuKontraks.length === 0">
+                        <tr v-if="bkuKontraks.data.length === 0">
                             <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
-                                Belum ada data Kontrak.
+                                Belum ada data BKU Kontrak.
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- PAGINATION SHADCN VUE -->
+            <div v-if="bkuKontraks.last_page > 1"
+                class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+                <Pagination v-slot="{ page: activePage }" :items-per-page="bkuKontraks.per_page"
+                    :total="bkuKontraks.total" :page="bkuKontraks.current_page" @update:page="goToPage">
+                    <PaginationContent v-slot="{ items }">
+                        <PaginationPrevious />
+
+                        <template v-for="(item, index) in items" :key="index">
+                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                :is-active="item.value === activePage">
+                                {{ item.value }}
+                            </PaginationItem>
+
+                            <PaginationEllipsis v-else :index="index" />
+                        </template>
+
+                        <PaginationNext />
+                    </PaginationContent>
+                </Pagination>
+            </div>
         </div>
 
-        <!-- DIALOG KONFIRMASI HAPUS BKU KOntrak -->
+        <!-- DIALOG KONFIRMASI HAPUS BKU KONTRAK -->
         <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
             <DialogContent class="sm:max-w-[425px]">
                 <DialogHeader>
@@ -232,8 +335,8 @@ const cancelDelete = () => {
                         <p class="text-sm text-gray-700">
                             Untuk mengonfirmasi, ketik:
                             <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                                delete BKU Kontrak {{ bkuKontrakToDelete?.bku.nama }} {{ bkuKontrakToDelete?.kontrak.nama }}
-                            </code>
+                        delete BKU Kontrak {{ bkuKontrakToDelete?.bku.nama }} {{ bkuKontrakToDelete?.kontrak.nama }}
+                    </code>
                         </p>
                     </strong>
                     <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
@@ -241,12 +344,13 @@ const cancelDelete = () => {
                 </DialogDescription>
 
                 <DialogFooter>
-                    <DialogClose>
-                        <button @click="cancelDelete" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
+                    <DialogClose as-child>
+                        <button type="button" @click="cancelDelete"
+                            class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
                             Batal
                         </button>
                     </DialogClose>
-                    <button @click="confirmDelete"
+                    <button type="button" @click="confirmDelete"
                         :disabled="deleteConfirmText.trim() !== `delete BKU Kontrak ${bkuKontrakToDelete?.bku.nama} ${bkuKontrakToDelete?.kontrak.nama}`"
                         class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                         Ya, Hapus

@@ -4,11 +4,14 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Search, Trash2, RotateCw } from 'lucide-vue-next';
+import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import DeleteBkuDialog from '@/components/bku/DeleteBkuDialog.vue';
 import AddBkuDialog from '@/components/bku/AddBkuDialog.vue';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from '@/components/ui/select';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,6 +19,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('bku.index'),
     }
 ];
+
+interface Kontrak {
+    id: number,
+    nama: string,
+}
 
 interface Bku {
     id: number;
@@ -43,19 +51,37 @@ interface PaginationData<T> {
 const props = defineProps<{
     bkus: PaginationData<Bku>;
     kategoris: string[];
+    filters: {
+        search?: string;
+        kategori?: string;
+    }
 }>();
-const kategoris = props.kategoris;
 
-const currentQuery = () => {
-    const query = new URLSearchParams(window.location.search);
-    const result: Record<string, string> = {};
-    query.forEach((value, key) => {
-        result[key] = value;
+const search = ref(props.filters.search ?? '');
+const kategori = ref(props.filters.kategori ? String(props.filters.kategori) : '');
+
+const currentQuery = () => ({
+    search: search.value || undefined,
+    kategori: kategori.value !== '' ? kategori.value : undefined,
+});
+
+const applyFilter = () => {
+    router.get(route('bku.index'), currentQuery(), {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
     });
-    return result;
 };
 
-const page = usePage<SharedData>();
+const resetFilter = () => {
+    search.value = '';
+    kategori.value = 'all';
+    router.get(route('bku.index'), {}, {
+        preserveState: false,
+        preserveScroll: true,
+        replace: true,
+    });
+};
 
 const goToPage = (page: number) => {
     router.get(
@@ -71,12 +97,12 @@ const goToPage = (page: number) => {
     );
 };
 
+const page = usePage<SharedData>();
 const user = computed(() => page.props.auth.user);
 
 const isStafEsdm = computed(() => {
     return user.value?.role === 'staf_dinas';
 });
-
 
 const flash = computed(() => page.props.flash as {
     success?: string; error?: string
@@ -105,6 +131,10 @@ const openDeleteDialog = (bku: Bku) => {
     bkuToDelete.value = bku;
     showDeleteDialog.value = true;
 };
+
+const isStafEsdmOrAdmin = computed(() => {
+    return (user.value?.role === 'staf_dinas' || (user.value?.role === 'operator_bku' && user.value?.bku_id != null))
+})
 </script>
 
 <template>
@@ -129,7 +159,7 @@ const openDeleteDialog = (bku: Bku) => {
                 </Link> -->
                 <Button
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                    v-if="isStafEsdm" @click="showAddDialog = true" >
+                    v-if="isStafEsdm" @click="showAddDialog = true">
                     <Plus :size="18" />
                     Tambah BKU
                 </Button>
@@ -159,6 +189,54 @@ const openDeleteDialog = (bku: Bku) => {
                     class="ml-4 text-lg font-bold text-red-700 hover:text-red-900">
                     ×
                 </button>
+            </div>
+
+            <!-- FILTER DATA BKU -->
+            <div class="mb-4 rounded-lg border bg-card p-4 shadow-sm">
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+                    <!-- Pencarian Nama BKU -->
+                    <div class="lg:col-span-1">
+                        <Label for="search" class="mb-2 block text-sm font-medium">
+                            Nama BKU
+                        </Label>
+                        <Input id="search" v-model="search" type="text" placeholder="Cari Nama BKU / Kota..."
+                            @keyup.enter="applyFilter" />
+                    </div>
+
+                    <!-- Filter Kategori -->
+                    <div>
+                        <Label for="kategori" class="mb-2 block text-sm font-medium">
+                            Kategori
+                        </Label>
+                        <Select v-model="kategori">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Pilih Kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="all">Semua Kategori</SelectItem>
+                                    <SelectItem v-for="kat in props.kategoris" :key="kat" :value="kat">
+                                        {{ kat }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <!-- Tombol Filter -->
+                    <div class="mt-6 flex justify-end items-end gap-2">
+                        <Button type="button" variant="outline" @click="resetFilter">
+                            <RotateCw />
+                            Reset
+                        </Button>
+                        <Button type="button" @click="applyFilter" class="hover:bg-yellow-600">
+                            <Search class="mr-1 h-4 w-4" />
+                            Terapkan Filter
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
