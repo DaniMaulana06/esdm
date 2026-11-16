@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';

@@ -31,10 +31,13 @@ class BkuKontrakController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $bkus = Bku::orderBy('nama')->get(['id', 'nama']);
+        
         $kontraks = Kontrak::orderBy('nama')->get(['id', 'nama']);
         
         return Inertia::render('BkuKontrak/Index', [
             'bkuKontraks' => $bkuKontraks,
+            'bkus' => $bkus,
             'kontraks' => $kontraks,
             'filters' => $request->only(['search', 'kontrak_id']),
         ]);

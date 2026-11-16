@@ -42,7 +42,7 @@ class JustifikasiController extends Controller
 
         $justifikasis = $query
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Justifikasi/Index', [

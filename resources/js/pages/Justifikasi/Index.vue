@@ -40,6 +40,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Label } from '@/components/ui/label';
 import { CalendarIcon, RotateCw, Search } from 'lucide-vue-next';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -55,6 +56,7 @@ interface Justifikasi {
     produksi_usulan: number | string;
     lifting_usulan: number | string;
     catatan_dinas: string | null;
+    created_at: string;
 
     laporan_harian: {
         id: number;
@@ -84,15 +86,19 @@ interface PaginationLink {
     active: boolean;
 }
 
-interface Pagination {
+interface PaginationData {
     data: Justifikasi[];
     current_page: number;
     last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
     links: PaginationLink[];
 }
 
 const props = defineProps<{
-    justifikasis: Pagination;
+    justifikasis: PaginationData;
 
     filters: {
         status?: string;
@@ -215,6 +221,32 @@ const resetFilter = () => {
     router.get(
         route('justifikasi.index'),
         {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
+
+const goToPage = (pageNumber: number) => {
+    if (
+        pageNumber < 1 ||
+        pageNumber > props.justifikasis.last_page ||
+        pageNumber === props.justifikasis.current_page
+    ) {
+        return;
+    }
+
+    router.get(
+        route('justifikasi.index'),
+        {
+            page: pageNumber,
+            status:
+                selectedStatus.value === 'all'
+                    ? undefined
+                    : selectedStatus.value,
+            tanggal: toDateString(selectedDate.value),
+        },
         {
             preserveState: true,
             preserveScroll: true,
@@ -353,12 +385,12 @@ const isStafEsdm = computed(() => {
                             <!-- Tombol Filter -->
                             <div class="flex gap-2 sm:ml-auto">
                                 <Button variant="outline" @click="resetFilter">
-                                    <RotateCw/>
+                                    <RotateCw />
                                     Reset
                                 </Button>
 
                                 <Button @click="applyFilter" variant="submit">
-                                    <Search/>
+                                    <Search />
                                     Terapkan
                                 </Button>
 
@@ -396,6 +428,10 @@ const isStafEsdm = computed(() => {
                                             Tanggal
                                         </th>
 
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                                            Tanggal Pengajuan
+                                        </th>
+
                                         <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">
                                             Produksi
                                         </th>
@@ -423,11 +459,7 @@ const isStafEsdm = computed(() => {
                                         ">
                                         <td class="px-6 py-4 text-sm text-gray-700">
                                             {{
-                                                (justifikasis.current_page -
-                                                    1) *
-                                                15 +
-                                                index +
-                                                1
+                                                (justifikasis.current_page - 1) * justifikasis.per_page + index + 1
                                             }}
                                         </td>
 
@@ -457,6 +489,15 @@ const isStafEsdm = computed(() => {
                                                     justifikasi
                                                         .laporan_harian
                                                         .tanggal,
+                                                )
+                                            }}
+                                        </td>
+
+                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                            {{
+                                                formatDate(
+                                                    justifikasi
+                                                        .created_at,
                                                 )
                                             }}
                                         </td>
@@ -549,27 +590,26 @@ const isStafEsdm = computed(() => {
                     </CardContent>
                 </Card>
 
-                <!-- Pagination -->
-                <div v-if="
-                    justifikasis.last_page > 1
-                " class="mt-6 flex flex-wrap justify-center gap-2">
-                    <Button v-for="link in justifikasis.links" :key="link.label" variant="outline" size="sm"
-                        :disabled="!link.url" :class="{
-                            'bg-gray-100':
-                                link.active,
-                        }" @click="
-                            link.url &&
-                            router.get(
-                                link.url,
-                                {},
-                                {
-                                    preserveState: true,
-                                    preserveScroll: true,
-                                },
-                            )
-                            ">
-                        <span v-html="link.label" />
-                    </Button>
+                <!-- PAGINATION SHADCN VUE -->
+                <div v-if="justifikasis.last_page > 1"
+                    class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="justifikasis.per_page"
+                        :total="justifikasis.total" :page="justifikasis.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
+
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
+
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
+
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </div>

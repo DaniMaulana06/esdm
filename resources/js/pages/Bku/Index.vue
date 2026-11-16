@@ -20,11 +20,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     }
 ];
 
-interface Kontrak {
-    id: number,
-    nama: string,
-}
-
 interface Bku {
     id: number;
     nama: string;
@@ -132,9 +127,6 @@ const openDeleteDialog = (bku: Bku) => {
     showDeleteDialog.value = true;
 };
 
-const isStafEsdmOrAdmin = computed(() => {
-    return (user.value?.role === 'staf_dinas' || (user.value?.role === 'operator_bku' && user.value?.bku_id != null))
-})
 </script>
 
 <template>

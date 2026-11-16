@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
@@ -13,6 +12,8 @@ import {
     DialogTitle,
     DialogClose,
 } from '@/components/ui/dialog';
+import Input from '../ui/input/Input.vue';
+import Button from '../ui/button/Button.vue';
 
 interface Bku {
     id: number;
@@ -74,10 +75,7 @@ const cancelDelete = () => {
 </script>
 
 <template>
-    <Dialog
-        :open="props.open"
-        @update:open="cancelDelete"
-    >
+    <Dialog :open="props.open" @update:open="cancelDelete">
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
                 <DialogTitle class="text-red-600">
@@ -100,37 +98,25 @@ const cancelDelete = () => {
                     </p>
                 </strong>
 
-                <input
-                    v-model="deleteConfirmText"
-                    type="text"
-                    placeholder="Ketik konfirmasi di sini..."
+                <Input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
                     :disabled="processing"
                     class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400"
-                    @keydown.enter="confirmDelete"
-                />
+                    @keydown.enter="confirmDelete" />
             </DialogDescription>
 
             <DialogFooter>
                 <DialogClose as-child>
-                    <button
-                        @click="cancelDelete"
-                        :disabled="processing"
-                        class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50"
-                    >
+                    <Button @click="cancelDelete" :disabled="processing" variant="outline">
                         Batal
-                    </button>
+                    </Button>
                 </DialogClose>
 
-                <button
-                    @click="confirmDelete"
-                    :disabled="
-                        deleteConfirmText.trim() !== expectedText()
-                        || processing
+                <Button @click="confirmDelete" :disabled="deleteConfirmText.trim() !== expectedText()
+                    || processing
                     "
-                    class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
+                    class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                     {{ processing ? 'Menghapus...' : 'Ya, Hapus' }}
-                </button>
+                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

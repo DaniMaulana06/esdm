@@ -4,20 +4,14 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
 import { Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import AddBkuKontrakDialog from '@/components/bkuKontrak/AddBkuKontrakDialog.vue';
+import DeleteBkuKontrakDialog from '@/components/bkuKontrak/DeleteBkuKontrakDialog.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -63,6 +57,7 @@ interface Filters {
 }
 const props = defineProps<{
     bkuKontraks: PaginationData<BkuKontrak>;
+    bkus: Bku[];
     kontraks: Kontrak[];
     filters: Filters;
 }>();
@@ -125,6 +120,9 @@ const closeFlash = () => {
     showFlash.value = false;
 };
 
+const bkus = props.bkus;
+const kontraks = props.kontraks;
+
 //delete dialog
 const showDeleteDialog = ref(false);
 const bkuKontrakToDelete = ref<BkuKontrak | null>(null);
@@ -136,24 +134,8 @@ const openDeleteDialog = (bkuKontrak: BkuKontrak) => {
     showDeleteDialog.value = true;
 }
 
-const confirmDelete = () => {
-    if (!bkuKontrakToDelete.value) return;
-    const expected = `delete BKU Kontrak ${bkuKontrakToDelete.value.bku.nama} ${bkuKontrakToDelete.value.kontrak.nama}`;
-    if (deleteConfirmText.value.trim() !== expected) return;
-    router.delete(route('bku-kontrak.destroy', bkuKontrakToDelete.value.id), {
-        onSuccess: () => {
-            showDeleteDialog.value = false;
-            bkuKontrakToDelete.value = null;
-            deleteConfirmText.value = '';
-        }
-    });
-}
-
-const cancelDelete = () => {
-    showDeleteDialog.value = false;
-    bkuKontrakToDelete.value = null;
-    deleteConfirmText.value = '';
-}
+//add dialog
+const showAddDialog = ref(false)
 </script>
 
 <template>
@@ -170,11 +152,18 @@ const cancelDelete = () => {
                         Kelola data BKU yang berkontrak.
                     </p>
                 </div>
-                <Link :href="route('bku-kontrak.create')" prefetch v-if="isStafEsdm"
+                <!-- <Link :href="route('bku-kontrak.create')" prefetch v-if="isStafEsdm"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah BKU Kontrak
-                </Link>
+                </Link> -->
+
+                <Button
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    v-if="isStafEsdm" @click="showAddDialog = true">
+                    <Plus :size="18" />
+                    Tambah BKU Kontrak
+                </Button>
             </div>
 
             <!-- FLASH SUCCESS -->
@@ -320,43 +309,11 @@ const cancelDelete = () => {
             </div>
         </div>
 
-        <!-- DIALOG KONFIRMASI HAPUS BKU KONTRAK -->
-        <Dialog :open="showDeleteDialog" @update:open="cancelDelete">
-            <DialogContent class="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle class="text-red-600">Hapus Kontrak</DialogTitle>
-                    <DialogDescription>
-                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data Kontrak akan dihapus secara permanen.
-                    </DialogDescription>
-                </DialogHeader>
+        <DeleteBkuKontrakDialog v-model:open="showDeleteDialog" :bku="bkuKontrakToDelete?.bku ?? null"
+            :kontrak="bkuKontrakToDelete?.kontrak ?? null" :bku-kontrak="bkuKontrakToDelete"
+            @deleted="router.reload({ only: ['bkuKontraks'] })" />
 
-                <DialogDescription class="my-2 space-y-3">
-                    <strong>
-                        <p class="text-sm text-gray-700">
-                            Untuk mengonfirmasi, ketik:
-                            <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                        delete BKU Kontrak {{ bkuKontrakToDelete?.bku.nama }} {{ bkuKontrakToDelete?.kontrak.nama }}
-                    </code>
-                        </p>
-                    </strong>
-                    <input v-model="deleteConfirmText" type="text" placeholder="Ketik konfirmasi di sini..."
-                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
-                </DialogDescription>
-
-                <DialogFooter>
-                    <DialogClose as-child>
-                        <button type="button" @click="cancelDelete"
-                            class="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
-                            Batal
-                        </button>
-                    </DialogClose>
-                    <button type="button" @click="confirmDelete"
-                        :disabled="deleteConfirmText.trim() !== `delete BKU Kontrak ${bkuKontrakToDelete?.bku.nama} ${bkuKontrakToDelete?.kontrak.nama}`"
-                        class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-                        Ya, Hapus
-                    </button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <AddBkuKontrakDialog v-model:open="showAddDialog" :bkus="bkus" :kontraks="kontraks"
+            @created="router.reload({ only: ['bkuKontraks'] })" />
     </AppLayout>
 </template>
