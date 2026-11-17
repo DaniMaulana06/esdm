@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import Input from '../ui/input/Input.vue';
 import Button from '../ui/button/Button.vue';
+import { AlertTriangle } from 'lucide-vue-next';
 
 interface Bku {
     id: number;
@@ -94,8 +95,9 @@ const cancelDelete = () => {
     <Dialog :open="props.open" @update:open="cancelDelete">
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
-                <DialogTitle class="text-red-600">
-                    Hapus BKU Kontrak
+                <DialogTitle class="text-red-600 text-center">
+                    Hapus BKU Kontrak ? <br class="mb-3">
+                    {{ props.bkuKontrak?.bku?.nama }} - {{ props.bkuKontrak?.kontrak?.nama }}
                 </DialogTitle>
 
                 <DialogDescription>
@@ -104,12 +106,31 @@ const cancelDelete = () => {
                 </DialogDescription>
             </DialogHeader>
 
-            <DialogDescription class="my-2 space-y-3">
+            <!-- Warning Box -->
+            <div class="my-3 flex gap-3 rounded-lg border-l-4 border-red-500 bg-red-100 px-4 py-4">
+                <div class="shrink-0 pt-0.5">
+                    <AlertTriangle class="h-6 w-6 text-orange-600" />
+                </div>
+
+                <div class="space-y-1">
+                    <p class="font-semibold text-orange-900">
+                        Warning
+                    </p>
+
+                    <p class="text-sm leading-relaxed text-orange-800">
+                        Dengan menghapus BKU Kontrak ini,
+                        <strong>seluruh data Laporan Harian yang terhubung dengan BKU Kontrak ini</strong>
+                        juga akan ikut terhapus secara permanen.
+                    </p>
+                </div>
+            </div>
+
+            <DialogDescription class="space-y-3">
                 <strong>
                     <p class="text-sm text-gray-700">
                         Untuk mengonfirmasi, ketik:
                         <code class="rounded bg-gray-100 px-1 font-mono font-semibold text-red-600">
-                            {{expectedText()}}
+                            {{ expectedText() }}
                         </code>
                     </p>
                 </strong>

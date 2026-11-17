@@ -56,154 +56,196 @@ const submit = () => {
 </script>
 
 <template>
-
     <Head title="Tambah User" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-2xl p-6">
-            <Card>
-                <CardHeader>
+        <div class="p-6">
+            <!-- Card Form - Center -->
+            <div class="flex justify-center">
+                <Card class="w-full max-w-2xl border border-gray-200 shadow-sm">
 
-                    <CardTitle>
-                        Tambah User
-                    </CardTitle>
+                    <CardHeader>
+                        <CardTitle class="text-lg font-semibold">
+                            Informasi Pengguna
+                        </CardTitle>
 
-                    <CardDescription>
-                        Tambahkan akun pengguna baru ke dalam sistem.
-                    </CardDescription>
-                </CardHeader>
+                        <CardDescription>
+                            Lengkapi informasi untuk membuat akun pengguna baru.
+                        </CardDescription>
+                    </CardHeader>
 
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
+                    <CardContent>
+                        <form @submit.prevent="submit" class="space-y-3">
 
-                        <!-- Nama -->
-                        <div class="space-y-2">
-                            <Label for="name" class="text-sm font-medium text-gray-700">
-                                Nama
-                            </Label>
+                            <!-- Nama -->
+                            <div class="space-y-2">
+                                <Label for="name" class="text-sm font-medium">
+                                    Nama
+                                </Label>
 
-                            <Input id="name" v-model="form.name" type="text" placeholder="Masukkan nama"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                                <Input
+                                    id="name"
+                                    v-model="form.name"
+                                    type="text"
+                                    placeholder="Masukkan nama"
+                                    class="h-10 w-full"
+                                />
 
-                            <p v-if="form.errors.name" class="text-sm text-red-600">
-                                {{ form.errors.name }}
-                            </p>
-                        </div>
+                                <p v-if="form.errors.name" class="text-sm text-red-600">
+                                    {{ form.errors.name }}
+                                </p>
+                            </div>
 
-                        <!-- Email -->
-                        <div class="space-y-2">
-                            <Label for="email" class="text-sm font-medium text-gray-700">
-                                Email
-                            </Label>
+                            <!-- Email -->
+                            <div class="space-y-2">
+                                <Label for="email" class="text-sm font-medium">
+                                    Email
+                                </Label>
 
-                            <Input id="email" v-model="form.email" type="email" placeholder="contoh@email.com"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                                <Input
+                                    id="email"
+                                    v-model="form.email"
+                                    type="email"
+                                    placeholder="contoh@email.com"
+                                    class="h-10 w-full"
+                                />
 
-                            <p v-if="form.errors.email" class="text-sm text-red-600">
-                                {{ form.errors.email }}
-                            </p>
-                        </div>
+                                <p v-if="form.errors.email" class="text-sm text-red-600">
+                                    {{ form.errors.email }}
+                                </p>
+                            </div>
 
-                        <!-- Role -->
-                        <div class="space-y-2">
-                            <Label for="role" class="text-sm font-medium text-gray-700">
-                                Role
-                            </Label>
+                            <!-- Role -->
+                            <div class="space-y-2">
+                                <Label for="role" class="text-sm font-medium">
+                                    Role
+                                </Label>
 
-                            <Select v-model="form.role">
-                                <SelectTrigger id="role" class="w-full">
-                                    <SelectValue placeholder="Pilih Role" />
-                                </SelectTrigger>
-                                <SelectContent class="w-[--reka-select-trigger-width]">
-                                    <SelectGroup>
-                                        <SelectItem value="admin">
-                                            Admin
-                                        </SelectItem>
-                                        <SelectItem value="staf_dinas">
-                                            Staf Dinas
-                                        </SelectItem>
-                                        <SelectItem value="operator_bku">
-                                            Operator BKU
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                                <Select v-model="form.role">
+                                    <SelectTrigger id="role" class="h-10 w-full">
+                                        <SelectValue placeholder="Pilih Role" />
+                                    </SelectTrigger>
 
-                            <p v-if="form.errors.role" class="text-sm text-red-600">
-                                {{ form.errors.role }}
-                            </p>
-                        </div>
+                                    <SelectContent class="w-[--reka-select-trigger-width]">
+                                        <SelectGroup>
+                                            <SelectItem value="admin">
+                                                Admin
+                                            </SelectItem>
 
-                        <!-- BKU -->
-                        <div v-if="isOperatorBku" class="space-y-2">
-                            <Label for="bku_id" class="text-sm font-medium text-gray-700">
-                                BKU
-                            </Label>
+                                            <SelectItem value="staf_dinas">
+                                                Staf Dinas
+                                            </SelectItem>
 
-                            <Select id="bku_id" v-model="form.bku_id">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Pilih BKU" />
-                                </SelectTrigger>
-                                <SelectContent class="w-[--reka-select-trigger-width]">
-                                    <SelectGroup>
-                                        <SelectItem v-for="bku in props.bkus" :key="bku.id" :value="bku.id">
-                                            {{ bku.nama }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                                            <SelectItem value="operator_bku">
+                                                Operator BKU
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
 
-                            <p v-if="form.errors.bku_id" class="text-sm text-red-600">
-                                {{ form.errors.bku_id }}
-                            </p>
-                        </div>
+                                <p v-if="form.errors.role" class="text-sm text-red-600">
+                                    {{ form.errors.role }}
+                                </p>
+                            </div>
 
-                        <!-- Password -->
-                        <div class="space-y-2">
-                            <Label for="password" class="text-sm font-medium text-gray-700">
-                                Password
-                            </Label>
+                            <!-- BKU -->
+                            <div v-if="isOperatorBku" class="space-y-2">
+                                <Label for="bku_id" class="text-sm font-medium">
+                                    BKU
+                                </Label>
 
-                            <Input id="password" v-model="form.password" type="password"
-                                placeholder="Minimal 8 karakter"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
+                                <Select v-model="form.bku_id">
+                                    <SelectTrigger id="bku_id" class="h-10 w-full">
+                                        <SelectValue placeholder="Pilih BKU" />
+                                    </SelectTrigger>
 
-                            <p v-if="form.errors.password" class="text-sm text-red-600">
-                                {{ form.errors.password }}
-                            </p>
-                        </div>
+                                    <SelectContent class="w-[--reka-select-trigger-width]">
+                                        <SelectGroup>
+                                            <SelectItem
+                                                v-for="bku in props.bkus"
+                                                :key="bku.id"
+                                                :value="String(bku.id)"
+                                            >
+                                                {{ bku.nama }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
 
-                        <!-- Konfirmasi Password -->
-                        <div class="space-y-2">
-                            <Label for="password_confirmation" class="text-sm font-medium text-gray-700">
-                                Konfirmasi Password
-                            </Label>
+                                <p v-if="form.errors.bku_id" class="text-sm text-red-600">
+                                    {{ form.errors.bku_id }}
+                                </p>
+                            </div>
 
-                            <Input id="password_confirmation" v-model="form.password_confirmation" type="password"
-                                placeholder="Ulangi password"
-                                class="h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm" />
-                        </div>
+                            <!-- Password -->
+                            <div class="space-y-2">
+                                <Label for="password" class="text-sm font-medium">
+                                    Password
+                                </Label>
 
-                        <!-- Button -->
-                        <div class="flex items-center justify-end gap-3 border-t pt-6">
-                            <Link :href="route('users.index')"
-                                class="rounded-lg border px-4 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Batal
-                            </Link>
+                                <Input
+                                    id="password"
+                                    v-model="form.password"
+                                    type="password"
+                                    placeholder="Minimal 8 karakter"
+                                    class="h-10 w-full"
+                                />
 
-                            <Button type="submit" :disabled="form.processing"
-                                class="rounded-lg bg-blue-600 px-4 py-1 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
-                                <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
-                                {{
-                                    form.processing
-                                        ? 'Menyimpan...'
-                                        : 'Simpan User'
-                                }}
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                                <p v-if="form.errors.password" class="text-sm text-red-600">
+                                    {{ form.errors.password }}
+                                </p>
+                            </div>
+
+                            <!-- Konfirmasi Password -->
+                            <div class="space-y-2">
+                                <Label for="password_confirmation" class="text-sm font-medium">
+                                    Konfirmasi Password
+                                </Label>
+
+                                <Input
+                                    id="password_confirmation"
+                                    v-model="form.password_confirmation"
+                                    type="password"
+                                    placeholder="Ulangi password"
+                                    class="h-10 w-full"
+                                />
+                            </div>
+
+                            <!-- Button -->
+                            <div class="flex items-center justify-end gap-3 border-t pt-6">
+
+                                <Link
+                                    :href="route('users.index')"
+                                    class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                >
+                                    Batal
+                                </Link>
+
+                                <Button
+                                    type="submit"
+                                    :disabled="form.processing"
+                                    class="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <Save
+                                        v-if="!form.processing"
+                                        :size="17"
+                                        :stroke-width="2.5"
+                                    />
+
+                                    {{
+                                        form.processing
+                                            ? 'Menyimpan...'
+                                            : 'Simpan'
+                                    }}
+                                </Button>
+
+                            </div>
+
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+
         </div>
     </AppLayout>
 </template>
