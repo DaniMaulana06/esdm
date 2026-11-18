@@ -8,11 +8,13 @@ use App\Models\BkuKontrak;
 use App\Models\Kontrak;
 use App\Models\LaporanHarian;
 use App\Models\User;
+use App\Services\DashboardPdfService;
 use App\Services\LaporanMonitoringService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
@@ -447,5 +449,25 @@ class DashboardController extends Controller
         }
 
         return [];
+    }
+
+    public function exportPdf(FilterDashboardRequest $request, DashboardPdfService $pdfService)
+    {
+        $user = $request->user();
+
+        // PDF hanya boleh diakses admin
+        abort_unless($user->isStafEsdmOrAdmin(), 403);
+
+        $filters = $request->validated();
+
+        $pdf = $pdfService->generate(
+            $user,
+            $filters['start_date'] ?? now()->startOfMonth()->toDateString(),
+            $filters['end_date'] ?? now()->toDateString(),
+            $filters['bku_id'] ?? null,
+            $filters['kontrak_id'] ?? null,
+        );
+
+        return $pdf->stream('laporan-dashboard.pdf');
     }
 }

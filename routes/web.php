@@ -60,6 +60,10 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
         Route::get('bku-kontrak', [BkuKontrakController::class, 'index'])->name('bku-kontrak.index');
         Route::get('sumur', [SumurController::class, 'index'])->name('sumur.index');
         Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
+
+        Route::get('/dashboard/pdf', [DashboardController::class, 'exportPdf'])
+            ->name('dashboard.pdf')
+            ->middleware('auth');
     });
 
     Route::get('sumur', [SumurController::class, 'index'])->name('sumur.index');
@@ -82,9 +86,9 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
         Route::put('laporan-harian/{laporan_harian}', [LaporanHarianController::class, 'update'])->name('laporan-harian.update');
 
         Route::put('justifikasi/{justifikasi}/process', [JustifikasiController::class, 'process'])->name('justifikasi.process');
-        
+
     });
-    
+
     Route::get('justifikasi', [JustifikasiController::class, 'index'])->name('justifikasi.index');
     Route::get('laporan-harian', [LaporanHarianController::class, 'index'])->name('laporan-harian.index');
 

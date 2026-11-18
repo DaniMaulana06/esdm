@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItemType } from '@/types';
+import type { BreadcrumbItemType, SharedData } from '@/types';
 import NavUser from './NavUser.vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Building2 } from 'lucide-vue-next';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
 
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
@@ -42,22 +47,23 @@ defineProps<{
             </template>
         </div>
 
-        <!-- Nama User - Role -->
-        <div class="flex items-center gap-3">
-            <!-- <div class="flex size-8 items-center justify-center rounded-full bg-gray-200 text-xl font-semibold">
-                {{ user.name.charAt(0).toUpperCase() }}
+        <!-- BKU - Nama User -->
+        <div class="flex min-w-0 flex-nowrap items-center gap-3">
+            <div v-if="user?.role === 'operator_bku' && user.bku"
+                class="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-800">
+                <Building2 class="h-5 w-5  shrink-0 text-yellow-600" :stroke-width="2" />
+
+                <span class="whitespace-nowrap">
+                    {{ user.bku }}
+                </span>
             </div>
 
-            <div class="hidden text-right sm:block">
-                <p class="text-base font-medium">
-                    <b>{{ user.name }}</b> | {{ formatRole(user.role) }}
-                </p>
-
-                <p class="text-sm text-muted-foreground">
-
-                </p>
-            </div> -->
-            <NavUser/>
+            <NavUser class="shrink-2" />
         </div>
+
+        <!-- <div class="flex items-center gap-3">
+
+            <NavUser />
+        </div> -->
     </header>
 </template>

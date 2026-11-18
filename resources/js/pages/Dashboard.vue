@@ -31,7 +31,7 @@ import {
     VisXYContainer,
 } from '@unovis/vue';
 import { GroupedBar } from '@unovis/ts';
-import { RotateCw, Search } from 'lucide-vue-next';
+import { Printer, RotateCw, Search } from 'lucide-vue-next';
 
 interface Bku {
     id: number;
@@ -347,6 +347,18 @@ const isStafEsdmOrAdmin = computed(() => {
 const isBku = computed(() => {
     return user.value?.role === 'operator_bku';
 });
+
+// cetak laporan 
+const printDashboard = () => {
+    const url = route('dashboard.pdf', {
+        start_date: props.filters.start_date,
+        end_date: props.filters.end_date,
+        bku_id: props.filters.bku_id,
+        kontrak_id: props.filters.kontrak_id,
+    });
+
+    window.open(url, '_blank');
+};
 </script>
 
 <template>
@@ -361,17 +373,25 @@ const isBku = computed(() => {
     ]">
         <div class="py-6">
             <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-
+                
                 <!-- Header -->
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800">
-                        Dashboard
-                    </h2>
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            Dashboard
+                        </h2>
 
-                    <p class="mt-1 text-sm text-gray-500">
-                        Ringkasan produksi dan pelaporan harian minyak bumi.
-                    </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Ringkasan produksi dan pelaporan harian minyak bumi.
+                        </p>
+                    </div>
+
+                    <Button v-if="isStafEsdmOrAdmin" type="button" variant="submit" @click="printDashboard">
+                        <Printer class="mr-2 h-4 w-4" />
+                        Cetak Laporan
+                    </Button>
                 </div>
+
 
                 <!-- KPI Admin or Staf-->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" v-if="!isBku">
@@ -628,12 +648,12 @@ const isBku = computed(() => {
 
                         <div class="mt-4 flex justify-end gap-2">
                             <Button type="button" variant="outline" @click="resetFilter">
-                                <RotateCw/>
+                                <RotateCw />
                                 Reset
                             </Button>
 
                             <Button type="button" @click="applyFilter" variant="submit">
-                                <Search/>
+                                <Search />
                                 Terapkan Filter
                             </Button>
                         </div>
