@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class StoreSumurRequest extends FormRequest
 {
@@ -11,10 +13,17 @@ class StoreSumurRequest extends FormRequest
         return $this->user()?->isOperatorBku() ?? false;
     }
 
-    public function rules(): array
+    public function rules(Request $request): array
     {
         return [
-            'bku_kontrak_id' => ['required', 'exists:bku_kontrak,id'],
+            'bku_kontrak_id' => [
+                'required', 
+                'exists:bku_kontrak,id',
+                Rule::when(
+                    $request->user()->isOperatorBku(),
+                    Rule::exists('bku_kontrak', 'id')->where('bku_id', $request->user()->bku_id)
+                ),
+            ],
             'nama_sumur' => ['required', 'string', 'max:100', 'unique:sumur,nama_sumur'],
             'desa' => ['required', 'string', 'max:100'],
             'kecamatan' => ['required', 'string', 'max:100'],

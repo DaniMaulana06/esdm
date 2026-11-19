@@ -64,10 +64,22 @@ class SumurController extends Controller
 
         $kontraks = $kontrakQuery->get();
 
+        $bkuKontrakQuery = BkuKontrak::with([
+            'bku:id,nama',
+            'kontrak:id,nama',
+        ]);
+
+        if($user->isOperatorBku()){
+            $bkuKontrakQuery->where('bku_id', $user->bku_id);
+        }
+
+        $bkuKontraks = $bkuKontrakQuery->get();
+
         return Inertia::render('Sumur/Index', [
             'sumurs' => $sumurs,
             'bkus' => $bkus,
             'kontraks' => $kontraks,
+            'bkuKontraks' => $bkuKontraks,
             'filters' =>$filters
         ]);
     }

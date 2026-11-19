@@ -28,7 +28,7 @@ class BkuKontrakController extends Controller
             ->latest();
 
         $bkuKontraks = $filter->apply($query)
-            ->paginate(10)
+            ->paginate(4)
             ->withQueryString();
 
         $bkus = Bku::orderBy('nama')->get(['id', 'nama']);

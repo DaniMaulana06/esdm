@@ -99,7 +99,7 @@ const submit = () => {
     <Dialog :open="props.open" @update:open="(value) => {
         if (!value) closeDialog();
     }">
-        <DialogContent class="sm:max-w-[525px]">
+        <DialogContent class="sm:max-w-[600px]">
             <DialogHeader>
                 <DialogTitle>Tambah Kontrak</DialogTitle>
                 <DialogDescription>
@@ -107,7 +107,7 @@ const submit = () => {
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submit" class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <form @submit.prevent="submit" class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
                 <!-- Kontrak -->
                 <div class="space-y-2">
@@ -116,16 +116,14 @@ const submit = () => {
                     </Label>
 
                     <Select v-model="form.bku_kontrak_id">
-                        <SelectTrigger class="w-[280px]">
-                            <SelectValue placeholder="Pilih Kontrak" />
+                        <SelectTrigger class="w-full min-w-0">
+                            <SelectValue placeholder="Pilih BKU - Kontrak" />
                         </SelectTrigger>
+
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value="all">Semua Kontrak</SelectItem>
                                 <SelectItem v-for="item in props.bkuKontraks" :key="item.id" :value="String(item.id)">
-                                    {{ item.bku.nama }}
-                                    -
-                                    {{ item.kontrak.nama }}
+                                    {{ item.bku?.nama }} - {{ item.kontrak?.nama }}
                                 </SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -229,14 +227,16 @@ const submit = () => {
 
                 <!-- Button -->
                 <div class="flex justify-end gap-3 md:col-span-2">
-                    <Button variant="outline" as-child>
-                        <Link :href="route('sumur.index')">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="closeDialog"
+                        :disabled="form.processing"
+                    >
                         Batal
-                        </Link>
                     </Button>
-
-                    <Button type="submit" :disabled="form.processing">
-                        <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
+                    <Button variant="submit" :disabled="form.processing">
+                        <Save :stroke-width="2.5" v-if="!form.processing" />
                         {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
                     </Button>
                 </div>

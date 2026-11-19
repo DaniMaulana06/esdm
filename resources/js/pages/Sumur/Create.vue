@@ -101,7 +101,6 @@ const submit = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem value="all">Semua Kontrak</SelectItem>
                                         <SelectItem v-for="item in props.bkuKontraks" :key="item.id"
                                             :value="String(item.id)">
                                             {{ item.bku.nama }}

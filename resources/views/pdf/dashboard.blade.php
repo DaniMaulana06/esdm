@@ -248,8 +248,8 @@
                 <tr>
                     <td class="center">{{ $index + 1 }}</td>
                     <td>{{ \Carbon\Carbon::parse($item['tanggal'])->translatedFormat('d F Y') }}</td>
-                    <td>{{ $item['bku'] }}</td>
-                    <td>{{ $item['kontrak'] }}</td>
+                    <td>{{ $item->bkuKontrak?->bku?->nama ?? '-' }}</td>
+                    <td>{{ $item->bkuKontrak?->kontrak?->nama ?? '-' }}</td>
                     <td>{{ number_format($item['total_produksi'], 2, ',', '.') }}</td>
                     <td>{{ number_format($item['total_lifting'], 2, ',', '.') }}</td>
                 </tr>

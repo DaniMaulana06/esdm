@@ -592,24 +592,43 @@ const isStafEsdm = computed(() => {
 
                 <!-- PAGINATION SHADCN VUE -->
                 <div v-if="justifikasis.last_page > 1"
-                    class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
-                    <Pagination v-slot="{ page: activePage }" :items-per-page="justifikasis.per_page"
-                        :total="justifikasis.total" :page="justifikasis.current_page" @update:page="goToPage">
-                        <PaginationContent v-slot="{ items }">
-                            <PaginationPrevious />
+                    class="grid grid-cols-1 items-center gap-4 px-3 py-3 sm:grid-cols-3">
 
-                            <template v-for="(item, index) in items" :key="index">
-                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
-                                    :is-active="item.value === activePage">
-                                    {{ item.value }}
-                                </PaginationItem>
+                    <div class="whitespace-nowrap text-center text-sm text-muted-foreground sm:text-left">
+                        Menampilkan
+                        <span class="font-semibold text-foreground">
+                            {{ props.justifikasis.data.length }}
+                        </span>
+                        dari
+                        <span class="font-semibold text-foreground">
+                            {{ props.justifikasis.total }}
+                        </span>
+                        data
+                    </div>
 
-                                <PaginationEllipsis v-else :index="index" />
-                            </template>
+                    <div class="flex justify-center">
+                        <Pagination v-slot="{ page: activePage }" :items-per-page="justifikasis.per_page"
+                            :total="justifikasis.total" :page="justifikasis.current_page" @update:page="goToPage">
 
-                            <PaginationNext />
-                        </PaginationContent>
-                    </Pagination>
+                            <PaginationContent v-slot="{ items }">
+                                <PaginationPrevious />
+
+                                <template v-for="(item, index) in items" :key="index">
+                                    <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                        :is-active="item.value === activePage">
+                                        {{ item.value }}
+                                    </PaginationItem>
+
+                                    <PaginationEllipsis v-else :index="index" />
+                                </template>
+
+                                <PaginationNext />
+                            </PaginationContent>
+
+                        </Pagination>
+                    </div>
+
+                    <div class="hidden sm:block"></div>
                 </div>
             </div>
         </div>

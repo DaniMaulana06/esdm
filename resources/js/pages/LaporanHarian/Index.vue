@@ -796,29 +796,48 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                                 Belum ada data Laporan Harian.
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
             </div>
 
             <!-- PAGINATION -->
-            <div v-if="pager && pager.last_page > 1" class="flex justify-center border-t border-gray-200 px-6 py-4">
-                <Pagination v-slot="{ page: activePage }" :items-per-page="pager.per_page" :total="pager.total"
-                    :page="pager.current_page" @update:page="goToPage">
-                    <PaginationContent v-slot="{ items }">
-                        <PaginationPrevious />
+            <div v-if="pager && pager.last_page > 1"
+                class="grid grid-cols-1 items-center gap-4 px-3 py-3 sm:grid-cols-3">
 
-                        <template v-for="(item, index) in items" :key="index">
-                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
-                                :is-active="item.value === activePage">
-                                {{ item.value }}
-                            </PaginationItem>
+                <div class="whitespace-nowrap text-center text-sm text-muted-foreground sm:text-left">
+                    Menampilkan
+                    <span class="font-semibold text-foreground">
+                        {{ pager.data.length }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-foreground">
+                        {{ pager.total }}
+                    </span>
+                    data
+                </div>
 
-                            <PaginationEllipsis v-else :index="index" />
-                        </template>
+                <div class="flex justify-center">
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="pager.per_page" :total="pager.total"
+                        :page="pager.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
+    
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
+    
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
+    
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
+                </div>
 
-                        <PaginationNext />
-                    </PaginationContent>
-                </Pagination>
+                <div class="hidden sm:block"></div>
             </div>
         </div>
 

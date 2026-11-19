@@ -310,30 +310,45 @@ const openDeleteDialog = (bku: Bku) => {
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <!-- Pagination -->
-        <div v-if="bkus.last_page > 1"
-            class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+            <!-- Pagination -->
+            <div v-if="bkus.last_page > 1" class="grid grid-cols-1 items-center gap-4 px-4 py-4 sm:grid-cols-3">
 
-            <!-- Navigasi halaman -->
-            <Pagination v-slot="{ page: activePage }" :items-per-page="bkus.per_page" :total="bkus.total"
-                :page="bkus.current_page" @update:page="goToPage">
-                <PaginationContent v-slot="{ items }">
-                    <PaginationPrevious />
+                <div class="whitespace-nowrap text-center text-sm text-muted-foreground sm:text-left">
+                    Menampilkan
+                    <span class="font-semibold text-foreground">
+                        {{ props.bkus.data.length }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-foreground">
+                        {{ props.bkus.total }}
+                    </span>
+                    data
+                </div>
 
-                    <template v-for="(item, index) in items" :key="index">
-                        <PaginationItem v-if="item.type === 'page'" :value="item.value"
-                            :is-active="item.value === activePage">
-                            {{ item.value }}
-                        </PaginationItem>
+                <!-- Navigasi halaman -->
+                <div class="flex justify-center">
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="bkus.per_page" :total="bkus.total"
+                        :page="bkus.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
 
-                        <PaginationEllipsis v-else :index="index" />
-                    </template>
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
 
-                    <PaginationNext />
-                </PaginationContent>
-            </Pagination>
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
+
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+
+                <div class="hidden sm:block"></div>
+            </div>
         </div>
 
         <DeleteBkuDialog :open="showDeleteDialog" :bku="bkuToDelete" @update:open="showDeleteDialog = $event"

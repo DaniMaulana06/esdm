@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AddSumurDialog from '@/components/sumur/AddSumurDialog.vue';
 import DeleteSumurDialog from '@/components/sumur/DeleteSumurDialog.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
@@ -10,7 +11,7 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { RotateCw } from '@lucide/vue';
 import { MapPin, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, readonly, ref } from 'vue';
 import { route } from 'ziggy-js';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -85,6 +86,7 @@ const props = defineProps<{
     sumurs: PaginationData<Sumur>;
     bkus: Bku[];
     kontraks: Kontrak[];
+    bkuKontraks: BkuKontrak[];
     filters: Filters;
 }>();
 
@@ -172,6 +174,9 @@ const openDeleteDialog = (sumur: Sumur) => {
     showDeleteDialog.value = true;
 }
 
+const bkuKontraks = props.bkuKontraks;
+const showAddDialog = ref(false);
+
 onMounted(() => {
     if (flash.value.success || flash.value.error) {
         setTimeout(() => {
@@ -207,11 +212,17 @@ const isStafEsdmOrAdmin = computed(() => {
                         Kelola data Sumur Minyak.
                     </p>
                 </div>
-                <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku" prefetch
+                <Button @click="showAddDialog = true" v-if="isStafEsdmOrOperatorBku"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Tambah Sumur
-                </Link>
+                </Button>
+
+                <!-- <Link :href="route('sumur.create')" v-if="isStafEsdmOrOperatorBku" prefetch
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800">
+                    <Plus class="h-4 w-4" :stroke-width="2.5" />
+                    Tambah Sumur
+                </Link> -->
             </div>
 
             <!-- FLASH SUCCESS -->
@@ -431,32 +442,49 @@ const isStafEsdmOrAdmin = computed(() => {
                     </table>
                 </div>
             </div>
+
             <!-- Pagination -->
             <div v-if="sumurs.last_page > 1"
-                class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+                class="grid grid-cols-1 items-center gap-4 px-3 py-3 sm:grid-cols-3">
 
-                <!-- Navigasi halaman -->
-                <Pagination v-slot="{ page: activePage }" :items-per-page="sumurs.per_page" :total="sumurs.total"
-                    :page="sumurs.current_page" @update:page="goToPage">
-                    <PaginationContent v-slot="{ items }">
-                        <PaginationPrevious />
+                <div class="whitespace-nowrap text-center text-sm text-muted-foreground sm:text-left">
+                    Menampilkan
+                    <span class="font-semibold text-foreground">
+                        {{ props.sumurs.data.length }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-foreground">
+                        {{ props.sumurs.total }}
+                    </span>
+                    data
+                </div>
 
-                        <template v-for="(item, index) in items" :key="index">
-                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
-                                :is-active="item.value === activePage">
-                                {{ item.value }}
-                            </PaginationItem>
+                <div class="flex justify-center">
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="sumurs.per_page" :total="sumurs.total"
+                        :page="sumurs.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
 
-                            <PaginationEllipsis v-else :index="index" />
-                        </template>
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
 
-                        <PaginationNext />
-                    </PaginationContent>
-                </Pagination>
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
+
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+
+                <div class="hidden sm:block"></div>
             </div>
         </div>
 
         <DeleteSumurDialog :open="showDeleteDialog" :sumur="sumurToDelete" @update:open="showDeleteDialog = $event"
             @deleted="sumurToDelete = null" />
+        <AddSumurDialog v-if="isStafEsdmOrOperatorBku" v-model:open="showAddDialog" :bku-kontraks="bkuKontraks" />
     </AppLayout>
 </template>

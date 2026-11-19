@@ -231,27 +231,42 @@ const cancelDelete = () => {
                 </table>
             </div>
             <!-- Pagination -->
-            <div v-if="kontraks.last_page > 1"
-                class="flex flex-col items-center justify-between gap-4 border-t px-4 py-4 sm:flex-row">
+            <div v-if="kontraks.last_page > 1" class="grid grid-cols-1 items-center gap-4 px-4 py-4 sm:grid-cols-3">
+
+                <div class="whitespace-nowrap text-center text-sm text-muted-foreground sm:text-left">
+                    Menampilkan
+                    <span class="font-semibold text-foreground">
+                        {{ props.kontraks.data.length }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-foreground">
+                        {{ props.kontraks.total }}
+                    </span>
+                    data
+                </div>
 
                 <!-- Navigasi halaman -->
-                <Pagination v-slot="{ page: activePage }" :items-per-page="kontraks.per_page" :total="kontraks.total"
-                    :page="kontraks.current_page" @update:page="goToPage">
-                    <PaginationContent v-slot="{ items }">
-                        <PaginationPrevious />
+                <div class="flex justify-center">
+                    <Pagination v-slot="{ page: activePage }" :items-per-page="kontraks.per_page"
+                        :total="kontraks.total" :page="kontraks.current_page" @update:page="goToPage">
+                        <PaginationContent v-slot="{ items }">
+                            <PaginationPrevious />
 
-                        <template v-for="(item, index) in items" :key="index">
-                            <PaginationItem v-if="item.type === 'page'" :value="item.value"
-                                :is-active="item.value === activePage">
-                                {{ item.value }}
-                            </PaginationItem>
+                            <template v-for="(item, index) in items" :key="index">
+                                <PaginationItem v-if="item.type === 'page'" :value="item.value"
+                                    :is-active="item.value === activePage">
+                                    {{ item.value }}
+                                </PaginationItem>
 
-                            <PaginationEllipsis v-else :index="index" />
-                        </template>
+                                <PaginationEllipsis v-else :index="index" />
+                            </template>
 
-                        <PaginationNext />
-                    </PaginationContent>
-                </Pagination>
+                            <PaginationNext />
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+
+                <div class="hidden sm:block"></div>
             </div>
         </div>
 

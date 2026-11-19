@@ -91,8 +91,8 @@ class DashboardPdfService
 
         $latestReports = (clone $laporanQuery)
             ->with([
-                'bkuKontrak.bku',
-                'bkuKontrak.kontrak',
+                'bkuKontrak.bku:id,nama',
+                'bkuKontrak.kontrak:id,nama',
             ])
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
