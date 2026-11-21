@@ -11,7 +11,7 @@ import { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, Link, usePage } from '@inertiajs/vue3';
 import { RotateCw } from '@lucide/vue';
 import { MapPin, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
-import { computed, onMounted, readonly, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
 const breadcrumbs: BreadcrumbItem[] = [

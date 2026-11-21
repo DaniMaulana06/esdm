@@ -5,7 +5,7 @@ import type { BreadcrumbItemType, SharedData } from '@/types';
 import NavUser from './NavUser.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { Building2, CircleUserRound } from 'lucide-vue-next';
+import { Building2 } from 'lucide-vue-next';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];

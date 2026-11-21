@@ -2,7 +2,7 @@
 import { watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
-import { Link, Save } from 'lucide-vue-next';
+import { Save } from 'lucide-vue-next';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

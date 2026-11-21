@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Building2, File, FileText, Folder, Home, Package, UserRoundCog } from 'lucide-vue-next';
+import { FileText, Folder, Home, UserRoundCog } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 import AppLogo from './AppLogo.vue';
 import NavCollapsible from './NavCollapsible.vue';
