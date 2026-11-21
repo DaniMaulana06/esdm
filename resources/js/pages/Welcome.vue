@@ -349,8 +349,9 @@ const resetFilter = () => {
             <!-- Header Title & Overview Stats -->
             <div class="text-center">
                 <h2
-                    class="mt-3 bg-amber-500 via-amber-600 to-orange-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-5xl dark:from-white dark:via-amber-400 dark:to-orange-400">
-                    Sebaran BKU Sumatera Selatan
+                    class="mt-3 bg-amber-500 via-amber-600 to-orange-600 bg-clip-text text-xl font-extrabold tracking-tight text-transparent sm:text-4xl dark:from-white dark:via-amber-400 dark:to-orange-400">
+                    Peta Sebaran Badan Kerjasama Usaha pengelola Sumur Minyak Rakyat <br>
+                    Provinsi Sumatera Selatan
                 </h2>
                 <p class="mx-auto mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-400">
                     Klik pada marker kabupaten/kota di peta untuk memfilter data BKU dan melihat proporsi kategori usaha

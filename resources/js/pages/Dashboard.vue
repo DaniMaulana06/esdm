@@ -3,7 +3,7 @@ import { computed, reactive, ref, Ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateValue } from 'reka-ui';
 import { CalendarIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
@@ -174,9 +174,11 @@ const isChartEmpty = computed(() =>
     chartData.value.every((d) => d.total_produksi === 0 && d.total_lifting === 0),
 );
 
-const seriesColors = ['#EAB308', '#166534'];
-
-const chartColors = (_d: ChartData, i: number): string => seriesColors[i];
+const chartColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+];
 
 const tooltipTriggers = {
     [GroupedBar.selectors.bar]: (d: ChartData): string => `
@@ -184,14 +186,14 @@ const tooltipTriggers = {
             <div style="font-weight:600;margin-bottom:6px">${d.label}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <span style="display:flex;align-items:center;gap:6px">
-                    <span style="width:10px;height:10px;border-radius:2px;background:${seriesColors[0]}"></span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:${chartColors[0]}"></span>
                     Produksi
                 </span>
                 <strong>${formatNumber(d.total_produksi)}</strong>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px">
                 <span style="display:flex;align-items:center;gap:6px">
-                    <span style="width:10px;height:10px;border-radius:2px;background:${seriesColors[1]}"></span>
+                    <span style="width:10px;height:10px;border-radius:2px;background:${chartColors[1]}"></span>
                     Lifting
                 </span>
                 <strong>${formatNumber(d.total_lifting)}</strong>
@@ -373,7 +375,7 @@ const printDashboard = () => {
     ]">
         <div class="py-6">
             <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-                
+
                 <!-- Header -->
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -761,17 +763,16 @@ const printDashboard = () => {
                         </div>
 
                         <div v-else class="space-y-3">
-                            <div v-for="item in productionChart" :key="item.tanggal"
+                            <div v-for="(item, index) in productionChart" :key="item.tanggal"
                                 class="grid grid-cols-[90px_1fr_100px] items-center gap-3">
                                 <span class="text-xs text-gray-500">
                                     {{ formatDate(item.tanggal) }}
                                 </span>
 
-                                <div class="h-7 overflow-hidden rounded bg-gray-100">
-                                    <div class="h-full rounded bg-gray-800 transition-all" :style="{
-                                        width: `${(item.total_produksi / maxProduction) * 100}%`,
-                                    }" />
-                                </div>
+                                <div class="h-full rounded transition-all duration-500" :style="{
+                                    width: `${(item.total_produksi / maxProduction) * 100}%`,
+                                    backgroundColor: chartColors[index % chartColors.length],
+                                }" />
 
                                 <span class="text-right text-sm font-medium">
                                     {{ formatNumber(item.total_produksi) }}
@@ -817,14 +818,18 @@ const printDashboard = () => {
                         <!-- Legend -->
                         <div class="mt-4 flex justify-center gap-6">
                             <div class="flex items-center gap-2">
-                                <span class="h-3 w-3 rounded-sm bg-yellow-500"></span>
+                                <span class="h-3 w-3 rounded-sm" :style="{
+                                    backgroundColor: chartColors[0]
+                                }"></span>
                                 <span class="text-sm text-muted-foreground">
                                     Produksi
                                 </span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <span class="h-3 w-3 rounded-sm bg-green-800"></span>
+                                <span class="h-3 w-3 rounded-sm" :style="{
+                                    backgroundColor: chartColors[1]
+                                }"></span>
                                 <span class="text-sm text-muted-foreground">
                                     Lifting
                                 </span>
@@ -891,6 +896,9 @@ const printDashboard = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Produksi Berdasarkan BKU</CardTitle>
+                            <CardDescription>
+                                Total produksi dari tiap BKU pada bulan ini.
+                            </CardDescription>
                         </CardHeader>
 
                         <CardContent>

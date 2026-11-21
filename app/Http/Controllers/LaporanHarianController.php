@@ -142,7 +142,7 @@ class LaporanHarianController extends Controller
         $query = BkuKontrak::with([
             'bku:id,nama',
             'kontrak:id,nama',
-        ])->whereDate('created_at', '<', now()->toDateString());
+        ])->whereDate('created_at', '<', now()->toDateString()); // mengambil bku kontrak yang berlaku hari ini
 
         // operator hanya melihat kontrak dari BKU miliknya
         if ($user->isOperatorBku()) {

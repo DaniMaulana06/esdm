@@ -5,7 +5,7 @@ import type { BreadcrumbItemType, SharedData } from '@/types';
 import NavUser from './NavUser.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { Building2 } from 'lucide-vue-next';
+import { Building2, CircleUserRound } from 'lucide-vue-next';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -28,7 +28,7 @@ const user = computed(() => page.props.auth.user);
                         <template v-for="(item, index) in breadcrumbs" :key="index">
                             <BreadcrumbItem>
                                 <template v-if="index === breadcrumbs.length - 1">
-                                    <BreadcrumbPage>
+                                    <BreadcrumbPage class="text-black">
                                         {{ item.title }}
                                     </BreadcrumbPage>
                                 </template>
@@ -51,7 +51,7 @@ const user = computed(() => page.props.auth.user);
         <div class="flex min-w-0 flex-nowrap items-center gap-3">
             <div v-if="user?.role === 'operator_bku' && user.bku"
                 class="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-800">
-                <Building2 class="h-5 w-5  shrink-0 text-yellow-600" :stroke-width="2" />
+                <Building2 class="h-5 w-5 shrink-0 text-yellow-600" :stroke-width="2" />
 
                 <span class="whitespace-nowrap">
                     {{ user.bku }}

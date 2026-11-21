@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Building2, Home, NotepadText, UserRoundCog } from 'lucide-vue-next';
+import { Building2, File, FileText, Folder, Home, Package, UserRoundCog } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 import AppLogo from './AppLogo.vue';
 import NavCollapsible from './NavCollapsible.vue';
@@ -42,7 +42,7 @@ const navMain: NavGroup[] = [
     },
     {
         title: 'Data Master',
-        icon: Building2,
+        icon: Folder,
         items: [
             { title: 'BKU', href: '/bku', roles: ['admin', 'staf_dinas'] },
             { title: 'Sumur', href: '/sumur', roles: ['admin', 'staf_dinas', 'operator_bku'] },
@@ -52,7 +52,7 @@ const navMain: NavGroup[] = [
     },
     {
         title: 'Laporan',
-        icon: NotepadText,
+        icon: FileText,
         items: [
             { title: 'Laporan Harian', href: '/laporan-harian', roles: ['admin', 'staf_dinas', 'operator_bku'] },
             { title: 'Justifikasi', href: '/justifikasi', roles: ['admin', 'staf_dinas'] },

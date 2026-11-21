@@ -457,13 +457,13 @@ const isStafEsdm = computed(() => {
                                     <tr v-for="(justifikasi, index
                                     ) in justifikasis.data" :key="justifikasi.id
                                         ">
-                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{
                                                 (justifikasis.current_page - 1) * justifikasis.per_page + index + 1
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{
                                                 justifikasi
                                                     .laporan_harian
@@ -473,7 +473,7 @@ const isStafEsdm = computed(() => {
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{
                                                 justifikasi
                                                     .laporan_harian
@@ -483,7 +483,7 @@ const isStafEsdm = computed(() => {
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{
                                                 formatDate(
                                                     justifikasi
@@ -493,7 +493,7 @@ const isStafEsdm = computed(() => {
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
                                             {{
                                                 formatDate(
                                                     justifikasi
@@ -502,7 +502,7 @@ const isStafEsdm = computed(() => {
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-right text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-right text-sm font-medium text-gray-900">
                                             {{
                                                 formatNumber(
                                                     justifikasi
@@ -512,7 +512,7 @@ const isStafEsdm = computed(() => {
                                             }}
                                         </td>
 
-                                        <td class="px-6 py-4 text-right text-sm text-gray-700">
+                                        <td class="px-6 py-4 text-right text-sm font-medium text-gray-900">
                                             {{
                                                 formatNumber(
                                                     justifikasi

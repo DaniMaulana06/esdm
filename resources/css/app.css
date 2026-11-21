@@ -56,14 +56,12 @@ html {
         --radius: 0.75rem; /* Kelengkungan sudut komponen default (8px) */
 
         /* Warna" grafik */
-        --chart-1: 44 90% 52%; /* Warna diagram 1: Golden Amber */
-        --chart-2: 71 64% 55%; /* Warna diagram 2: Lime Green */
-        --chart-3: 197 37% 24%; /* Warna diagram 3: Biru ESDM */
-        --chart-4: 43 74% 66%; /* Warna diagram 4: Kuning Terang */
-        --chart-5: 27 87% 67%; /* Warna diagram 5: Oranye */
+        --chart-1: 44 90% 52%; /* Warna diagram 1: Kuning ESDM */
+        --chart-2: 71 64% 55%; /* Warna diagram 2: Hijau ESDM */
+        --chart-3: 0 0% 10%; /* Warna diagram 3: Hitam */
 
         /* Style sidebar */
-        --sidebar-background: 0 0% 98%; /* Latar belakang sidebar (Abu-abu sangat terang, bersih & elegan) */
+        --sidebar-background: 0 0% 100%; /* Latar belakang sidebar (Abu-abu sangat terang, bersih & elegan) */
         --sidebar-foreground: 0 0% 12%; /* Teks menu sidebar (Hitam tegas agar nama menu terbaca jelas) */
         --sidebar-primary: 46 77% 56%; /* Latar menu yang sedang aktif di sidebar (Golden Amber) */
         --sidebar-primary-foreground: 0 0% 9%; /* Teks pada menu yang sedang aktif (Hitam pekat) */
