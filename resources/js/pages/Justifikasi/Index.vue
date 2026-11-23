@@ -325,13 +325,7 @@ const isStafEsdm = computed(() => {
                 </div>
 
                 <!-- Filter -->
-                <Card class="mb-6">
-                    <CardHeader>
-                        <CardTitle>
-                            Filter
-                        </CardTitle>
-                    </CardHeader>
-
+                <Card class="mb-6 py-4">
                     <CardContent>
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div class="w-full sm:w-64">

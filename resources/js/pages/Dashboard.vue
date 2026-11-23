@@ -750,6 +750,109 @@ const printDashboard = () => {
                     </CardContent>
                 </Card>
 
+                <!-- Produksi per BKU + Status -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2" v-if="isStafEsdmOrAdmin">
+
+                    <!-- Produksi per BKU -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Produksi Berdasarkan BKU</CardTitle>
+                            <CardDescription>
+                                Total produksi dari tiap BKU pada bulan ini.
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div v-if="productionByBku.length === 0" class="py-10 text-center text-sm text-gray-500">
+                                Belum ada data produksi.
+                            </div>
+
+                            <div v-else class="space-y-5">
+                                <div v-for="item in productionByBku" :key="item.id">
+                                    <div class="mb-2 flex justify-between text-sm">
+                                        <span class="font-medium">
+                                            {{ item.nama }}
+                                        </span>
+
+                                        <span>
+                                            {{ formatNumber(item.total_produksi) }}
+                                        </span>
+                                    </div>
+
+                                    <div class="h-2 rounded-full bg-gray-100">
+                                        <div class="h-2 rounded-full bg-gray-800" :style="{
+                                            width: `${(item.total_produksi / maxBkuProduction) * 100}%`,
+                                        }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Status Pelaporan Hari ini -->
+                    <Card v-if="isStafEsdmOrAdmin">
+                        <CardHeader>
+                            <CardTitle>
+                                Status Pelaporan Hari Ini
+                            </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div class="grid grid-cols-3 gap-3 text-center">
+
+                                <div class="rounded-lg border p-4">
+                                    <p class="text-2xl font-bold">
+                                        {{ reportingStatus.total_bku }}
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Total BKU
+                                    </p>
+                                </div>
+
+                                <div class="rounded-lg border p-4">
+                                    <p class="text-2xl font-bold text-green-600">
+                                        {{ reportingStatus.sudah_melapor }}
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Lengkap
+                                    </p>
+                                </div>
+
+                                <div class="rounded-lg border p-4">
+                                    <p class="text-2xl font-bold text-red-600">
+                                        {{ reportingStatus.belum_melapor }}
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Belum Lengkap
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div class="mt-5">
+                                <div class="mb-2 flex justify-between text-sm">
+                                    <span>
+                                        Kelengkapan laporan
+                                    </span>
+
+                                    <span class="font-medium">
+                                        {{ reportingStatus.percentage }}%
+                                    </span>
+                                </div>
+
+                                <div class="h-2 rounded-full bg-gray-100">
+                                    <div class="h-2 rounded-full bg-green-600" :style="{
+                                        width: `${reportingStatus.percentage}%`,
+                                    }" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <!-- Grafik Produksi -->
                 <Card>
                     <CardHeader>
@@ -889,108 +992,6 @@ const printDashboard = () => {
                         </div>
                     </CardContent>
                 </Card>
-
-                <!-- Produksi per BKU + Status -->
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2" v-if="isStafEsdmOrAdmin">
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Produksi Berdasarkan BKU</CardTitle>
-                            <CardDescription>
-                                Total produksi dari tiap BKU pada bulan ini.
-                            </CardDescription>
-                        </CardHeader>
-
-                        <CardContent>
-                            <div v-if="productionByBku.length === 0" class="py-10 text-center text-sm text-gray-500">
-                                Belum ada data produksi.
-                            </div>
-
-                            <div v-else class="space-y-5">
-                                <div v-for="item in productionByBku" :key="item.id">
-                                    <div class="mb-2 flex justify-between text-sm">
-                                        <span class="font-medium">
-                                            {{ item.nama }}
-                                        </span>
-
-                                        <span>
-                                            {{ formatNumber(item.total_produksi) }}
-                                        </span>
-                                    </div>
-
-                                    <div class="h-2 rounded-full bg-gray-100">
-                                        <div class="h-2 rounded-full bg-gray-800" :style="{
-                                            width: `${(item.total_produksi / maxBkuProduction) * 100}%`,
-                                        }" />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card v-if="isStafEsdmOrAdmin">
-                        <CardHeader>
-                            <CardTitle>
-                                Status Pelaporan Hari Ini
-                            </CardTitle>
-                        </CardHeader>
-
-                        <CardContent>
-                            <div class="grid grid-cols-3 gap-3 text-center">
-
-                                <div class="rounded-lg border p-4">
-                                    <p class="text-2xl font-bold">
-                                        {{ reportingStatus.total_bku }}
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        Total BKU
-                                    </p>
-                                </div>
-
-                                <div class="rounded-lg border p-4">
-                                    <p class="text-2xl font-bold text-green-600">
-                                        {{ reportingStatus.sudah_melapor }}
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        Lengkap
-                                    </p>
-                                </div>
-
-                                <div class="rounded-lg border p-4">
-                                    <p class="text-2xl font-bold text-red-600">
-                                        {{ reportingStatus.belum_melapor }}
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        Belum Lengkap
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <div class="mt-5">
-                                <div class="mb-2 flex justify-between text-sm">
-                                    <span>
-                                        Kelengkapan laporan
-                                    </span>
-
-                                    <span class="font-medium">
-                                        {{ reportingStatus.percentage }}%
-                                    </span>
-                                </div>
-
-                                <div class="h-2 rounded-full bg-gray-100">
-                                    <div class="h-2 rounded-full bg-green-600" :style="{
-                                        width: `${reportingStatus.percentage}%`,
-                                    }" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                </div>
 
                 <!-- BKU Belum Lengkap -->
                 <Card v-if="isStafEsdmOrAdmin">
