@@ -8,7 +8,7 @@ withDefaults(defineProps<{ authenticated?: boolean }>(), { authenticated: false 
 <template>
     <nav
         class="sticky top-0 z-[1000] border-b border-slate-200/80 bg-white/90 px-6 py-3.5 shadow-sm backdrop-blur-lg dark:border-slate-800 dark:bg-slate-950/90">
-        <div class="mx-auto flex max-w-7xl items-center justify-between">
+        <div class="mx-auto flex max-w-8xl items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="/images/logo_esdm.png" alt="Logo ESDM" class="h-9 w-auto object-contain" />
                 <div>

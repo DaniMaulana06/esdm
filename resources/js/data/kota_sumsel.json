@@ -134,53 +134,5 @@
     "tipe": "Kabupaten",
     "latitude": -3.2166,
     "longitude": 103.8447
-  },
-  {
-    "id": 18,
-    "nama": "Tanjung Enim",
-    "nama_resmi": "Tanjung Enim (Muara Enim)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -3.7153,
-    "longitude": 103.8015
-  },
-  {
-    "id": 19,
-    "nama": "Keluang",
-    "nama_resmi": "Keluang (Musi Banyuasin)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -2.6778,
-    "longitude": 103.9011
-  },
-  {
-    "id": 20,
-    "nama": "Sekayu",
-    "nama_resmi": "Sekayu (Musi Banyuasin)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -2.8833,
-    "longitude": 103.8333
-  },
-  {
-    "id": 21,
-    "nama": "Sungai Lilin",
-    "nama_resmi": "Sungai Lilin (Musi Banyuasin)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -2.6056,
-    "longitude": 104.0928
-  },
-  {
-    "id": 22,
-    "nama": "Babat Toman",
-    "nama_resmi": "Babat Toman (Musi Banyuasin)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -2.7333,
-    "longitude": 103.5833
-  },
-  {
-    "id": 23,
-    "nama": "Pendopo",
-    "nama_resmi": "Pendopo (PALI)",
-    "tipe": "Wilayah Kerja Migas",
-    "latitude": -3.3108,
-    "longitude": 103.8447
   }
 ]

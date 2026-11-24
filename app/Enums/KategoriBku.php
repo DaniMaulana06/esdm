@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum KategoriBku: string
 {
-    case PERUSAHAAN = 'Perusahaan';
+    case BUMD = 'BUMD';
     case KOPERASI = 'Koperasi';
     case UMKM = 'UMKM';
 
