@@ -7,6 +7,7 @@ use App\Models\Bku;
 use App\Models\BkuKontrak;
 use App\Models\Kontrak;
 use App\Models\LaporanHarian;
+use App\Models\Sumur;
 use App\Models\User;
 use App\Services\DashboardPdfService;
 use App\Services\LaporanMonitoringService;
@@ -18,6 +19,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
+    /** Laporan terlewat baru ditampilkan ke operator setelah melewati N hari. */
+    private const HARI_MASA_TENGGANG_LAPORAN = 7;
+
     public function index(FilterDashboardRequest $request, LaporanMonitoringService $monitoring): Response
     {
         $user = $request->user();
@@ -59,6 +63,8 @@ class DashboardController extends Controller
 
             'latestReports' => $this->getLatestReports($laporanQuery),
             'missingDatesForOperator' => $this->getMissingDatesForOperator($user, $monitoring),
+
+            'total_sumur' => $this->getTotalSumur(),
         ]);
     }
 
@@ -442,10 +448,10 @@ class DashboardController extends Controller
     /**
      * Tanggal terlewat khusus untuk operator BKU.
      */
-    private function getMissingDatesForOperator(User $user, LaporanMonitoringService $monitoring): array|Collection
+    private function getMissingDatesForOperator(User $user, LaporanMonitoringService $monitoring): array| Collection
     {
         if ($user->isOperatorBku() && $user->bku_id) {
-            return $monitoring->getMissingDatesForBku($user->bku_id);
+            return $monitoring->getMissingDatesForBku($user->bku_id, self::HARI_MASA_TENGGANG_LAPORAN);
         }
 
         return [];
@@ -469,5 +475,17 @@ class DashboardController extends Controller
         );
 
         return $pdf->stream('laporan-dashboard.pdf');
+    }
+
+    private function getTotalSumur(): int {
+        $user = auth()->user();
+
+        if($user->role !== 'operator_bku' || !$user->bku_id){
+            return 0;
+        }
+
+        return Sumur::whereHas('bkuKontrak', function($query) use ($user) {
+            $query->where('bku_id', $user->bku_id);
+        })->count();
     }
 }

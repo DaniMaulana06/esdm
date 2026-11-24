@@ -12,7 +12,10 @@ interface BkuItem {
 interface CategoryMeta {
     badge: string;
 }
-defineProps<{ bkuList: BkuItem[]; categoryMeta: Record<string, CategoryMeta> }>();
+defineProps<{ 
+    bkuList: BkuItem[]; 
+    categoryMeta: Record<string, CategoryMeta> 
+}>();
 </script>
 
 <template>

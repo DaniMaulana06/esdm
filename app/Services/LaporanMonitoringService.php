@@ -104,8 +104,11 @@ class LaporanMonitoringService
     /**
      * Ambil daftar tanggal yang terlewat (belum ada laporan) untuk BKU tertentu.
      * Digunakan di dashboard operator BKU agar dapat mengisi laporan yang tertinggal.
+     *
+     * @param int $minimalHariTerlewat Hanya tampilkan tanggal yang sudah lewat
+     *                                 lebih dari N hari (0 = tampilkan semua).
      */
-    public function getMissingDatesForBku(int $bkuId): array
+    public function getMissingDatesForBku(int $bkuId, int $minimalHariTerlewat = 0): array
     {
         $hasil = [];
 
@@ -119,6 +122,10 @@ class LaporanMonitoringService
         $kontrakIds = $bku->bkuKontraks->pluck('id');
 
         $hariIni = Carbon::today();
+
+        // Laporan terlewat baru ditampilkan setelah melewati masa tenggang.
+        // Contoh: minimalHariTerlewat = 7 -> hanya tanggal sebelum (hari ini - 7 hari).
+        $batasTanggalHariIni = $hariIni->copy()->subDays($minimalHariTerlewat);
 
         /*
          * Titik mulai pengecekan: tanggal kontrak terlama milik BKU ini,
@@ -144,14 +151,14 @@ class LaporanMonitoringService
         LaporanHarian::query()
             ->whereIn('bku_kontrak_id', $kontrakIds)
             ->whereDate('tanggal', '>=', $tanggal)
-            ->whereDate('tanggal', '<', $hariIni)
+            ->whereDate('tanggal', '<=', $batasTanggalHariIni)
             ->get(['bku_kontrak_id', 'tanggal'])
             ->each(function ($laporan) use (&$sudahMelaporMap) {
                 $tgl = Carbon::parse($laporan->tanggal)->toDateString();
                 $sudahMelaporMap[$tgl][] = $laporan->bku_kontrak_id;
             });
 
-        while ($tanggal->lt($hariIni)) {
+        while ($tanggal->lt($batasTanggalHariIni)) {
             if ($tanggal->isWeekday()) {
                 $sudahMelaporIds = $sudahMelaporMap[$tanggal->toDateString()] ?? [];
 

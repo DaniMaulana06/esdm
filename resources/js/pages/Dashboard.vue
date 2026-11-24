@@ -48,6 +48,7 @@ interface Stats {
     total_kontrak: number;
     average_produksi: number;
     average_lifting: number;
+    total_sumur: number;
 }
 
 interface ProductionChartItem {
@@ -91,16 +92,6 @@ interface LatestReport {
     kontrak: string;
     total_produksi: number;
     total_lifting: number;
-}
-
-interface MissingReport {
-    id: number;
-    nama: string;
-    missing_count: number;
-    contracts: {
-        id: number;
-        nama: string;
-    }[];
 }
 
 interface BkuBelumLapor {
@@ -148,6 +139,7 @@ const props = defineProps<{
     bkuBelumLapor: BkuBelumLapor[];
     latestReports: LatestReport[];
     missingDatesForOperator: MissingDateForOperator[];
+    total_sumur: number;
 }>();
 
 interface ChartData {
@@ -394,9 +386,10 @@ const printDashboard = () => {
                     </Button>
                 </div>
 
-
                 <!-- KPI Admin or Staf-->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" v-if="!isBku">
+
+                    <!-- jumlah bku -->
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -411,6 +404,7 @@ const printDashboard = () => {
                         </CardContent>
                     </Card>
 
+                    <!-- jumlah Kontrak -->
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -425,6 +419,7 @@ const printDashboard = () => {
                         </CardContent>
                     </Card>
 
+                    <!-- Rata2 produksi -->
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -448,6 +443,7 @@ const printDashboard = () => {
                 <!-- KPI Operator BKU-->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" v-if="isBku">
 
+                    <!-- total kontrak -->
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -462,6 +458,7 @@ const printDashboard = () => {
                         </CardContent>
                     </Card>
 
+                    <!-- Rata2 produksi -->
                     <Card>
                         <CardHeader class="pb-2">
                             <CardTitle class="text-sm font-medium text-gray-500">
@@ -479,18 +476,35 @@ const printDashboard = () => {
                             </p>
                         </CardContent>
                     </Card>
+
+                    <!-- Total Sumur -->
+                    <Card>
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-sm font-medium text-gray-500">
+                                Total Sumur
+                            </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div class="text-2xl font-bold">
+                                {{ props.total_sumur ?? 0 }}
+                            </div>
+
+                            <p class="mt-1 text-xs text-gray-500">
+                                Sumur terdaftar milik BKU
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
 
-                <!-- =============================================
-                     Laporan Terlewat (Hanya Operator BKU)
-                     ============================================= -->
+                <!-- Laporan Terlewat (Hanya Operator BKU) -->
                 <Card v-if="isBku">
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <div>
                                 <CardTitle>Laporan Terlewat</CardTitle>
                                 <p class="mt-1 text-sm text-gray-500">
-                                    Tanggal hari kerja yang belum ada laporan. Klik tanggal untuk mengisi.
+                                    Laporan terlewat lebih dari 7 hari. Klik tanggal untuk mengisi.
                                 </p>
                             </div>
                             <span v-if="missingDatesForOperator.length > 0"
@@ -501,10 +515,10 @@ const printDashboard = () => {
                     </CardHeader>
 
                     <CardContent>
-                        <!-- Semua sudah dilaporkan -->
+                        <!-- Tidak ada laporan terlewat di luar masa tenggang -->
                         <div v-if="missingDatesForOperator.length === 0"
                             class="rounded-lg border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-700">
-                            ✅ Semua laporan hari kerja sudah terisi!
+                            ✅ Tidak ada laporan yang terlewat lebih dari 7 hari.
                         </div>
 
                         <!-- Daftar tanggal terlewat -->
@@ -853,7 +867,7 @@ const printDashboard = () => {
                     </Card>
                 </div>
 
-                <!-- Grafik Produksi -->
+                <!-- Grafik Produksi Harian-->
                 <Card>
                     <CardHeader>
                         <CardTitle>Produksi Harian</CardTitle>
@@ -940,7 +954,6 @@ const printDashboard = () => {
                         </div>
                     </CardContent>
                 </Card>
-
 
                 <!-- Produksi vs Lifting -->
                 <Card>
