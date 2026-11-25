@@ -68,10 +68,10 @@ const submit = () => {
                         <CardTitle>Tambah BKU</CardTitle>
                         <CardDescription>Tambahkan BKU baru ke dalam sistem.</CardDescription>
                     </CardHeader>
-    
+
                     <CardContent>
                         <form @submit.prevent="submit" class="space-y-5">
-    
+
                             <!-- Nama BKU -->
                             <div class="space-y-2">
                                 <Label for="name">Nama BKU</Label>
@@ -80,14 +80,14 @@ const submit = () => {
                                     {{ form.errors.nama }}
                                 </p>
                             </div>
-                            
+
                             <!-- Kategori -->
                             <div class="space-y-2">
                                 <Label for="kategori">Kategori</Label>
                                 <Select id="kategori" v-model="form.kategori">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Pilih Kategori" />
-                                    </SelectTrigger>    
+                                    </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectItem v-for="item in kategoris" :key="item" :value="item">
@@ -100,15 +100,15 @@ const submit = () => {
                                     {{ form.errors.kategori }}
                                 </p>
                             </div>
-                            
+
                             <!-- Kabupaten / Kota -->
                             <div class="space-y-2">
                                 <Label for="kota">Kabupaten / Kota</Label>
                                 <Select id="kota" v-model="form.kota">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Pilih Kabupaten/Kota" />
-                                    </SelectTrigger>    
-                                    
+                                    </SelectTrigger>
+
                                     <SelectContent>
                                         <SelectGroup class="h-[280px]">
                                             <SelectItem v-for="item in daftarKota" :key="item.id" :value="item.nama">
@@ -121,7 +121,7 @@ const submit = () => {
                                     {{ form.errors.kota }}
                                 </p>
                             </div>
-    
+
                             <!-- Penetapan BKU -->
                             <div class="space-y-2">
                                 <Label for="penetapan">Pentapan BKU</Label>
@@ -131,7 +131,7 @@ const submit = () => {
                                     {{ form.errors.penetapan }}
                                 </p>
                             </div>
-    
+
                             <!-- Tombol Action -->
                             <div class="flex gap-3 pt-2 justify-end">
                                 <Button variant="outline" as-child>
@@ -139,13 +139,13 @@ const submit = () => {
                                         Batal
                                     </Link>
                                 </Button>
-    
+
                                 <Button type="submit" :disabled="form.processing">
-                                    <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing"/>
+                                    <Save color="#ffffff" :stroke-width="2.5" v-if="!form.processing" />
                                     {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
                                 </Button>
                             </div>
-    
+
                         </form>
                     </CardContent>
                 </Card>

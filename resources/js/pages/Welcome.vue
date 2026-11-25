@@ -126,7 +126,10 @@ const isSameCity = (cityA?: string | null, cityB?: string | null): boolean => {
     if (!cityA || !cityB) return false;
     const a = cleanCityName(cityA);
     const b = cleanCityName(cityB);
-    return !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+    // Harus sama persis setelah prefix "Kabupaten/Kota" dibuang.
+    // Jangan pakai includes(): "musi banyuasin".includes("banyuasin") = true,
+    // sehingga filter Musi Banyuasin ikut menarik data Banyuasin.
+    return a !== '' && a === b;
 };
 const filteredBku = computed(() => {
     let list = props.bkuList;
@@ -197,42 +200,61 @@ watch(selectedTahun, () => applyPeriodFilter());
 </script>
 
 <template>
-
     <Head title="Peta BKU Sumatera Selatan" />
-    <div
-        class="dark:bg-slate-950 dark:text-slate-100 min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white">
+    <div class="dark:bg-slate-950 dark:text-slate-100 min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-amber-500 selection:text-white">
         <WelcomeNavbar :authenticated="!!page.props.auth?.user" />
         <main class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <WelcomeHero />
-            <WelcomeKpiCards :selected-kabupaten="selectedKabupaten" :total-bku="filteredBku.length"
-                :total-produksi="totalProduksiFiltered" :label-periode="labelPeriode" />
-            <WelcomeFilterBar :selected-bulan="selectedBulan" :selected-tahun="selectedTahun"
-                :selected-kabupaten="selectedKabupaten" :search-query="searchQuery" :daftar-bulan="DAFTAR_BULAN"
-                :tahun-tersedia="props.tahunTersedia" :daftar-kabupaten="daftarKabupaten" :label-periode="labelPeriode"
-                @update:selected-bulan="selectedBulan = $event" @update:selected-tahun="selectedTahun = $event"
-                @update:selected-kabupaten="selectedKabupaten = $event" @update:search-query="searchQuery = $event"
-                @reset="resetAllFilters" />
+            <WelcomeKpiCards
+                :selected-kabupaten="selectedKabupaten"
+                :total-bku="filteredBku.length"
+                :total-produksi="totalProduksiFiltered"
+                :label-periode="labelPeriode"
+            />
+            <WelcomeFilterBar
+                :selected-bulan="selectedBulan"
+                :selected-tahun="selectedTahun"
+                :selected-kabupaten="selectedKabupaten"
+                :search-query="searchQuery"
+                :daftar-bulan="DAFTAR_BULAN"
+                :tahun-tersedia="props.tahunTersedia"
+                :daftar-kabupaten="daftarKabupaten"
+                :label-periode="labelPeriode"
+                @update:selected-bulan="selectedBulan = $event"
+                @update:selected-tahun="selectedTahun = $event"
+                @update:selected-kabupaten="selectedKabupaten = $event"
+                @update:search-query="searchQuery = $event"
+                @reset="resetAllFilters"
+            />
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <WelcomeCategoryChart :category-stats="categoryStats" :hovered-category="hoveredCategory"
-                    :active-hovered-data="activeHoveredData" :selected-kabupaten="selectedKabupaten"
-                    :total-bku="filteredBku.length" @update:hovered-category="hoveredCategory = $event" />
-                <WelcomeBkuProportion :bku-list="filteredBku" :selected-kabupaten="selectedKabupaten"
-                    :label-periode="labelPeriode" />
+                <WelcomeCategoryChart
+                    :category-stats="categoryStats"
+                    :hovered-category="hoveredCategory"
+                    :active-hovered-data="activeHoveredData"
+                    :selected-kabupaten="selectedKabupaten"
+                    :total-bku="filteredBku.length"
+                    @update:hovered-category="hoveredCategory = $event"
+                />
+                <WelcomeBkuProportion :bku-list="filteredBku" :selected-kabupaten="selectedKabupaten" :label-periode="labelPeriode" />
             </div>
 
             <!-- Map dan List BKU -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <div class="lg:col-span-7">
-                    <WelcomeMap ref="mapRef" :bku-list="props.bkuList" :selected-kabupaten="selectedKabupaten"
-                        :label-periode="labelPeriode" @select-city="selectedKabupaten = $event"
-                        @reset-filter="resetMapFilter" />
+                    <WelcomeMap
+                        ref="mapRef"
+                        :bku-list="props.bkuList"
+                        :selected-kabupaten="selectedKabupaten"
+                        :label-periode="labelPeriode"
+                        @select-city="selectedKabupaten = $event"
+                        @reset-filter="resetMapFilter"
+                    />
                 </div>
                 <div class="lg:col-span-5">
                     <WelcomeBkuList :bku-list="filteredBku" :category-meta="CATEGORY_COLORS" />
                 </div>
             </div>
-
         </main>
     </div>
 </template>

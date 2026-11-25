@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Save } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -51,7 +52,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const getLaporanError = (
     index: number,
-    field: 'bku_kontrak_id' | 'total_produksi' | 'total_lifting',
+    field: 'bku_kontrak_id' | 'total_produksi' | 'total_lifting' | 'keterangan',
 ): string | undefined => {
     return form.errors[
         `laporan.${index}.${field}` as keyof typeof form.errors
@@ -59,6 +60,7 @@ const getLaporanError = (
 };
 
 const form = useForm({
+    is_backfill: true,
     tanggal: props.tanggalBackfill,
     laporan: props.bkuKontraks.map((item) => ({
         bku_kontrak_id: item.id,
@@ -273,9 +275,13 @@ const formatDateDisplay = (dateStr: string): string => {
                                                     Keterangan
                                                 </Label>
     
-                                                <Input v-model="form.laporan[index]
-                                                    .keterangan
-                                                    " type="text" min="0" step="0.01" placeholder="Keterangan" />
+                                                <Input v-model="form.laporan[index].keterangan" 
+                                                    type="text" 
+                                                    min="0" 
+                                                    step="0.01" 
+                                                    :required="form.is_backfill"
+                                                    placeholder="Keterangan" 
+                                                     />
     
                                                 <InputError :message="getLaporanError(index, 'total_lifting')"
                                                     class="mt-2" />
@@ -303,6 +309,7 @@ const formatDateDisplay = (dateStr: string): string => {
                                         <Button type="submit" :disabled="form.processing ||
                                             props.bkuKontraks.length === 0
                                             ">
+                                            <Save />
                                             {{
                                                 form.processing
                                                     ? 'Menyimpan...'

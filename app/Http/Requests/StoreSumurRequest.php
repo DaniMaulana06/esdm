@@ -10,7 +10,7 @@ class StoreSumurRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isOperatorBku() ?? false;
+        return $this->user()?->isStafEsdmOrBku() ?? false;
     }
 
     public function rules(Request $request): array

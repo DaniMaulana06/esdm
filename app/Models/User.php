@@ -57,6 +57,10 @@ class User extends Authenticatable
     {
         return in_array($this->role, ['admin', 'staf_dinas'], true);
     }
+    public function isStafEsdmOrBku(): bool
+    {
+        return in_array($this->role, ['operator_bku', 'staf_dinas'], true);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -8,6 +8,8 @@ use App\Models\BkuKontrak;
 use App\Models\LaporanHarian;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Builder;
 
 class DashboardPdfService
@@ -20,6 +22,114 @@ class DashboardPdfService
         $kontrakId = null,
         ?LaporanMonitoringService $monitoring = null
     ) {
+        $rekapBku = $this->buildProductionRecap(
+            $user,
+            $startDate,
+            $endDate,
+            $bkuId,
+            $kontrakId
+        );
+
+        $totalProduksi = $rekapBku->sum('total_produksi');
+        $totalLifting = $rekapBku->sum('total_lifting');
+
+        $dates = collect(
+            CarbonPeriod::create(
+                Carbon::parse($startDate)->startOfDay(),
+                Carbon::parse($endDate)->startOfDay()
+            )
+        );
+
+        $rekapPages = $this->paginateRecap(
+            $rekapBku,
+            $dates,
+            28 // perkiraan jumlah baris per halaman
+        );
+
+        $data = compact(
+            'startDate',
+            'endDate',
+            'rekapPages',
+            'totalProduksi',
+            'totalLifting'
+        );
+
+        return Pdf::loadView('pdf.dashboard', $data)
+            ->setPaper('a4', 'landscape');
+    }
+
+    private function paginateRecap($rekapBku, $dates, int $rowsPerPage = 18): array
+    {
+        $pages = [];
+        $currentPage = [];
+        $remainingRows = $rowsPerPage;
+        $bkuIndex = 0;
+
+        foreach ($rekapBku->values() as $bkuIndex => $bku) {
+            $remainingDates = $dates->values();
+
+            while ($remainingDates->isNotEmpty()) {
+                $take = min($remainingRows, $remainingDates->count());
+
+                $currentPage[] = [
+                    'bku' => $bku,
+                    'nomor' => $bkuIndex + 1,
+                    'dates' => $remainingDates->take($take)->values(),
+                ];
+
+                $remainingDates = $remainingDates->slice($take)->values();
+                $remainingRows -= $take;
+
+                if ($remainingRows === 0) {
+                    $pages[] = $currentPage;
+
+                    $currentPage = [];
+                    $remainingRows = $rowsPerPage;
+                }
+            }
+        }
+
+        if (!empty($currentPage)) {
+            $pages[] = $currentPage;
+        }
+
+        return $pages;
+    }
+
+    private function buildProductionRecap(
+        User $user,
+        string $startDate,
+        string $endDate,
+        $bkuId = null,
+        $kontrakId = null
+    ) {
+        // ambil data bku beserta kontrak dan jumlah sumur
+        $bkuQuery = Bku::query()
+            ->with([
+                'bkuKontraks' => function ($query) use ($kontrakId) {
+                    if ($kontrakId) {
+                        $query->where('kontrak_id', $kontrakId);
+                    }
+
+                    $query->with([
+                        'kontrak',
+                        'sumurs',
+                    ]);
+                },
+            ])
+            ->orderBy('nama');
+
+        if ($user->isOperatorBku()) {
+            $bkuQuery->where('id', $user->bku_id);
+        }
+
+        if ($bkuId) {
+            $bkuQuery->where('id', $bkuId);
+        }
+
+        $bkus = $bkuQuery->get();
+
+        //ambil rekap laporan berdasarkan bku, kontrak dan tanggal
         $laporanQuery = LaporanHarian::query()
             ->whereBetween('tanggal', [$startDate, $endDate]);
 
@@ -30,176 +140,112 @@ class DashboardPdfService
             $kontrakId
         );
 
-        $totalProduksi = (clone $laporanQuery)->sum('total_produksi');
-        $totalLifting = (clone $laporanQuery)->sum('total_lifting');
-
-        $jumlahHari = (clone $laporanQuery)
-            ->select('tanggal')
-            ->distinct()
-            ->count();
-
-        $bkuQuery = Bku::query();
-
-        if ($bkuId) {
-            $bkuQuery->where('id', $bkuId);
-        }
-
-        $bkuKontrakQuery = BkuKontrak::query();
-
-        if ($bkuId) {
-            $bkuKontrakQuery->where('bku_id', $bkuId);
-        }
-
-        if ($kontrakId) {
-            $bkuKontrakQuery->where('kontrak_id', $kontrakId);
-        }
-
-        $stats = [
-            'total_bku' => $bkuQuery->count(),
-            'total_kontrak' => $bkuKontrakQuery
-                ->distinct('kontrak_id')
-                ->count('kontrak_id'),
-            'average_produksi' => $jumlahHari > 0
-                ? round($totalProduksi / $jumlahHari, 2)
-                : 0,
-            'average_lifting' => $jumlahHari > 0
-                ? round($totalLifting / $jumlahHari, 2)
-                : 0,
-        ];
-
-        $productionLiftingChart = (clone $laporanQuery)
-            ->selectRaw('DATE(tanggal) as tanggal')
-            ->selectRaw('SUM(total_produksi) as total_produksi')
-            ->selectRaw('SUM(total_lifting) as total_lifting')
-            ->groupBy('tanggal')
-            ->orderBy('tanggal')
-            ->get();
-
-        $productionByBku = (clone $laporanQuery)
+        $laporan = $laporanQuery
             ->join(
                 'bku_kontrak',
                 'laporan_harian.bku_kontrak_id',
                 '=',
                 'bku_kontrak.id'
             )
-            ->join('bku', 'bku_kontrak.bku_id', '=', 'bku.id')
-            ->select('bku.id', 'bku.nama')
-            ->selectRaw('SUM(laporan_harian.total_produksi) as total_produksi')
-            ->groupBy('bku.id', 'bku.nama')
-            ->orderByDesc('total_produksi')
+            ->join(
+                'kontrak',
+                'bku_kontrak.kontrak_id',
+                '=',
+                'kontrak.id'
+            )
+            ->selectRaw('
+                bku_kontrak.bku_id as bku_id,
+                bku_kontrak.kontrak_id as kontrak_id,
+                kontrak.nama as nama_kontrak,
+                DATE(laporan_harian.tanggal) as tanggal,
+                SUM(laporan_harian.total_produksi) as total_produksi,
+                SUM(laporan_harian.total_lifting) as total_lifting
+            ')
+            ->groupBy(
+                'bku_kontrak.bku_id',
+                'bku_kontrak.kontrak_id',
+                'kontrak.nama',
+                'tanggal'
+            )
             ->get();
 
-        $latestReports = (clone $laporanQuery)
-            ->with([
-                'bkuKontrak.bku:id,nama',
-                'bkuKontrak.kontrak:id,nama',
-            ])
-            ->orderByDesc('tanggal')
-            ->orderByDesc('id')
-            ->limit(10)
-            ->get();
+        //susun data rekapitulasi setiap bku
+        return $bkus->map(function ($bku) use ($laporan) {
 
+            $sumurPertamina = 0;
+            $sumurMedco = 0;
 
+            foreach ($bku->bkuKontraks as $bkuKontrak) {
+                $namaKontrak = strtolower(
+                    $bkuKontrak->kontrak?->nama ?? ''
+                );
 
-        $reporting = $this->buildReportingStatus($user);
-        $reportingStatus = $reporting['status'];
-        $missingReports = $reporting['missing'];
+                if (str_contains($namaKontrak, 'pertamina')) {
+                    $sumurPertamina += $bkuKontrak->sumurs->count();
+                }
 
-        $data = compact(
-            'startDate',
-            'endDate',
-            'stats',
-            'productionLiftingChart',
-            'productionByBku',
-            'latestReports',
-            'reportingStatus',
-            'missingReports'
-        );
-        return Pdf::loadView('pdf.dashboard', $data)
-            ->setPaper('a4', 'landscape');
-    }
+                if (str_contains($namaKontrak, 'medco')) {
+                    $sumurMedco += $bkuKontrak->sumurs->count();
+                }
+            }
 
+            // ambil laporan milik bku
+            $laporanBku = $laporan->where('bku_id', $bku->id);
 
-    private function buildReportingStatus(User $user): array
-    {
-        $today = now()->toDateString();
+            //kelompokan laporan berdasarkan tanggal
+            $harian = [];
 
-        $reportingBkusQuery = Bku::query()
-            ->withCount([
-                'bkuKontraks as total_kontrak' => function ($query) use ($today) {
-                    $query->whereDate('created_at', '<', $today);
-                },
-                'bkuKontraks as kontrak_sudah_melapor' => function ($query) use ($today) {
-                    $query->whereDate('created_at', '<', $today)
-                        ->whereHas(
-                            'laporanHarians',
-                            fn($reportQuery) => $reportQuery->whereDate('tanggal', $today)
-                        );
-                },
-            ])
-            ->with([
-                'bkuKontraks' => function ($query) use ($today) {
-                    $query
-                        ->whereDate('created_at', '<', $today)
-                        ->with('kontrak')
-                        ->whereDoesntHave(
-                            'laporanHarians',
-                            fn($reportQuery) => $reportQuery->whereDate('tanggal', $today)
-                        );
-                },
-            ])
-            ->orderBy('nama');
+            foreach ($laporanBku as $item) {
+                $tanggal = Carbon::parse($item->tanggal)->format('Y-m-d');
 
-        if ($user->isOperatorBku()) {
-            $reportingBkusQuery->where('id', $user->bku_id);
-        }
+                $namaKontrak = strtolower($item->nama_kontrak);
 
-        $reportingBkus = $reportingBkusQuery->get();
+                if (!isset($harian[$tanggal])) {
+                    $harian[$tanggal] = [
+                        'produksi_pertamina' => 0,
+                        'produksi_medco' => 0,
+                        'lifting_pertamina' => 0,
+                        'lifting_medco' => 0,
+                    ];
+                }
 
-        $totalReportingBku = $reportingBkus->count();
+                if (str_contains($namaKontrak, 'pertamina')) {
+                    $harian[$tanggal]['produksi_pertamina'] +=
+                        (float) $item->total_produksi;
 
-        $sudahMelapor = $reportingBkus
-            ->filter(
-                fn($bku) =>
-                    $bku->total_kontrak > 0 &&
-                    $bku->kontrak_sudah_melapor >= $bku->total_kontrak
-            )
-            ->count();
+                    $harian[$tanggal]['lifting_pertamina'] +=
+                        (float) $item->total_lifting;
+                }
 
-        $belumMelapor = $totalReportingBku - $sudahMelapor;
+                if (str_contains($namaKontrak, 'medco')) {
+                    $harian[$tanggal]['produksi_medco'] +=
+                        (float) $item->total_produksi;
 
-        $reportingPercentage = $totalReportingBku > 0
-            ? round(($sudahMelapor / $totalReportingBku) * 100, 1)
-            : 0;
+                    $harian[$tanggal]['lifting_medco'] +=
+                        (float) $item->total_lifting;
+                }
+            }
 
-        $missingReports = $reportingBkus
-            ->filter(
-                fn($bku) => $bku->total_kontrak > $bku->kontrak_sudah_melapor
-            )
-            ->map(fn($bku) => [
+            //hitung total produksi dan lifting
+
+            $totalProduksi = $laporanBku->sum('total_produksi');
+            $totalLifting = $laporanBku->sum('total_lifting');
+
+            return [
                 'id' => $bku->id,
                 'nama' => $bku->nama,
-                'missing_count' => $bku->total_kontrak - $bku->kontrak_sudah_melapor,
-                'contracts' => $bku->bkuKontraks
-                    ->map(fn($bkuKontrak) => [
-                        'id' => $bkuKontrak->id,
-                        'nama' => $bkuKontrak->kontrak->nama,
-                    ])
-                    ->values(),
-            ])
-            ->values();
+                'penetapan' => $bku->penetapan,
 
-        return [
-            'status' => [
-                'total_bku' => $totalReportingBku,
-                'sudah_melapor' => $sudahMelapor,
-                'belum_melapor' => $belumMelapor,
-                'percentage' => $reportingPercentage,
-            ],
-            'missing' => $missingReports,
-        ];
+                'sumur_pertamina' => $sumurPertamina,
+                'sumur_medco' => $sumurMedco,
+
+                'total_produksi' => $totalProduksi,
+                'total_lifting' => $totalLifting,
+
+                'harian' => $harian,
+            ];
+        });
     }
-
 
     private function applyLaporanScope(
         Builder $query,

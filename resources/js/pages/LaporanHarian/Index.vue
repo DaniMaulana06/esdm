@@ -477,6 +477,9 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                             </SelectContent>
                         </Select>
                     </div>
+                </div>
+
+                <div class="mt-4 flex items-end justify-between gap-4">
 
                     <!-- Tanggal -->
                     <div>
@@ -509,17 +512,18 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                             </PopoverContent>
                         </Popover>
                     </div>
-                </div>
 
-                <div class="mt-4 flex justify-end gap-2 items-end">
-                    <Button type="button" variant="outline" @click="resetFilter">
-                        <RotateCw />
-                        Reset
-                    </Button>
-                    <Button type="button" @click="applyFilter" variant="submit">
-                        <Search />
-                        Cari
-                    </Button>
+                    <!-- tombol -->
+                    <div class="flex items-center justify-end gap-2">
+                        <Button type="button" variant="outline" @click="resetFilter">
+                            <RotateCw />
+                            Reset
+                        </Button>
+                        <Button type="button" @click="applyFilter" variant="submit">
+                            <Search />
+                            Cari
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -822,16 +826,16 @@ const openJustifikasi = (laporan: LaporanHarian) => {
                         :page="pager.current_page" @update:page="goToPage">
                         <PaginationContent v-slot="{ items }">
                             <PaginationPrevious />
-    
+
                             <template v-for="(item, index) in items" :key="index">
                                 <PaginationItem v-if="item.type === 'page'" :value="item.value"
                                     :is-active="item.value === activePage">
                                     {{ item.value }}
                                 </PaginationItem>
-    
+
                                 <PaginationEllipsis v-else :index="index" />
                             </template>
-    
+
                             <PaginationNext />
                         </PaginationContent>
                     </Pagination>

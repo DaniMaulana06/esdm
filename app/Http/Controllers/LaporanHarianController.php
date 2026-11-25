@@ -209,7 +209,7 @@ class LaporanHarianController extends Controller
 
     public function store(StoreLaporanHarianRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $request->user();   
 
         $validated = $request->validated();
 

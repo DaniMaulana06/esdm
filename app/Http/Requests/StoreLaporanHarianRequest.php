@@ -63,7 +63,7 @@ class StoreLaporanHarianRequest extends FormRequest
             ],
 
             'laporan.*.keterangan' => [
-                'nullable',
+                $this->boolean('is_backfill') ? 'required' : 'nullable',
                 'string',
                 'max:500',
             ],
@@ -111,7 +111,9 @@ class StoreLaporanHarianRequest extends FormRequest
             'laporan.*.total_lifting.min' =>
                 'Total lifting tidak boleh kurang dari 0.',
             'laporan.*.keterangan.max' =>
-                'keterangan tidak boleh lebih dari 500 karakter'
+                'keterangan tidak boleh lebih dari 500 karakter',
+            'laporan.*.keterangan.required' =>
+                'Keterangan wajib diisi untuk laporan terlewat'
         ];
     }
 }

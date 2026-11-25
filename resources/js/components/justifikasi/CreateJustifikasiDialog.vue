@@ -180,6 +180,7 @@ const submit = () => {
 
                         <Textarea id="alasan_revisi" v-model="form.alasan_revisi" rows="4" maxlength="1000"
                             placeholder="Jelaskan alasan perubahan data..."
+                            required
                             class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition" />
 
                         <InputError :message="form.errors.alasan_revisi" class="mt-2" />
