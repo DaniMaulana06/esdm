@@ -74,6 +74,16 @@ export interface MissingDateForOperator {
     contracts: ReportContract[];
 }
 
+export interface ReportingDisciplineItem {
+    bku_id: number;
+    nama: string;
+    total_hari_efektif: number;
+    terlambat: number;
+    tidak_melapor: number;
+    tepat_waktu: number;
+    persentase_tepat_waktu: number;
+}
+
 export interface ProductionMonthlyItem {
     bulan: string; // "2026-11"
     total_produksi: number;
@@ -115,5 +125,6 @@ export interface DashboardProps {
     bkuBelumLapor: BkuBelumLapor[];
     latestReports: LatestReport[];
     missingDatesForOperator: MissingDateForOperator[];
+    disiplinPelaporan: ReportingDisciplineItem[];
     total_sumur?: number;
 }

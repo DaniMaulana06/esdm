@@ -113,6 +113,13 @@ body {
     display: table-header-group;
 }
 
+.recap-table thead th {
+    font-family: Arial, sans-serif;
+    font-weight: 700 !important;
+    font-style: normal;
+    color: #000;
+}
+
 .recap-table tr {
     page-break-inside: avoid;
 }

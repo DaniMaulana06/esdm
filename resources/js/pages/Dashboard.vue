@@ -11,6 +11,7 @@ import DashboardMissingReportsCard from '@/components/dashboard/DashboardMissing
 import DashboardMonthlyComparisonCard from '@/components/dashboard/DashboardMonthlyComparisonCard.vue';
 import DashboardProductionByBkuCard from '@/components/dashboard/DashboardProductionByBkuCard.vue';
 import DashboardProductionLiftingTableCard from '@/components/dashboard/DashboardProductionLiftingTableCard.vue';
+import DashboardReportingDisciplineCard from '@/components/dashboard/DashboardReportingDisciplineCard.vue';
 import DashboardReportingStatusCard from '@/components/dashboard/DashboardReportingStatusCard.vue';
 import type { DashboardProps, FilterPayload } from '@/components/dashboard/types';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -38,7 +39,7 @@ const applyFilter = (payload: FilterPayload) => {
         {
             preserveScroll: true,
             preserveState: true,
-            only: ['filters', 'stats', 'productionChart', 'productionLiftingChart', 'productionMonthlyChart', 'productionByBku'],
+            only: ['filters', 'stats', 'productionChart', 'productionLiftingChart', 'productionMonthlyChart', 'productionByBku', 'disiplinPelaporan'],
         },
     );
 };
@@ -105,6 +106,9 @@ const printDashboard = () => {
                     @apply="applyFilter"
                     @reset="resetFilter"
                 />
+
+                <!-- Disiplin Pelaporan (Terlambat & Tidak Melapor) -->
+                <DashboardReportingDisciplineCard :items="disiplinPelaporan" v-if="isStafEsdmOrAdmin"/>
 
                 <!-- Produksi per BKU + Status -->
                 <div v-if="isStafEsdmOrAdmin" class="grid grid-cols-1 gap-6 lg:grid-cols-2">

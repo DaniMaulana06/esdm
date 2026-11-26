@@ -11,19 +11,22 @@ use App\Models\Sumur;
 use App\Models\User;
 use App\Services\DashboardPdfService;
 use App\Services\LaporanMonitoringService;
+use App\Services\LaporanTerlambatService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
     /** Laporan terlewat baru ditampilkan ke operator setelah melewati N hari. */
     private const HARI_MASA_TENGGANG_LAPORAN = 7;
 
-    public function index(FilterDashboardRequest $request, LaporanMonitoringService $monitoring): Response
-    {
+    public function index(
+        FilterDashboardRequest $request,
+        LaporanMonitoringService $monitoring,
+        LaporanTerlambatService $disiplinPelaporan,
+    ): Response {
         $user = $request->user();
 
         $startDate = $request->validated('start_date')
@@ -52,6 +55,14 @@ class DashboardController extends Controller
             'bkus' => $this->getBkus($user),
             'kontraks' => $this->getKontraks($user, $bkuId),
             'bkuBelumLapor' => $monitoring->getBkuBelumLapor(),
+
+            'disiplinPelaporan' => $disiplinPelaporan->hitung(
+                $user,
+                $startDate,
+                $endDate,
+                $bkuId ? (int) $bkuId : null,
+                $kontrakId ? (int) $kontrakId : null,
+            ),
 
             'productionChart' => $this->getProductionChart($laporanQuery),
             'productionLiftingChart' => $this->getProductionLiftingChart($laporanQuery),

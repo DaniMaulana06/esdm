@@ -16,6 +16,21 @@
 
     @php
         $formatAngka = fn($angka) => number_format($angka ?? 0, 2, ',', '.');
+
+        $tanggalAwal = \Carbon\Carbon::parse($startDate);
+        $tanggalAkhir = \Carbon\Carbon::parse($endDate);
+
+        if ($tanggalAwal->format('Y-m') === $tanggalAkhir->format('Y-m')) {
+            $periode = $tanggalAwal->translatedFormat('F Y');
+        } elseif ($tanggalAwal->format('Y') === $tanggalAkhir->format('Y')) {
+            $periode = $tanggalAwal->translatedFormat('F')
+                . ' - ' .
+                $tanggalAkhir->translatedFormat('F Y');
+        } else {
+            $periode = $tanggalAwal->translatedFormat('F Y')
+                . ' - ' .
+                $tanggalAkhir->translatedFormat('F Y');
+        }
     @endphp
 
     <h2 class="report-title">
@@ -23,8 +38,7 @@
     </h2>
 
     <div class="report-period">
-        Periode
-        {{ \Carbon\Carbon::parse($startDate)->translatedFormat('F Y') }}
+        Periode {{ $periode }}
     </div>
 
     @foreach ($rekapPages as $pageIndex => $page)
