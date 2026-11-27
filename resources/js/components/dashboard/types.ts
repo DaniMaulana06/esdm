@@ -22,6 +22,8 @@ export interface ProductionChartItem {
 
 export interface ProductionLiftingItem {
     tanggal: string;
+    kontrak_id: number;
+    kontrak: string;
     total_produksi: number;
     total_lifting: number;
 }

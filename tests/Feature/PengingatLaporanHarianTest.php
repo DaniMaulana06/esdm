@@ -119,28 +119,48 @@ test('3. Laporan sudah melewati batas dan belum tersedia: email pengingat dikiri
     });
 });
 
-test('4. Hari Sabtu dan Minggu tidak dihitung (dilewati dari perhitungan tunggakan)', function () {
+// test('4. Hari Sabtu dan Minggu tidak dihitung (dilewati dari perhitungan tunggakan)', function () {
+//     Mail::fake();
+//     $setup = createTestSetup();
+
+//     // Hari ini Selasa 2026-11-03.
+//     // Rentang 4 hari kalender ke belakang mencakup:
+//     // - 2026-10-30 (Jumat - hari kerja)
+//     // - 2026-10-31 (Sabtu - akhir pekan) -> HARUS DILEWATI
+//     // - 2026-11-01 (Minggu - akhir pekan) -> HARUS DILEWATI
+//     // - 2026-11-02 (Senin - hari kerja)
+//     Artisan::call('laporan:kirim-pengingat', ['--days' => 4]);
+
+//     Mail::assertSent(PengingatLaporanHarianMail::class, function ($mail) {
+//         // Sabtu dan Minggu tidak boleh masuk ke missingDates
+//         $containsWeekend = in_array('2026-10-31', $mail->missingDates) ||
+//                            in_array('2026-11-01', $mail->missingDates);
+
+//         // Hari kerja (Jumat & Senin) harus ada
+//         $containsWeekdays = in_array('2026-10-30', $mail->missingDates) &&
+//                             in_array('2026-11-02', $mail->missingDates);
+
+//         return ! $containsWeekend && $containsWeekdays;
+//     });
+// });
+
+test('4. Hari Sabtu dan Minggu ikut dihitung dalam perhitungan tunggakan', function () {
     Mail::fake();
     $setup = createTestSetup();
 
     // Hari ini Selasa 2026-11-03.
     // Rentang 4 hari kalender ke belakang mencakup:
-    // - 2026-10-30 (Jumat - hari kerja)
-    // - 2026-10-31 (Sabtu - akhir pekan) -> HARUS DILEWATI
-    // - 2026-11-01 (Minggu - akhir pekan) -> HARUS DILEWATI
-    // - 2026-11-02 (Senin - hari kerja)
+    // - 2026-10-30 (Jumat)
+    // - 2026-10-31 (Sabtu) -> IKUT DIHITUNG
+    // - 2026-11-01 (Minggu) -> IKUT DIHITUNG
+    // - 2026-11-02 (Senin)
     Artisan::call('laporan:kirim-pengingat', ['--days' => 4]);
 
     Mail::assertSent(PengingatLaporanHarianMail::class, function ($mail) {
-        // Sabtu dan Minggu tidak boleh masuk ke missingDates
-        $containsWeekend = in_array('2026-10-31', $mail->missingDates) ||
-                           in_array('2026-11-01', $mail->missingDates);
-
-        // Hari kerja (Jumat & Senin) harus ada
-        $containsWeekdays = in_array('2026-10-30', $mail->missingDates) &&
-                            in_array('2026-11-02', $mail->missingDates);
-
-        return ! $containsWeekend && $containsWeekdays;
+        return in_array('2026-10-30', $mail->missingDates) &&
+               in_array('2026-10-31', $mail->missingDates) &&
+               in_array('2026-11-01', $mail->missingDates) &&
+               in_array('2026-11-02', $mail->missingDates);
     });
 });
 

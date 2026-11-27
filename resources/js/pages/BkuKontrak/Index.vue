@@ -35,6 +35,7 @@ interface BkuKontrak {
     bku_id: number;
     kontrak_id: number;
     jumlah_sumur: number;
+    sumurs_count: number;
     bku: Bku;
     kontrak: Kontrak;
 }
@@ -259,7 +260,7 @@ const showAddDialog = ref(false)
                                 {{ bkuKontrak.kontrak?.nama }}
                             </td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ bkuKontrak.jumlah_sumur }}
+                                {{ bkuKontrak.sumurs_count }}
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">

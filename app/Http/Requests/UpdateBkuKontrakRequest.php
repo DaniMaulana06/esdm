@@ -29,7 +29,7 @@ class UpdateBkuKontrakRequest extends FormRequest
                     ->ignore($this->route('bku_kontrak')),
             ],
             'jumlah_sumur' => [
-                'required',
+                'nullable',
                 'integer',
                 'min:0',
             ],

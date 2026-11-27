@@ -66,12 +66,13 @@ class PengingatLaporanService
             $missingDates = [];
             $currentDate = $startDate->copy()->startOfDay();
 
-            // Periksa setiap hari kerja (Sabtu dan Minggu dilewati / tidak dihitung)
             while ($currentDate->lte($endDate)) {
-                if ($currentDate->isWeekend()) {
-                    $currentDate->addDay();
-                    continue;
-                }
+                
+                // Periksa setiap hari kerja (Sabtu dan Minggu dilewati / tidak dihitung)
+                // if ($currentDate->isWeekend()) {
+                //     $currentDate->addDay();
+                //     continue;
+                // } 
 
                 $dateStr = $currentDate->toDateString();
 

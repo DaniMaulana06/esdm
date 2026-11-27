@@ -14,7 +14,7 @@ defineProps<{
         <!-- total kontrak -->
         <Card>
             <CardHeader class="pb-2">
-                <CardTitle class="text-sm font-medium text-gray-500">Jumlah Kontrak</CardTitle>
+                <CardTitle class="text-sm font-medium text-gray-500">Jumlah Kontrak dengan K3S</CardTitle>
             </CardHeader>
 
             <CardContent>

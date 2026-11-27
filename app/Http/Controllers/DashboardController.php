@@ -199,19 +199,25 @@ class DashboardController extends Controller
     }
 
     /**
-     * Data produksi vs lifting per tanggal.
+     * Data produksi vs lifting per tanggal dan kontrak.
      */
     private function getProductionLiftingChart(Builder $laporanQuery): Collection
     {
         return (clone $laporanQuery)
-            ->selectRaw('DATE(tanggal) as tanggal')
-            ->selectRaw('SUM(total_produksi) as total_produksi')
-            ->selectRaw('SUM(total_lifting) as total_lifting')
-            ->groupBy('tanggal')
+            ->join('bku_kontrak', 'laporan_harian.bku_kontrak_id', '=', 'bku_kontrak.id')
+            ->join('kontrak', 'bku_kontrak.kontrak_id', '=', 'kontrak.id')
+            ->selectRaw('DATE(laporan_harian.tanggal) as tanggal')
+            ->addSelect('kontrak.id as kontrak_id', 'kontrak.nama as kontrak')
+            ->selectRaw('SUM(laporan_harian.total_produksi) as total_produksi')
+            ->selectRaw('SUM(laporan_harian.total_lifting) as total_lifting')
+            ->groupBy('tanggal', 'kontrak.id', 'kontrak.nama')
             ->orderBy('tanggal')
+            ->orderBy('kontrak.nama')
             ->get()
             ->map(fn($item) => [
                 'tanggal' => $item->tanggal,
+                'kontrak_id' => (int) $item->kontrak_id,
+                'kontrak' => $item->kontrak,
                 'total_produksi' => (float) $item->total_produksi,
                 'total_lifting' => (float) $item->total_lifting,
             ])

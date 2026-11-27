@@ -23,7 +23,7 @@ class StoreBkuKontrakRequest extends FormRequest
                     return $query->where('bku_id', $this->bku_id);
                 }),
             ],
-            'jumlah_sumur' => ['required', 'integer', 'min:0'],
+            'jumlah_sumur' => ['nullable', 'integer', 'min:0'],
         ];
     }
 

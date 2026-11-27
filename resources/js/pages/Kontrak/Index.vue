@@ -131,9 +131,9 @@ const cancelDelete = () => {
                     <h1 class="text-2xl font-semibold text-gray-900">
                         Kontrak
                     </h1>
-
+ 
                     <p class="mt-1 text-sm text-gray-600">
-                        Kelola data Kontrak.
+                        Kelola data Kontraktor Kontrak Kerja Sama (K3S).
                     </p>
                 </div>
                 <Button

@@ -46,7 +46,7 @@ const navMain: NavGroup[] = [
         items: [
             { title: 'BKU', href: '/bku', roles: ['admin', 'staf_dinas'] },
             { title: 'Sumur', href: '/sumur', roles: ['admin', 'staf_dinas', 'operator_bku'] },
-            { title: 'Kontrak', href: '/kontrak', roles: ['admin', 'staf_dinas'] },
+            { title: 'Kontrak K3S', href: '/kontrak', roles: ['admin', 'staf_dinas'] },
             { title: 'BKU Kontrak', href: '/bku-kontrak', roles: ['admin', 'staf_dinas'] },
         ],
     },
