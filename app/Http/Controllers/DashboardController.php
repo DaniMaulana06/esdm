@@ -14,6 +14,7 @@ use App\Services\LaporanMonitoringService;
 use App\Services\LaporanTerlambatService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -237,14 +238,37 @@ class DashboardController extends Controller
 
         $this->applyLaporanScope($monthlyQuery, $user, $bkuId, $kontrakId);
 
+        $driver = DB::connection()->getDriverName();
+
+        $yearExpression = $driver === 'sqlite'
+            ? "CAST(strftime('%Y', tanggal) AS INTEGER)"
+            : 'YEAR(tanggal)';
+
+        $monthExpression = $driver === 'sqlite'
+            ? "CAST(strftime('%m', tanggal) AS INTEGER)"
+            : 'MONTH(tanggal)';
+
+        // $monthlyRows = $monthlyQuery
+        //     ->selectRaw('EXTRACT(YEAR FROM tanggal) as tahun')
+        //     ->selectRaw('EXTRACT(MONTH FROM tanggal) as bulan')
+        //     ->selectRaw('SUM(total_produksi) as total_produksi')
+        //     ->selectRaw('SUM(total_lifting) as total_lifting')
+        //     ->groupBy('tahun', 'bulan')
+        //     ->get()
+        //     ->keyBy(fn($row) => sprintf('%04d-%02d', $row->tahun, $row->bulan));
+
         $monthlyRows = $monthlyQuery
-            ->selectRaw('EXTRACT(YEAR FROM tanggal) as tahun')
-            ->selectRaw('EXTRACT(MONTH FROM tanggal) as bulan')
+            ->selectRaw("$yearExpression as tahun")
+            ->selectRaw("$monthExpression as bulan")
             ->selectRaw('SUM(total_produksi) as total_produksi')
             ->selectRaw('SUM(total_lifting) as total_lifting')
             ->groupBy('tahun', 'bulan')
             ->get()
-            ->keyBy(fn($row) => sprintf('%04d-%02d', $row->tahun, $row->bulan));
+            ->keyBy(fn($row) => sprintf(
+                '%04d-%02d',
+                $row->tahun,
+                $row->bulan
+            ));
 
         // Isi semua bulan (bulan tanpa data = 0) agar grafik tidak bolong
         return collect(range(0, 11))
@@ -465,7 +489,7 @@ class DashboardController extends Controller
     /**
      * Tanggal terlewat khusus untuk operator BKU.
      */
-    private function getMissingDatesForOperator(User $user, LaporanMonitoringService $monitoring): array| Collection
+    private function getMissingDatesForOperator(User $user, LaporanMonitoringService $monitoring): array|Collection
     {
         if ($user->isOperatorBku() && $user->bku_id) {
             return $monitoring->getMissingDatesForBku($user->bku_id, self::HARI_MASA_TENGGANG_LAPORAN);
@@ -494,14 +518,15 @@ class DashboardController extends Controller
         return $pdf->stream('laporan-dashboard.pdf');
     }
 
-    private function getTotalSumur(): int {
+    private function getTotalSumur(): int
+    {
         $user = auth()->user();
 
-        if($user->role !== 'operator_bku' || !$user->bku_id){
+        if ($user->role !== 'operator_bku' || !$user->bku_id) {
             return 0;
         }
 
-        return Sumur::whereHas('bkuKontrak', function($query) use ($user) {
+        return Sumur::whereHas('bkuKontrak', function ($query) use ($user) {
             $query->where('bku_id', $user->bku_id);
         })->count();
     }

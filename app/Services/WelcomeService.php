@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\Bku;
 use App\Models\LaporanHarian;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class WelcomeService
 {
@@ -33,10 +34,27 @@ class WelcomeService
     /**
      * Ambil daftar tahun yang ada laporan produksinya untuk opsi filter.
      */
+    // public function getAvailableYears(): array
+    // {
+    //     $years = LaporanHarian::query()
+    //         ->selectRaw('DISTINCT YEAR(tanggal) as tahun')
+    //         ->orderByDesc('tahun')
+    //         ->pluck('tahun')
+    //         ->toArray();
+
+    //     return !empty($years) ? $years : [(int) date('Y')];
+    // }
+
     public function getAvailableYears(): array
     {
+        $driver = DB::connection()->getDriverName();
+
+        $yearExpression = $driver === 'sqlite'
+            ? "CAST(strftime('%Y', tanggal) AS INTEGER)"
+            : 'YEAR(tanggal)';
+
         $years = LaporanHarian::query()
-            ->selectRaw('DISTINCT YEAR(tanggal) as tahun')
+            ->selectRaw("DISTINCT {$yearExpression} as tahun")
             ->orderByDesc('tahun')
             ->pluck('tahun')
             ->toArray();
